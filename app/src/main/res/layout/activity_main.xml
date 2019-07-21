@@ -45,4 +45,11 @@
         android:text="clickRatio"
         android:onClick="onClickRatio"
         />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="p2p"
+        android:onClick="onP2P"
+        />
 </LinearLayout>

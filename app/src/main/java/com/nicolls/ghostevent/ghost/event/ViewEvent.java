@@ -35,6 +35,7 @@ public class ViewEvent implements IEvent {
      * 每一个滑动事件触发的move所占用的时间
      */
     private static final long INTERVAL_TIME_SLIDE_MOVE_UNIT = 16;
+
     private static int sDisplayWidth;
     private static int sDisplayHeight;
 
@@ -122,9 +123,9 @@ public class ViewEvent implements IEvent {
         int centerX = sDisplayWidth / 2;
         int centerY = sDisplayHeight / 2;
         int moveUnit = distance / SLIDE_MOVE_TIMES;
-        Point down = new Point();
-        Point up = new Point();
-        List<Point> moves = new ArrayList<>();
+        PointF down = new PointF();
+        PointF up = new PointF();
+        List<PointF> moves = new ArrayList<>();
         int xStart = 0;
         int xEnd = 0;
         int yStart = 0;
@@ -164,10 +165,11 @@ public class ViewEvent implements IEvent {
         }
         down.x = xStart;
         down.y = yStart;
+        // 移动的点，包括up跟down
         for (int i = 0; i < SLIDE_MOVE_TIMES; i++) {
             int moveX = xStart + moveUnitX * i;
             int moveY = yStart + moveUnitY * i;
-            Point move = new Point(moveX, moveY);
+            PointF move = new PointF(moveX, moveY);
             moves.add(move);
         }
         up.x = xEnd;
@@ -176,7 +178,54 @@ public class ViewEvent implements IEvent {
 
     }
 
-    private void slide(final Point down, final List<Point> moves, final Point up) {
+    @Override
+    public void slide(final PointF from, final PointF to) {
+        LogUtil.i(TAG, "slide from:" + from.toString() + " to:" + to.toString());
+        if (from.x < 0 || from.y < 0 || to.x < 0 || to.y < 0) {
+            LogUtil.e(TAG, "invalid params slide from - to");
+            return;
+        }
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                List<PointF> moves = new ArrayList<>();
+                float horizontal = to.x - from.x;
+                float vertical = to.y - from.y;
+                float horizontalDistance = Math.abs(horizontal);
+                float verticalDistance = Math.abs(vertical);
+                float yUnit = 0;
+                float xUnit = 0;
+                float ratio = 0;
+                if (vertical != 0) {
+                    ratio = Math.abs(horizontal / vertical);
+                }
+
+                if (ratio <= 1&&vertical!=0) { // 说明是一个偏y轴的滑动，则以y为distance
+                    final float distanceUnit = Math.abs(vertical) / SLIDE_MOVE_TIMES;
+                    yUnit = distanceUnit;
+                    if (horizontalDistance > 5) { // 如果x轴只动了5，默认是一个直y轴的滑动
+                        xUnit = Math.abs(ratio) * distanceUnit;
+                    }
+                } else {
+                    final float distanceUnit = Math.abs(horizontal) / SLIDE_MOVE_TIMES;
+                    xUnit = distanceUnit;
+                    if (verticalDistance > 5) { // 如果y轴只动了5，默认是一个直x轴的滑动
+                        yUnit = Math.abs(ratio) * distanceUnit;
+                    }
+                }
+
+                for (int i = 0, j = 0; i < horizontalDistance || j < verticalDistance; i += xUnit, j += yUnit) {
+                    float moveX = horizontal > 0 ? (from.x + i) : (from.x - i);
+                    float moveY = vertical > 0 ? (from.y + j) : (from.y - j);
+                    PointF move = new PointF(moveX, moveY);
+                    moves.add(move);
+                }
+                slide(from, moves, to);
+            }
+        });
+    }
+
+    private void slide(final PointF down, final List<PointF> moves, final PointF up) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -184,7 +233,7 @@ public class ViewEvent implements IEvent {
                 MotionEvent downEvent = MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, down.x, down.y, 0);
                 view.dispatchTouchEvent(downEvent);
 
-                for (Point move : moves) {
+                for (PointF move : moves) {
                     long moveTime = SystemClock.uptimeMillis();
                     MotionEvent moveEvent = MotionEvent.obtain(downTime, moveTime, MotionEvent.ACTION_MOVE, move.x, move.y, 0);
                     view.dispatchTouchEvent(moveEvent);
@@ -198,16 +247,6 @@ public class ViewEvent implements IEvent {
         });
     }
 
-    @Override
-    public void slide(final PointF from, final PointF to) {
-        LogUtil.i(TAG, "slide from:" + from.toString() + " to:" + to.toString());
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-
-            }
-        });
-    }
 
     private void runOnUiThread(final Runnable runnable) {
         if (Looper.myLooper() != Looper.getMainLooper()) {

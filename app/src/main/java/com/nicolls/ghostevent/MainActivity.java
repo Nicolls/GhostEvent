@@ -3,6 +3,8 @@ package com.nicolls.ghostevent;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+import android.graphics.Point;
+import android.graphics.PointF;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -89,6 +91,24 @@ public class MainActivity extends AppCompatActivity {
 
     public void onClickRatio(View view){
         event.clickRatio(0.5f,0.5f);
+    }
+
+    public void onP2P(View view) {
+        Point display=DisplayUtils.getDisplaySize(getApplicationContext());
+
+        // 直y
+        PointF from=new PointF(display.x/2.0f,display.y-display.y/4.0f);
+        PointF to=new PointF(display.x/2.0f,display.y/4.0f);
+
+        //直x
+//        PointF from=new PointF(display.x-display.x/4.0f,display.y/3.0f);
+//        PointF to=new PointF(display.x/4.0f,display.y/3.0f);
+
+        // 斜着
+//        PointF from=new PointF(display.x-display.x/4.0f,display.y-display.y/4.0f);
+//        PointF to=new PointF(display.x/4.0f,display.y/4.0f);
+
+        event.slide(from,to);
     }
 
     private final class MyAdapter extends BaseAdapter {
