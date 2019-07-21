@@ -35,15 +35,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        listView=findViewById(R.id.my_listview);
+        listView=findViewById(R.id.my_listView);
 //        listView.setAdapter(new MyAdapter());
-        MyWebView webView=new MyWebView(this);
-        webView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
 
-//        webView.setTranslationX(DisplayUtils.getDisplaySize(this).x+40);
-        ViewGroup viewGroup= (ViewGroup) getWindow().getDecorView();
-        viewGroup.addView(webView,0);
-        event=new ViewEvent(webView);
+
+
+//        ViewGroup viewGroup= (ViewGroup) getWindow().getDecorView();
+//        viewGroup.addView(webView,0);
+//        event=new ViewEvent(webView);
     }
 
     @Override
@@ -109,6 +108,14 @@ public class MainActivity extends AppCompatActivity {
 //        PointF to=new PointF(display.x/4.0f,display.y/4.0f);
 
         event.slide(from,to);
+    }
+
+    public void onLongClickXY(View view) {
+
+    }
+
+    public void onDone(View view) {
+        Advert.attachToActivity(this);
     }
 
     private final class MyAdapter extends BaseAdapter {

@@ -1,0 +1,21 @@
+package com.nicolls.ghostevent.ghost.real;
+
+import android.content.Context;
+import android.graphics.Point;
+import android.util.DisplayMetrics;
+
+public class GhostUtils {
+    public static int displayWidth = 0;
+    public static int displayHeight = 0;
+    private static boolean isInit = false;
+
+    public static void init(Context context) {
+        if (context == null || isInit) {
+            return;
+        }
+        DisplayMetrics dm = context.getResources().getDisplayMetrics();
+        displayWidth = dm.widthPixels;
+        displayHeight = dm.heightPixels;
+        isInit = true;
+    }
+}

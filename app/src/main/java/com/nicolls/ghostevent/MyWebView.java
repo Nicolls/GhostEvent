@@ -31,7 +31,7 @@ public class MyWebView extends WebView {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
         LogUtil.d(TAG,"onInterceptTouchEvent ev:"+MotionEvent.actionToString(ev.getAction()));
-        return true;
+        return super.onInterceptTouchEvent(ev);
     }
 
     @Override
