@@ -16,6 +16,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.nicolls.ghostevent.ghost.event.GroupEvent;
 import com.nicolls.ghostevent.ghost.utils.DisplayUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 import com.nicolls.ghostevent.ghost.old.IEvent;
@@ -34,10 +35,6 @@ import com.nicolls.ghostevent.ghost.event.SlideEvent;
 public class GhostWebView extends BaseWebView {
     private static final String TAG = "GhostWebView";
 
-
-    private Handler mainHandler = new Handler(Looper.getMainLooper());
-    private String url;
-    private IEvent event;
     private int displayWidth;
     private int displayHeight;
     private EventExecutor eventExecutor=new EventExecutor();
@@ -68,7 +65,6 @@ public class GhostWebView extends BaseWebView {
         Point display= DisplayUtils.getDisplaySize(getContext());
         displayWidth=display.x;
         displayHeight=display.y;
-        event = new ViewEvent(this);
     }
 
     public void start(String url) {
@@ -147,12 +143,17 @@ public class GhostWebView extends BaseWebView {
             eventExecutor.execute(slideBottom);
             eventExecutor.execute(slideTop);
             eventExecutor.execute(slideBottom);
+            final GroupEvent groupEvent=new GroupEvent();
+            groupEvent.addEvent(slideTop);
+            groupEvent.addEvent(slideBottom);
+            groupEvent.addEvent(slideTop);
+            groupEvent.addEvent(slideBottom);
+            groupEvent.addEvent(slideTop);
+            groupEvent.addEvent(slideBottom);
+            eventExecutor.execute(groupEvent);
             eventExecutor.execute(slideTop);
             eventExecutor.execute(slideBottom);
-            eventExecutor.execute(slideTop);
-            eventExecutor.execute(slideBottom);
-            eventExecutor.execute(slideTop);
-            eventExecutor.execute(slideBottom);
+
             BaseEvent click=new ClickEvent(GhostWebView.this,displayWidth/2,displayHeight/2);
             eventExecutor.execute(click);
 

@@ -10,6 +10,7 @@ import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.Completable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -22,7 +23,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
  */
 public class SlideEvent extends BaseEvent {
     private static final String TAG = "SlideEvent";
-    static final int INTERVAL_TIME_CLICK = 100;
     /**
      * 每一个滑动事件需要触发的move数
      */
@@ -41,6 +41,7 @@ public class SlideEvent extends BaseEvent {
     }
 
     public SlideEvent(View view, final Direction direct) {
+        this.name = TAG;
         this.view=view;
         LogUtil.i(TAG, "slide direct:" + direct);
         int distance = 0;
@@ -154,10 +155,14 @@ public class SlideEvent extends BaseEvent {
 
 
     @Override
-    public Completable exe() {
+    public Completable exe(final AtomicBoolean cancel) {
         return Completable.fromRunnable(new Runnable() {
             @Override
             public void run() {
+                if(cancel.get()){
+                    LogUtil.d(TAG,"cancel!");
+                    return;
+                }
                 long downTime = SystemClock.uptimeMillis();
                 MotionEvent downEvent = MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, from.x, from.y, 0);
                 view.dispatchTouchEvent(downEvent);
@@ -174,11 +179,6 @@ public class SlideEvent extends BaseEvent {
                 view.dispatchTouchEvent(upEvent);
             }
         }).subscribeOn(AndroidSchedulers.mainThread());
-    }
-
-    @Override
-    public String getName() {
-        return "SlideEvent";
     }
 
 }

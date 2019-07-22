@@ -5,6 +5,9 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.nicolls.ghostevent.ghost.utils.GhostUtils;
+import com.nicolls.ghostevent.ghost.utils.LogUtil;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.Completable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -26,6 +29,7 @@ public class ClickEvent extends BaseEvent {
         this.view = view;
         this.x = x;
         this.y = y;
+        this.name = TAG;
     }
 
     public float getX() {
@@ -37,10 +41,14 @@ public class ClickEvent extends BaseEvent {
     }
 
     @Override
-    public Completable exe() {
+    public Completable exe(final AtomicBoolean cancel) {
         return Completable.fromRunnable(new Runnable() {
             @Override
             public void run() {
+                if (cancel.get()) {
+                    LogUtil.d(TAG,"cancel!");
+                    return;
+                }
                 long downTime = SystemClock.uptimeMillis();
                 MotionEvent downEvent = MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, getX(), getY(), 0);
                 view.dispatchTouchEvent(downEvent);
@@ -50,11 +58,6 @@ public class ClickEvent extends BaseEvent {
                 view.dispatchTouchEvent(upEvent);
             }
         }).subscribeOn(AndroidSchedulers.mainThread());
-    }
-
-    @Override
-    public String getName() {
-        return "ClickEvent";
     }
 
     public static class Builder {
@@ -97,7 +100,7 @@ public class ClickEvent extends BaseEvent {
 
     @Override
     public String toString() {
-        return getName()+"{" +
+        return getName() + "{" +
                 "x=" + x +
                 ", y=" + y +
                 '}';
