@@ -7,7 +7,7 @@ import android.util.AttributeSet;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 
-import com.nicolls.ghostevent.ghost.LogUtil;
+import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 public class BaseWebView extends WebView {
     private static final String TAG = "BaseWebView";

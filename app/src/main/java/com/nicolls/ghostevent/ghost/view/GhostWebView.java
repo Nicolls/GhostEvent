@@ -3,13 +3,10 @@ package com.nicolls.ghostevent.ghost.view;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
-import android.graphics.PointF;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceError;
@@ -19,14 +16,14 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import com.nicolls.ghostevent.ghost.DisplayUtils;
-import com.nicolls.ghostevent.ghost.LogUtil;
-import com.nicolls.ghostevent.ghost.event.IEvent;
-import com.nicolls.ghostevent.ghost.event.ViewEvent;
-import com.nicolls.ghostevent.ghost.real.BaseEvent;
-import com.nicolls.ghostevent.ghost.real.ClickEvent;
-import com.nicolls.ghostevent.ghost.real.EventExecutor;
-import com.nicolls.ghostevent.ghost.real.SlideEvent;
+import com.nicolls.ghostevent.ghost.utils.DisplayUtils;
+import com.nicolls.ghostevent.ghost.utils.LogUtil;
+import com.nicolls.ghostevent.ghost.old.IEvent;
+import com.nicolls.ghostevent.ghost.old.ViewEvent;
+import com.nicolls.ghostevent.ghost.event.BaseEvent;
+import com.nicolls.ghostevent.ghost.event.ClickEvent;
+import com.nicolls.ghostevent.ghost.event.EventExecutor;
+import com.nicolls.ghostevent.ghost.event.SlideEvent;
 
 /**
  * author:mengjiankang
@@ -79,7 +76,7 @@ public class GhostWebView extends BaseWebView {
     }
 
     public void stop() {
-
+        eventExecutor.shutDown();
     }
 
     @Override
@@ -144,48 +141,21 @@ public class GhostWebView extends BaseWebView {
 
             final BaseEvent slideTop=new SlideEvent(GhostWebView.this, SlideEvent.Direction.TOP);
             final BaseEvent slideBottom=new SlideEvent(GhostWebView.this, SlideEvent.Direction.BOTTOM);
-            eventExecutor.enQueue(slideTop);
-            eventExecutor.enQueue(slideBottom);
-            eventExecutor.enQueue(slideTop);
-            eventExecutor.enQueue(slideBottom);
-            eventExecutor.enQueue(slideTop);
-            eventExecutor.enQueue(slideBottom);
+            eventExecutor.execute(slideTop);
+            eventExecutor.execute(slideBottom);
+            eventExecutor.execute(slideTop);
+            eventExecutor.execute(slideBottom);
+            eventExecutor.execute(slideTop);
+            eventExecutor.execute(slideBottom);
+            eventExecutor.execute(slideTop);
+            eventExecutor.execute(slideBottom);
+            eventExecutor.execute(slideTop);
+            eventExecutor.execute(slideBottom);
+            eventExecutor.execute(slideTop);
+            eventExecutor.execute(slideBottom);
+            BaseEvent click=new ClickEvent(GhostWebView.this,displayWidth/2,displayHeight/2);
+            eventExecutor.execute(click);
 
-            mainHandler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    eventExecutor.enQueue(slideTop);
-                    eventExecutor.enQueue(slideBottom);
-                    eventExecutor.enQueue(slideTop);
-                    eventExecutor.enQueue(slideBottom);
-
-                    BaseEvent click=new ClickEvent(GhostWebView.this,displayWidth/2,displayHeight/2);
-                    eventExecutor.enQueue(click);
-                }
-            },6000);
-//            mainHandler.postDelayed(new Runnable() {
-//                @Override
-//                public void run() {
-////                    event.slide(IEvent.Direction.TOP);
-//
-//                    event.slide(IEvent.Direction.TOP);
-//                    mainHandler.postDelayed(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            event.slide(IEvent.Direction.BOTTOM);
-//                        }
-//                    },500);
-//
-////                    final int adDistance=200;
-////                    PointF from=new PointF(displayWidth/2,displayHeight/2+adDistance);
-////                    PointF to=new PointF(aKjm#8955436
-////                    displayWidth/2,displayHeight/2);
-////                    event.slide(from,to);
-////
-////                    Point clickPoint=new Point(displayWidth/2,displayHeight/2);
-////                    event.click(clickPoint.x,clickPoint.y);
-//                }
-//            },2000);
         }
 
         /**

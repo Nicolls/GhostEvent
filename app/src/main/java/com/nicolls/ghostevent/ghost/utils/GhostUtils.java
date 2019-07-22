@@ -1,7 +1,6 @@
-package com.nicolls.ghostevent.ghost.real;
+package com.nicolls.ghostevent.ghost.utils;
 
 import android.content.Context;
-import android.graphics.Point;
 import android.util.DisplayMetrics;
 
 public class GhostUtils {

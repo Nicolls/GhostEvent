@@ -1,4 +1,4 @@
-package com.nicolls.ghostevent.ghost.event;
+package com.nicolls.ghostevent.ghost.old;
 
 import android.graphics.Point;
 import android.graphics.PointF;
@@ -10,8 +10,8 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 
-import com.nicolls.ghostevent.ghost.DisplayUtils;
-import com.nicolls.ghostevent.ghost.LogUtil;
+import com.nicolls.ghostevent.ghost.utils.DisplayUtils;
+import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.ArrayList;
 import java.util.List;

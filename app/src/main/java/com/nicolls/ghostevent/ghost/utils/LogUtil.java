@@ -1,4 +1,4 @@
-package com.nicolls.ghostevent.ghost;
+package com.nicolls.ghostevent.ghost.utils;
 
 import android.util.Log;
 

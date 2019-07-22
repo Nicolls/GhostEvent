@@ -1,7 +1,4 @@
-package com.nicolls.ghostevent.ghost.real;
-
-import android.os.Handler;
-import android.os.Looper;
+package com.nicolls.ghostevent.ghost.event;
 
 import io.reactivex.Completable;
 
@@ -18,6 +15,8 @@ public abstract class BaseEvent {
     public int getId() {
         return hashCode();
     }
+
+    public abstract String getName();
 
     protected void sleepTimes(long times) {
         try {

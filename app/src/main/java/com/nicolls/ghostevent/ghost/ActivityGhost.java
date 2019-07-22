@@ -13,6 +13,7 @@ import com.nicolls.ghostevent.ghost.view.GhostWebView;
 import java.lang.ref.WeakReference;
 
 public class ActivityGhost extends Ghost {
+    private static final String TAG="ActivityGhost";
     private final WeakReference<Activity> activityRef;
     private GhostWebView ghostWebView;
 
@@ -34,6 +35,20 @@ public class ActivityGhost extends Ghost {
             viewGroup.addView(ghostWebView, 0);
             ghostWebView.start(DEFAULT_URL);
         }
+    }
+
+    @Override
+    public void exit() {
+        if (ghostWebView != null) {
+            ghostWebView.stop();
+            Activity activity = activityRef.get();
+            if (activity != null) {
+                ViewGroup viewGroup = (ViewGroup) ghostWebView.getParent();
+                viewGroup.removeView(ghostWebView);
+                ghostWebView = null;
+            }
+        }
+        activityRef.clear();
     }
 
 

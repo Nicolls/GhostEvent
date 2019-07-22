@@ -1,8 +1,10 @@
-package com.nicolls.ghostevent.ghost.real;
+package com.nicolls.ghostevent.ghost.event;
 
 import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.View;
+
+import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 
 import io.reactivex.Completable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -50,6 +52,11 @@ public class ClickEvent extends BaseEvent {
         }).subscribeOn(AndroidSchedulers.mainThread());
     }
 
+    @Override
+    public String getName() {
+        return "ClickEvent";
+    }
+
     public static class Builder {
         private ClickEvent clickEvent;
 
@@ -90,7 +97,7 @@ public class ClickEvent extends BaseEvent {
 
     @Override
     public String toString() {
-        return "ClickEvent{" +
+        return getName()+"{" +
                 "x=" + x +
                 ", y=" + y +
                 '}';

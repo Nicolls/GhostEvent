@@ -1,11 +1,12 @@
-package com.nicolls.ghostevent.ghost.real;
+package com.nicolls.ghostevent.ghost.event;
 
 import android.graphics.PointF;
 import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.nicolls.ghostevent.ghost.LogUtil;
+import com.nicolls.ghostevent.ghost.utils.LogUtil;
+import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +21,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
  * </p>
  */
 public class SlideEvent extends BaseEvent {
-    private static final String TAG = "ClickEvent";
+    private static final String TAG = "SlideEvent";
     static final int INTERVAL_TIME_CLICK = 100;
     /**
      * 每一个滑动事件需要触发的move数
@@ -173,6 +174,11 @@ public class SlideEvent extends BaseEvent {
                 view.dispatchTouchEvent(upEvent);
             }
         }).subscribeOn(AndroidSchedulers.mainThread());
+    }
+
+    @Override
+    public String getName() {
+        return "SlideEvent";
     }
 
 }

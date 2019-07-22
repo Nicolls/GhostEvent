@@ -1,9 +1,9 @@
-package com.nicolls.ghostevent.ghost.real;
+package com.nicolls.ghostevent.ghost.event;
 
 
 import android.os.HandlerThread;
 
-import com.nicolls.ghostevent.ghost.LogUtil;
+import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
@@ -18,16 +18,21 @@ public class EventExecutor {
     private BlockingQueue<BaseEvent> eventBlockingQueue = new LinkedBlockingQueue<>();
     private HandlerThread delayThread;
     private Thread executeThread;
-    private boolean isRunExecutor = true;
+    private boolean shutDown=false;
     public EventExecutor() {
+        shutDown=false;
         this.delayThread = new HandlerThread("EventExecutor background thread");
         this.delayThread.start();
         this.executeThread = new Thread(executeCmdTask);
         this.executeThread.start();
     }
 
-    public synchronized void enQueue(BaseEvent event) {
-        LogUtil.d(TAG, "enQueue event: " + event.getId());
+    public synchronized void execute(BaseEvent event) {
+        LogUtil.d(TAG, "execute event: " + event.getId()+" shutDown:"+shutDown);
+        if(shutDown){
+            LogUtil.d(TAG,"executor have been shutdown ");
+            return;
+        }
         try {
             eventBlockingQueue.put(event);
         } catch (InterruptedException e) {
@@ -42,7 +47,7 @@ public class EventExecutor {
             try {
                 // 一直等待直到有新的命令
                 BaseEvent event;
-                while (isRunExecutor && (event = eventBlockingQueue.take()) != null) {
+                while (!shutDown && (event = eventBlockingQueue.take()) != null) {
                     CountDownLatch countDownLatch=new CountDownLatch(1);
                     LogUtil.d(TAG,"exe event");
                     executeEvent(event,countDownLatch);
@@ -61,6 +66,9 @@ public class EventExecutor {
         event.exe().observeOn(Schedulers.io()).subscribe(new Action() {
             @Override
             public void run() throws Exception {
+                if(shutDown){
+                    return;
+                }
                 LogUtil.d(TAG,"event call back");
                 Thread.sleep(EVENT_INTERVAL_TIME);
                 LogUtil.d(TAG,"count down");
@@ -70,7 +78,8 @@ public class EventExecutor {
     }
 
     public void  shutDown(){
-        isRunExecutor=false;
+        shutDown=true;
+        eventBlockingQueue.clear();
     }
 
 }

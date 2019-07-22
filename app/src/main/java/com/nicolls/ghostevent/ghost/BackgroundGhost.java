@@ -14,4 +14,9 @@ public class BackgroundGhost extends Ghost {
     public void init() {
 
     }
+
+    @Override
+    public void exit() {
+
+    }
 }
