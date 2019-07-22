@@ -47,6 +47,18 @@ public class MainActivity extends AppCompatActivity {
         listView.setAdapter(new MyAdapter());
     }
 
+    public void onReload(View view) {
+        Advert.instance.reload();
+    }
+
+    public void onRecord(View view) {
+        Advert.instance.record();
+    }
+
+    public void onPlay(View view) {
+        Advert.instance.play();
+    }
+
     private final class MyAdapter extends BaseAdapter {
         String[] names={"a","b","b","b","b","b","b","r","b","b","b","b","b","q","b","b","b","b","b","r"};
 

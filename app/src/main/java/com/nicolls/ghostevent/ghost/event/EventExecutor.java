@@ -5,32 +5,43 @@ import android.os.HandlerThread;
 
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.reactivex.CompletableObserver;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
 import io.reactivex.schedulers.Schedulers;
 
 public class EventExecutor {
     private static final String TAG = "EventExecutor";
     private BlockingQueue<BaseEvent> eventBlockingQueue = new LinkedBlockingQueue<>();
-    private HandlerThread delayThread;
     private Thread executeThread;
     private final AtomicBoolean cancelAtom = new AtomicBoolean(false);
     // 信号量，事件需要按顺序一个接一个的执行
     private final Semaphore semaphore = new Semaphore(1, true);
 
+    public interface ExecuteCallBack {
+        void onSuccess(int eventId);
+
+        void onFail(int eventId);
+    }
+
+    private ExecuteCallBack executeCallBack;
+
     public EventExecutor() {
-        this.delayThread = new HandlerThread("EventExecutor background thread");
-        this.delayThread.start();
-        this.executeThread = new Thread(executeCmdTask);
+        init();
+    }
+
+    private void init() {
+        this.executeThread = new Thread(executeEventTask);
         this.executeThread.start();
+    }
+
+    public void setExecuteCallBack(ExecuteCallBack callBack) {
+        this.executeCallBack = callBack;
     }
 
     public synchronized void execute(List<BaseEvent> eventList) {
@@ -53,11 +64,12 @@ public class EventExecutor {
 
     }
 
-    private Runnable executeCmdTask = new Runnable() {
+    private Runnable executeEventTask = new Runnable() {
         @Override
         public void run() {
             try {
                 // 一直等待直到有新的命令
+                LogUtil.d(TAG,"executeEventTask start run");
                 BaseEvent event;
                 while (!cancelAtom.get() && (event = eventBlockingQueue.take()) != null) {
                     LogUtil.d(TAG, "semaphore acquire waiting!");
@@ -70,6 +82,7 @@ public class EventExecutor {
                         semaphore.release();
                     }
                 }
+                LogUtil.d(TAG,"executeEventTask over");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -78,18 +91,42 @@ public class EventExecutor {
 
 
     private void executeEvent(final BaseEvent event) {
-        Disposable disposable = event.exe(cancelAtom).observeOn(Schedulers.io()).subscribe(new Action() {
+        event.exe(cancelAtom).observeOn(Schedulers.io()).subscribe(new CompletableObserver() {
             @Override
-            public void run() throws Exception {
+            public void onSubscribe(Disposable d) {
+                LogUtil.d(TAG, "onSubscribe");
+            }
+
+            @Override
+            public void onComplete() {
                 if (cancelAtom.get()) {
                     LogUtil.d(TAG, "event call back ,executor have been shutdown!");
                     semaphore.release();
                     return;
                 }
                 LogUtil.d(TAG, "event " + event.getName() + " execute completed");
-                Thread.sleep(Constant.EVENT_INTERVAL_TIME);
+                try {
+                    Thread.sleep(Constant.EVENT_INTERVAL_TIME);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 LogUtil.d(TAG, "semaphore release");
+                executeCallBack.onSuccess(event.getId());
                 semaphore.release();
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                LogUtil.e(TAG, "event call back onError " + e);
+                if (event.needRetry()) {
+                    LogUtil.d(TAG, "need retry!");
+                    executeEvent(event);
+                    return;
+                }
+                // 只要出现事件错误，则停止
+                shutDown();
+                semaphore.release();
+                executeCallBack.onFail(event.getId());
             }
         });
     }
@@ -98,6 +135,13 @@ public class EventExecutor {
         LogUtil.d(TAG, "shutDown");
         cancelAtom.set(true);
         eventBlockingQueue.clear();
+    }
+
+    public void retry(List<BaseEvent> events) {
+        shutDown();
+        cancelAtom.set(false);
+        executeThread = null;
+        init();
     }
 
 }

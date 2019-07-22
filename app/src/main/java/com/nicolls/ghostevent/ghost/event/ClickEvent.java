@@ -7,10 +7,15 @@ import android.view.View;
 import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.Completable;
+import io.reactivex.Single;
+import io.reactivex.SingleObserver;
+import io.reactivex.SingleSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Action;
 
 /**
  * author:mengjiankang
@@ -42,22 +47,26 @@ public class ClickEvent extends BaseEvent {
 
     @Override
     public Completable exe(final AtomicBoolean cancel) {
-        return Completable.fromRunnable(new Runnable() {
+        return Completable.fromAction(new Action() {
             @Override
-            public void run() {
+            public void run() throws Exception {
                 if (cancel.get()) {
-                    LogUtil.d(TAG,"cancel!");
+                    LogUtil.d(TAG, "cancel!");
                     return;
                 }
-                long downTime = SystemClock.uptimeMillis();
-                MotionEvent downEvent = MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, getX(), getY(), 0);
-                view.dispatchTouchEvent(downEvent);
-                sleepTimes(INTERVAL_TIME_CLICK);
-                long upTime = SystemClock.uptimeMillis();
-                MotionEvent upEvent = MotionEvent.obtain(downTime, upTime, MotionEvent.ACTION_UP, getX(), getY(), 0);
-                view.dispatchTouchEvent(upEvent);
+                doEvent();
             }
         }).subscribeOn(AndroidSchedulers.mainThread());
+    }
+
+    protected void doEvent() {
+        long downTime = SystemClock.uptimeMillis();
+        MotionEvent downEvent = MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, getX(), getY(), 0);
+        view.dispatchTouchEvent(downEvent);
+        sleepTimes(INTERVAL_TIME_CLICK);
+        long upTime = SystemClock.uptimeMillis();
+        MotionEvent upEvent = MotionEvent.obtain(downTime, upTime, MotionEvent.ACTION_UP, getX(), getY(), 0);
+        view.dispatchTouchEvent(upEvent);
     }
 
     public static class Builder {

@@ -181,4 +181,8 @@ public class SlideEvent extends BaseEvent {
         }).subscribeOn(AndroidSchedulers.mainThread());
     }
 
+    protected void doEvent(){
+
+    }
+
 }

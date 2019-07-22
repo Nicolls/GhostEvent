@@ -13,7 +13,7 @@ import io.reactivex.Completable;
  * </p>
  */
 public abstract class BaseEvent {
-    private static final String TAG="BaseEvent";
+    private static final String TAG = "BaseEvent";
     protected String name;
 
     public abstract Completable exe(AtomicBoolean cancel);
@@ -28,6 +28,10 @@ public abstract class BaseEvent {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean needRetry() {
+        return false;
     }
 
     protected void sleepTimes(long times) {

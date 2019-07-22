@@ -3,6 +3,7 @@ package com.nicolls.ghostevent.ghost.view;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.graphics.PointF;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.AttributeSet;
@@ -16,7 +17,10 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.nicolls.ghostevent.ghost.event.ClickRedirectEvent;
 import com.nicolls.ghostevent.ghost.event.GroupEvent;
+import com.nicolls.ghostevent.ghost.event.PageGoBackEvent;
+import com.nicolls.ghostevent.ghost.event.RedirectHandler;
 import com.nicolls.ghostevent.ghost.utils.DisplayUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 import com.nicolls.ghostevent.ghost.old.IEvent;
@@ -25,6 +29,9 @@ import com.nicolls.ghostevent.ghost.event.BaseEvent;
 import com.nicolls.ghostevent.ghost.event.ClickEvent;
 import com.nicolls.ghostevent.ghost.event.EventExecutor;
 import com.nicolls.ghostevent.ghost.event.SlideEvent;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * author:mengjiankang
@@ -35,9 +42,14 @@ import com.nicolls.ghostevent.ghost.event.SlideEvent;
 public class GhostWebView extends BaseWebView {
     private static final String TAG = "GhostWebView";
 
+    private static final int MAX_TRY_TIMES = 5;
     private int displayWidth;
     private int displayHeight;
-    private EventExecutor eventExecutor=new EventExecutor();
+    private EventExecutor eventExecutor = new EventExecutor();
+    private final RedirectHandler redirectHandler = new RedirectHandler();
+    private final List<BaseEvent> ghostEventList = new ArrayList<>();
+
+    private int tryTimes = 0;
 
     public GhostWebView(Context context) {
         super(context);
@@ -62,17 +74,71 @@ public class GhostWebView extends BaseWebView {
         setWebViewClient(new GhostWebViewClient());
         clearCache(true);
         clearHistory();
-        Point display= DisplayUtils.getDisplaySize(getContext());
-        displayWidth=display.x;
-        displayHeight=display.y;
+        Point display = DisplayUtils.getDisplaySize(getContext());
+        displayWidth = display.x;
+        displayHeight = display.y;
+        eventExecutor.setExecuteCallBack(executeCallBack);
+//        initEvents();
+    }
+
+    private void initEvents() {
+        final BaseEvent slideTop = new SlideEvent(GhostWebView.this, SlideEvent.Direction.TOP);
+        final BaseEvent slideBottom = new SlideEvent(GhostWebView.this, SlideEvent.Direction.BOTTOM);
+
+        final BaseEvent redirectClick = new ClickRedirectEvent(redirectHandler, GhostWebView.this, displayWidth / 2, displayHeight / 2);
+
+        final BaseEvent click = new ClickEvent(GhostWebView.this, displayWidth / 2, displayHeight / 2);
+
+        final GroupEvent groupEvent = new GroupEvent(slideTop, slideBottom, slideTop, slideBottom);
+
+        final BaseEvent goBackEvent = new PageGoBackEvent(redirectHandler, GhostWebView.this);
+
+        ghostEventList.add(slideTop);
+        ghostEventList.add(slideBottom);
+        ghostEventList.add(groupEvent);
+        ghostEventList.add(redirectClick);
+        ghostEventList.add(slideTop);
+        ghostEventList.add(goBackEvent);
+        ghostEventList.add(click);
+    }
+
+    private final EventExecutor.ExecuteCallBack executeCallBack = new EventExecutor.ExecuteCallBack() {
+        @Override
+        public void onSuccess(int eventId) {
+
+        }
+
+        @Override
+        public void onFail(int eventId) {
+            tryTimes++;
+            if (tryTimes <= MAX_TRY_TIMES) {
+                retry();
+            }
+        }
+    };
+
+    private void retry() {
+        eventExecutor.retry(ghostEventList);
     }
 
     public void start(String url) {
         loadUrl(url);
     }
 
+    public void reload(String url) {
+        loadUrl(url);
+    }
+
     public void stop() {
         eventExecutor.shutDown();
+    }
+
+    public void record() {
+        ghostEventList.clear();
+    }
+
+    public void play() {
+        eventExecutor.execute(ghostEventList);
     }
 
     @Override
@@ -88,6 +154,8 @@ public class GhostWebView extends BaseWebView {
         }
     }
 
+    private boolean first = true;
+
     private class GhostWebViewClient extends WebViewClient {
         private boolean isError = false;
 
@@ -100,6 +168,7 @@ public class GhostWebView extends BaseWebView {
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             super.onPageStarted(view, url, favicon);
             isError = false;
+            redirectHandler.notifyStart();
         }
 
         @Override
@@ -126,64 +195,64 @@ public class GhostWebView extends BaseWebView {
             super.onReceivedError(view, request, error);
             LogUtil.d(TAG, "onReceivedError");
             isError = true;
-            onError();
+            redirectHandler.notifyFail();
         }
 
         /**
          * 加载成功
          */
         private void onSuccess() {
-            LogUtil.d(TAG,"load onSuccess");
-
-            final BaseEvent slideTop=new SlideEvent(GhostWebView.this, SlideEvent.Direction.TOP);
-            final BaseEvent slideBottom=new SlideEvent(GhostWebView.this, SlideEvent.Direction.BOTTOM);
-            eventExecutor.execute(slideTop);
-            eventExecutor.execute(slideBottom);
-            eventExecutor.execute(slideTop);
-            eventExecutor.execute(slideBottom);
-            eventExecutor.execute(slideTop);
-            eventExecutor.execute(slideBottom);
-            final GroupEvent groupEvent=new GroupEvent();
-            groupEvent.addEvent(slideTop);
-            groupEvent.addEvent(slideBottom);
-            groupEvent.addEvent(slideTop);
-            groupEvent.addEvent(slideBottom);
-            groupEvent.addEvent(slideTop);
-            groupEvent.addEvent(slideBottom);
-            eventExecutor.execute(groupEvent);
-            eventExecutor.execute(slideTop);
-            eventExecutor.execute(slideBottom);
-
-            BaseEvent click=new ClickEvent(GhostWebView.this,displayWidth/2,displayHeight/2);
-            eventExecutor.execute(click);
-
-        }
-
-        /**
-         * 加载失败
-         */
-        private void onError() {
-
+            LogUtil.d(TAG, "load onSuccess");
+            redirectHandler.notifySuccess();
+            if (first) {
+                firstEvent();
+            }
         }
 
     }
 
-    @Override
-    public boolean onInterceptTouchEvent(MotionEvent ev) {
-        LogUtil.d(TAG,"onInterceptTouchEvent ev:"+MotionEvent.actionToString(ev.getAction()));
-        return super.onInterceptTouchEvent(ev);
+    private void firstEvent() {
+        first = false;
+//        eventExecutor.execute(ghostEventList);
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        LogUtil.d(TAG,"onTouchEvent ev:"+MotionEvent.actionToString(event.getAction()));
-        return super.onTouchEvent(event);
-    }
+    private float downX;
+    private float downY;
+    private float upX;
+    private float upY;
+
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        LogUtil.d(TAG,"dispatchTouchEvent ev:"+MotionEvent.actionToString(ev.getAction()));
-        LogUtil.d(TAG,"dispatchTouchEvent x-y :"+ev.getX()+"-"+ev.getY() +" rawX-rawY:"+ev.getRawX()+"-"+ev.getRawY());
+        LogUtil.d(TAG, "dispatchTouchEvent ev:" + MotionEvent.actionToString(ev.getAction()));
+        LogUtil.d(TAG, "dispatchTouchEvent x-y :" + ev.getX() + "-" + ev.getY() + " rawX-rawY:" + ev.getRawX() + "-" + ev.getRawY());
+
+        switch (ev.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                downX=ev.getX();
+                downY=ev.getY();
+                break;
+            case MotionEvent.ACTION_MOVE:
+
+                break;
+            case MotionEvent.ACTION_UP:
+                upX=ev.getX();
+                upY=ev.getY();
+                if(Math.abs(upX-downX)<5&&Math.abs(upY-downY)<5){
+                    // click
+                    LogUtil.d(TAG,"add click");
+                    BaseEvent clickRecdirect=new ClickRedirectEvent(redirectHandler,this,upX,upY);
+                    ghostEventList.add(clickRecdirect);
+                }else {
+                    // slide
+                    LogUtil.d(TAG,"add slide");
+                    PointF from=new PointF(downX,downY);
+                    PointF to=new PointF(upX,upY);
+                    BaseEvent slideEvent=new SlideEvent(this,from,to);
+                    ghostEventList.add(slideEvent);
+                }
+                break;
+        }
         return super.dispatchTouchEvent(ev);
     }
 

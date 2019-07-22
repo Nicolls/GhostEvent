@@ -6,4 +6,10 @@ public abstract class Ghost {
     public abstract void init();
     public abstract void exit();
 
+    public abstract void reload();
+
+    public abstract void record();
+
+    public abstract void play();
+
 }

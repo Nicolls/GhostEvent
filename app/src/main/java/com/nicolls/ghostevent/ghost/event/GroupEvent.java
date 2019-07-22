@@ -10,6 +10,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.Completable;
+import io.reactivex.CompletableObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
@@ -24,6 +25,13 @@ public class GroupEvent extends BaseEvent {
         this.name = TAG;
     }
 
+    public GroupEvent(BaseEvent ... events) {
+        this.name = TAG;
+        for (BaseEvent event:events){
+            childList.add(event);
+        }
+    }
+
     public void addEvent(BaseEvent event) {
         childList.add(event);
     }
@@ -34,9 +42,10 @@ public class GroupEvent extends BaseEvent {
 
     @Override
     public Completable exe(final AtomicBoolean cancel) {
-        return Completable.fromRunnable(new Runnable() {
+
+        return Completable.fromAction(new Action() {
             @Override
-            public void run() {
+            public void run() throws Exception {
                 if (cancel.get()) {
                     LogUtil.d(TAG, "cancel!");
                     return;
@@ -47,12 +56,8 @@ public class GroupEvent extends BaseEvent {
                         LogUtil.d(TAG, "start child cancel!");
                         break;
                     }
-                    try {
-                        LogUtil.d(TAG, "child acquire");
-                        semaphore.acquire();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                    LogUtil.d(TAG, "child acquire");
+                    semaphore.acquire();
                     LogUtil.d(TAG, "execute child event");
                     Disposable disposable = event.exe(cancel).observeOn(Schedulers.io()).subscribe(new Action() {
                         @Override

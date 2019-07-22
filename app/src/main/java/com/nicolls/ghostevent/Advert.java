@@ -35,4 +35,22 @@ public class Advert {
             ghost = null;
         }
     }
+
+    public void reload(){
+        if (ghost != null) {
+            ghost.reload();
+        }
+    }
+
+    public void record(){
+        if (ghost != null) {
+            ghost.record();
+        }
+    }
+
+    public void play() {
+        if (ghost != null) {
+            ghost.play();
+        }
+    }
 }

@@ -19,4 +19,19 @@ public class BackgroundGhost extends Ghost {
     public void exit() {
 
     }
+
+    @Override
+    public void reload() {
+
+    }
+
+    @Override
+    public void record() {
+
+    }
+
+    @Override
+    public void play() {
+
+    }
 }

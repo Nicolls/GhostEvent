@@ -30,5 +30,27 @@
             android:onClick="onEnd"
             android:layout_margin="15dp"
             android:text="结束" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onReload"
+            android:layout_marginLeft="15dp"
+            android:layout_marginTop="100dp"
+            android:text="重载" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onRecord"
+            android:layout_margin="15dp"
+            android:text="录制" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onPlay"
+            android:layout_margin="15dp"
+            android:text="播放" />
     </LinearLayout>
 </RelativeLayout>
