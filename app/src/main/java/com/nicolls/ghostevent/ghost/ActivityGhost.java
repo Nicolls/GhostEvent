@@ -77,5 +77,12 @@ public class ActivityGhost extends Ghost {
         }
     }
 
+    @Override
+    public void goHome() {
+        if(ghostWebView!=null){
+            ghostWebView.goHome();
+        }
+    }
+
 
 }

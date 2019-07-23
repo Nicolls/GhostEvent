@@ -52,6 +52,10 @@ public class GroupEvent extends BaseEvent {
         childList.remove(event);
     }
 
+    public void removeAllEvents(){
+        childList.clear();
+    }
+
     @Override
     public Completable exe(final AtomicBoolean cancel) {
 

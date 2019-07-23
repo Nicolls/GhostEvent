@@ -12,4 +12,6 @@ public abstract class Ghost {
 
     public abstract void play();
 
+    public abstract void goHome();
+
 }

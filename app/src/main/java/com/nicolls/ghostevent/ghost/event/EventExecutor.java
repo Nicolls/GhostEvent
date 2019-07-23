@@ -32,11 +32,18 @@ public class EventExecutor {
 
     private ExecuteCallBack executeCallBack;
 
+    private long eventIntervalTime;
+
     public EventExecutor() {
-        init();
+        this(Constant.EVENT_INTERVAL_TIME);
     }
 
-    private void init() {
+    public EventExecutor(long eventIntervalTime) {
+        init(eventIntervalTime);
+    }
+
+    private void init(long eventIntervalTime) {
+        this.eventIntervalTime = eventIntervalTime;
         this.executeThread = new Thread(executeEventTask);
         this.executeThread.start();
     }
@@ -107,7 +114,7 @@ public class EventExecutor {
                 }
                 LogUtil.d(TAG, "event " + event.getName() + " execute completed");
                 try {
-                    Thread.sleep(Constant.EVENT_INTERVAL_TIME);
+                    Thread.sleep(eventIntervalTime);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -142,7 +149,7 @@ public class EventExecutor {
         shutDown();
         cancelAtom.set(false);
         executeThread = null;
-        init();
+        init(eventIntervalTime);
     }
 
 }

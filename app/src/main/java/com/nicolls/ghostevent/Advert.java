@@ -53,4 +53,10 @@ public class Advert {
             ghost.play();
         }
     }
+
+    public void goHome() {
+        if (ghost != null) {
+            ghost.goHome();
+        }
+    }
 }

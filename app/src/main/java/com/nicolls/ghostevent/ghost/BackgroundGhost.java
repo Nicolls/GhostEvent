@@ -34,4 +34,9 @@ public class BackgroundGhost extends Ghost {
     public void play() {
 
     }
+
+    @Override
+    public void goHome() {
+
+    }
 }

@@ -20,6 +20,7 @@ import com.nicolls.ghostevent.ghost.event.ClickEvent;
 import com.nicolls.ghostevent.ghost.event.ClickRedirectEvent;
 import com.nicolls.ghostevent.ghost.event.EventExecutor;
 import com.nicolls.ghostevent.ghost.event.GroupEvent;
+import com.nicolls.ghostevent.ghost.event.HomePageEvent;
 import com.nicolls.ghostevent.ghost.event.IEventHandler;
 import com.nicolls.ghostevent.ghost.event.IWebTarget;
 import com.nicolls.ghostevent.ghost.event.PageGoBackEvent;
@@ -148,16 +149,23 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         eventExecutor.shutDown();
     }
 
+    private HomePageEvent homePageEvent = new HomePageEvent(redirectHandler, this);
+
+    public void goHome() {
+        eventExecutor.execute(homePageEvent);
+        eventExecutor.execute(ghostEventList);
+    }
+
     private boolean isRecord = false;
 
     public void record() {
-        ghostEventList.clear();
+        recordEvent.removeAllEvents();
         isRecord = true;
     }
 
     public void play() {
         isRecord = false;
-        eventExecutor.execute(ghostEventList);
+        eventExecutor.execute(recordEvent);
     }
 
     @Override
@@ -255,8 +263,8 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
     private float downY;
     private float upX;
     private float upY;
-    private long lastMoveTime = 0;
-    private List<TouchPoint> moves = new ArrayList<>();
+    private GroupEvent recordEvent = new GroupEvent(this);
+    private int lastScrollY = 0;
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
@@ -265,51 +273,32 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
 
         switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                lastMoveTime = System.currentTimeMillis();
                 downX = ev.getX();
                 downY = ev.getY();
-                moves.clear();
+                lastScrollY = getScrollY();
                 break;
             case MotionEvent.ACTION_MOVE:
-                long moveTime = System.currentTimeMillis() - lastMoveTime;
-                LogUtil.d(TAG, "moveTime :" + moveTime);
-                if (moveTime > 0 && moveTime < 2000) {
-                    TouchPoint move = new TouchPoint(new PointF(ev.getX(), ev.getY()), moveTime);
-                    moves.add(move);
-                }
-                lastMoveTime = System.currentTimeMillis();
+
                 break;
             case MotionEvent.ACTION_UP:
                 upX = ev.getX();
                 upY = ev.getY();
-                postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        LogUtil.d(TAG, "Web-dispatchTouchEvent scrollY " + getScrollY());
-                    }
-                }, 1000);
+                LogUtil.d(TAG, "Web-dispatchTouchEvent scrollY " + getScrollY());
                 if (!isRecord) {
                     break;
                 }
                 if (Math.abs(upX - downX) < 5 && Math.abs(upY - downY) < 5) {
                     // click
-                    LogUtil.d(TAG, "add click");
-
                     BaseEvent clickRecdirect = new ClickRedirectEvent(redirectHandler, this, TouchPoint.obtainClick(upX, upY));
                     LogUtil.d(TAG, "Web-dispatchTouchEvent cllick:" + clickRecdirect.toString());
-
-                    ghostEventList.add(clickRecdirect);
+                    recordEvent.addEvent(clickRecdirect);
                 } else {
-                    // slide
-                    LogUtil.d(TAG, "add slide");
-                    TouchPoint from = TouchPoint.obtainDown(downX, downY);
-                    TouchPoint to = TouchPoint.obtainDown(upX, upY);
-//                    BaseEvent slideEvent = new SlideEvent(this, from, to);
-                    BaseEvent slideEvent = new SlideEvent(this, from, to, moves);
-                    LogUtil.d(TAG, "Web-dispatchTouchEvent slide:" + slideEvent.toString());
-                    ghostEventList.add(slideEvent);
+                    // scroll
+                    ScrollVerticalEvent scroll = new ScrollVerticalEvent(this, lastScrollY, getScrollY());
+                    recordEvent.addEvent(scroll);
+                    LogUtil.d(TAG, "Web-dispatchTouchEvent scroll:" + scroll.toString());
+
                 }
-                moves.clear();
                 break;
         }
         return super.dispatchTouchEvent(ev);

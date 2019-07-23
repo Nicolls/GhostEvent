@@ -2,7 +2,6 @@ package com.nicolls.ghostevent.ghost.event;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
-import android.animation.TimeInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.webkit.WebView;
 
@@ -13,29 +12,31 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.Completable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Action;
 import io.reactivex.schedulers.Schedulers;
 
 public class ScrollVerticalEvent extends BaseEvent {
     private static final String TAG = "ScrollVerticalEvent";
-    private static final long DEFAULT_ANIM_DURATION = 500;
+    private static final long DEFAULT_ANIM_DURATION = 800;
     private IWebTarget target;
     private int from;
     private int to;
     private int distance;
+    private boolean isScrollByDistance = false;
 
     public ScrollVerticalEvent(IWebTarget target, int from, int to) {
         super(target);
         this.target = target;
         this.from = from;
         this.to = to;
+        isScrollByDistance = false;
     }
 
     public ScrollVerticalEvent(IWebTarget target, int distance) {
         super(target);
         this.target = target;
         this.distance = distance;
+        isScrollByDistance = true;
     }
 
     @Override
@@ -44,8 +45,10 @@ public class ScrollVerticalEvent extends BaseEvent {
             @Override
             public void run() throws Exception {
                 final WebView webView = (WebView) target;
-                from = webView.getScrollY();
-                to = from + distance;
+                if (isScrollByDistance) {
+                    from = webView.getScrollY();
+                    to = from + distance;
+                }
                 long animDuration = DEFAULT_ANIM_DURATION;
                 int distance = Math.abs(to - from);
                 int displayHeight = GhostUtils.displayHeight;
@@ -55,6 +58,9 @@ public class ScrollVerticalEvent extends BaseEvent {
                     animDuration = DEFAULT_ANIM_DURATION;
                 } else {
                     animDuration = DEFAULT_ANIM_DURATION / 2;
+                }
+                if (animDuration < DEFAULT_ANIM_DURATION / 4) {
+                    animDuration = DEFAULT_ANIM_DURATION / 4;
                 }
                 LogUtil.d(TAG, "scroll vertical event start anim duration:" + animDuration);
                 LogUtil.d(TAG, "anim from:" + from + " to:" + to);
@@ -97,5 +103,15 @@ public class ScrollVerticalEvent extends BaseEvent {
                 LogUtil.d(TAG, "scroll vertical event completed scrollY:" + webView.getScrollY());
             }
         }).subscribeOn(Schedulers.io());
+    }
+
+    @Override
+    public String toString() {
+        return "ScrollVerticalEvent{" +
+                "target=" + target +
+                ", from=" + from +
+                ", to=" + to +
+                ", distance=" + distance +
+                '}';
     }
 }
