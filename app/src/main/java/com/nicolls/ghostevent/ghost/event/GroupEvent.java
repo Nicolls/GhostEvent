@@ -23,7 +23,7 @@ public class GroupEvent extends BaseEvent {
     private ITarget target;
 
     public GroupEvent(ITarget target) {
-        this(target, null);
+        this(target, new BaseEvent[]{});
     }
 
     public GroupEvent(ITarget target, BaseEvent... events) {

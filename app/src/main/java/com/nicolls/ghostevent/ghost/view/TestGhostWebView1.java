@@ -22,6 +22,8 @@ import com.nicolls.ghostevent.ghost.event.GroupEvent;
 import com.nicolls.ghostevent.ghost.event.HomePageEvent;
 import com.nicolls.ghostevent.ghost.event.IEventHandler;
 import com.nicolls.ghostevent.ghost.event.IWebTarget;
+import com.nicolls.ghostevent.ghost.event.JSParseEvent;
+import com.nicolls.ghostevent.ghost.event.LoadPageEvent;
 import com.nicolls.ghostevent.ghost.event.PageGoBackEvent;
 import com.nicolls.ghostevent.ghost.event.RedirectHandler;
 import com.nicolls.ghostevent.ghost.event.ScrollVerticalEvent;
@@ -42,7 +44,7 @@ import java.util.List;
  * <p>
  * </p>
  */
-public class GhostWebView extends BaseWebView implements IWebTarget {
+public class TestGhostWebView1 extends BaseWebView implements IWebTarget {
     private static final String TAG = "GhostWebView";
 
     private static final int MAX_TRY_TIMES = 5;
@@ -54,17 +56,17 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
     private IEventHandler eventHandler;
     private int tryTimes = 0;
 
-    public GhostWebView(Context context) {
+    public TestGhostWebView1(Context context) {
         super(context);
         init();
     }
 
-    public GhostWebView(Context context, AttributeSet attrs) {
+    public TestGhostWebView1(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
     }
 
-    public GhostWebView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public TestGhostWebView1(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
     }
@@ -88,13 +90,13 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         final BaseEvent slideTop = new SlideEvent(this, SlideEvent.Direction.TOP);
         final BaseEvent slideBottom = new SlideEvent(this, SlideEvent.Direction.BOTTOM);
 
-        final BaseEvent redirectClick = new ClickRedirectEvent(redirectHandler, GhostWebView.this, TouchPoint.obtainClick(displayWidth / 2, displayHeight / 2));
+        final BaseEvent redirectClick = new ClickRedirectEvent(redirectHandler, TestGhostWebView1.this, TouchPoint.obtainClick(displayWidth / 2, displayHeight / 2));
 
         final BaseEvent click = new ClickEvent(this, TouchPoint.obtainClick(displayWidth / 2, displayHeight / 2));
 
         final GroupEvent groupEvent = new GroupEvent(this, slideTop, slideBottom, slideTop, slideBottom);
 
-        final BaseEvent goBackEvent = new PageGoBackEvent(redirectHandler, GhostWebView.this);
+        final BaseEvent goBackEvent = new PageGoBackEvent(redirectHandler, TestGhostWebView1.this);
 
         final BaseEvent smoothSlide = new SmoothSlideEvent(this,
                 TouchPoint.obtainDown(displayWidth / 2, displayHeight - displayHeight / 4),
@@ -136,7 +138,9 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
 
     public void start(String url) {
         isRecord = false;
-        loadUrl(url);
+        pageEvent = new LoadPageEvent(redirectHandler, this, url);
+        eventExecutor.execute(pageEvent);
+        eventExecutor.execute(parseEvent);
     }
 
     public void reload(String url) {
@@ -275,6 +279,8 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
     private float upX;
     private float upY;
     private GroupEvent recordEvent = new GroupEvent(this);
+    private LoadPageEvent pageEvent;
+    private JSParseEvent parseEvent = new JSParseEvent(this);
     private int lastScrollY = 0;
 
     @Override

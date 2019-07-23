@@ -7,5 +7,4 @@ public interface ITarget {
     Handler getMainHandler();
     Handler getEventHandler();
     void doEvent(MotionEvent event);
-
 }
