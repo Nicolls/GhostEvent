@@ -152,8 +152,9 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
     private HomePageEvent homePageEvent = new HomePageEvent(redirectHandler, this);
 
     public void goHome() {
+        recordEvent.addEvent(homePageEvent);
         eventExecutor.execute(homePageEvent);
-        eventExecutor.execute(ghostEventList);
+//        eventExecutor.execute(ghostEventList);
     }
 
     private boolean isRecord = false;
@@ -290,13 +291,13 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
                 if (Math.abs(upX - downX) < 5 && Math.abs(upY - downY) < 5) {
                     // click
                     BaseEvent clickRecdirect = new ClickRedirectEvent(redirectHandler, this, TouchPoint.obtainClick(upX, upY));
-                    LogUtil.d(TAG, "Web-dispatchTouchEvent cllick:" + clickRecdirect.toString());
+                    LogUtil.d(TAG, "Web-dispatchTouchEvent add click:" + clickRecdirect.toString());
                     recordEvent.addEvent(clickRecdirect);
                 } else {
                     // scroll
                     ScrollVerticalEvent scroll = new ScrollVerticalEvent(this, lastScrollY, getScrollY());
                     recordEvent.addEvent(scroll);
-                    LogUtil.d(TAG, "Web-dispatchTouchEvent scroll:" + scroll.toString());
+                    LogUtil.d(TAG, "Web-dispatchTouchEvent add scroll:" + scroll.toString());
 
                 }
                 break;
