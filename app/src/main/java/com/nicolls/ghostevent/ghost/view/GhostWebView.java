@@ -220,7 +220,7 @@ public class GhostWebView extends BaseWebView {
     private float downY;
     private float upX;
     private float upY;
-
+    private List<PointF> moves=new ArrayList<>();
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
@@ -231,9 +231,11 @@ public class GhostWebView extends BaseWebView {
             case MotionEvent.ACTION_DOWN:
                 downX=ev.getX();
                 downY=ev.getY();
+                moves.clear();
                 break;
             case MotionEvent.ACTION_MOVE:
-
+                PointF move=new PointF(ev.getX(),ev.getY());
+                moves.add(move);
                 break;
             case MotionEvent.ACTION_UP:
                 upX=ev.getX();
@@ -251,6 +253,7 @@ public class GhostWebView extends BaseWebView {
                     BaseEvent slideEvent=new SlideEvent(this,from,to);
                     ghostEventList.add(slideEvent);
                 }
+                moves.clear();
                 break;
         }
         return super.dispatchTouchEvent(ev);

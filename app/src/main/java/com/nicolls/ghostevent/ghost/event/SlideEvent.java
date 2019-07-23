@@ -31,18 +31,18 @@ public class SlideEvent extends BaseEvent {
      * 每一个滑动事件触发的move所占用的时间
      */
     private static final long INTERVAL_TIME_SLIDE_MOVE_UNIT = 16;
-    private PointF from=new PointF();
-    private PointF to=new PointF();
-    private List<PointF> moves=new ArrayList<>();
+    private PointF from = new PointF();
+    private PointF to = new PointF();
+    private List<PointF> moves = new ArrayList<>();
     private View view;
 
-    public enum Direction{
-        LEFT,RIGHT,TOP,BOTTOM
+    public enum Direction {
+        LEFT, RIGHT, TOP, BOTTOM
     }
 
     public SlideEvent(View view, final Direction direct) {
         this.name = TAG;
-        this.view=view;
+        this.view = view;
         LogUtil.i(TAG, "slide direct:" + direct);
         int distance = 0;
         switch (direct) {
@@ -111,11 +111,11 @@ public class SlideEvent extends BaseEvent {
     }
 
     public SlideEvent(View view, final PointF from, final PointF to) {
-        this.view=view;
-        this.from.x=from.x;
-        this.from.y=from.y;
+        this.view = view;
+        this.from.x = from.x;
+        this.from.y = from.y;
         this.to.x = to.x;
-        this.to.y= to.y;
+        this.to.y = to.y;
         if (from.x < 0 || from.y < 0 || to.x < 0 || to.y < 0) {
             LogUtil.e(TAG, "invalid params slide from - to");
             return;
@@ -124,33 +124,46 @@ public class SlideEvent extends BaseEvent {
         float vertical = to.y - from.y;
         float horizontalDistance = Math.abs(horizontal);
         float verticalDistance = Math.abs(vertical);
-        float yUnit = 0;
         float xUnit = 0;
+        float yUnit = 0;
         float ratio = 0;
         if (vertical != 0) {
-            ratio = Math.abs(horizontal / vertical);
+            ratio = horizontalDistance / verticalDistance;
         }
 
-        if (ratio <= 1&&vertical!=0) { // 说明是一个偏y轴的滑动，则以y为distance
-            final float distanceUnit = Math.abs(vertical) / SLIDE_MOVE_TIMES;
+        if (ratio <= 1 && vertical != 0) { // 说明是一个偏y轴的滑动，则以y为distance
+            final float distanceUnit = verticalDistance / SLIDE_MOVE_TIMES;
             yUnit = distanceUnit;
             if (horizontalDistance > 5) { // 如果x轴只动了5，默认是一个直y轴的滑动
-                xUnit = Math.abs(ratio) * distanceUnit;
+                xUnit = ratio * distanceUnit;
             }
         } else {
-            final float distanceUnit = Math.abs(horizontal) / SLIDE_MOVE_TIMES;
+            final float distanceUnit = horizontalDistance / SLIDE_MOVE_TIMES;
             xUnit = distanceUnit;
             if (verticalDistance > 5) { // 如果y轴只动了5，默认是一个直x轴的滑动
-                yUnit = Math.abs(ratio) * distanceUnit;
+                yUnit = ratio * distanceUnit;
             }
         }
 
-        for (int i = 0, j = 0; i < horizontalDistance || j < verticalDistance; i += xUnit, j += yUnit) {
+        for (int i = 0, j = 0, count = 0; count < SLIDE_MOVE_TIMES; i += xUnit, j += yUnit, count++) {
             float moveX = horizontal > 0 ? (from.x + i) : (from.x - i);
             float moveY = vertical > 0 ? (from.y + j) : (from.y - j);
             PointF move = new PointF(moveX, moveY);
             moves.add(move);
         }
+    }
+
+    public SlideEvent(View view, final PointF from, final PointF to, final List<PointF> moves) {
+        this.view = view;
+        this.from.x = from.x;
+        this.from.y = from.y;
+        this.to.x = to.x;
+        this.to.y = to.y;
+        if (from.x < 0 || from.y < 0 || to.x < 0 || to.y < 0) {
+            LogUtil.e(TAG, "invalid params slide from - to");
+            return;
+        }
+        this.moves.addAll(moves);
     }
 
 
@@ -159,30 +172,30 @@ public class SlideEvent extends BaseEvent {
         return Completable.fromRunnable(new Runnable() {
             @Override
             public void run() {
-                if(cancel.get()){
-                    LogUtil.d(TAG,"cancel!");
+                if (cancel.get()) {
+                    LogUtil.d(TAG, "cancel!");
                     return;
                 }
-                long downTime = SystemClock.uptimeMillis();
-                MotionEvent downEvent = MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, from.x, from.y, 0);
-                view.dispatchTouchEvent(downEvent);
-
-                for (PointF move : moves) {
-                    long moveTime = SystemClock.uptimeMillis();
-                    MotionEvent moveEvent = MotionEvent.obtain(downTime, moveTime, MotionEvent.ACTION_MOVE, move.x, move.y, 0);
-                    view.dispatchTouchEvent(moveEvent);
-                    sleepTimes(INTERVAL_TIME_SLIDE_MOVE_UNIT);
-                }
-
-                long upTime = SystemClock.uptimeMillis();
-                MotionEvent upEvent = MotionEvent.obtain(downTime, upTime, MotionEvent.ACTION_UP, to.x, to.y, 0);
-                view.dispatchTouchEvent(upEvent);
+                doEvent();
             }
         }).subscribeOn(AndroidSchedulers.mainThread());
     }
 
-    protected void doEvent(){
+    protected void doEvent() {
+        long downTime = SystemClock.uptimeMillis();
+        MotionEvent downEvent = MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, from.x, from.y, 0);
+        view.dispatchTouchEvent(downEvent);
 
+        for (PointF move : moves) {
+            long moveTime = SystemClock.uptimeMillis();
+            MotionEvent moveEvent = MotionEvent.obtain(downTime, moveTime, MotionEvent.ACTION_MOVE, move.x, move.y, 0);
+            view.dispatchTouchEvent(moveEvent);
+            sleepTimes(INTERVAL_TIME_SLIDE_MOVE_UNIT);
+        }
+
+        long upTime = SystemClock.uptimeMillis();
+        MotionEvent upEvent = MotionEvent.obtain(downTime, upTime, MotionEvent.ACTION_UP, to.x, to.y, 0);
+        view.dispatchTouchEvent(upEvent);
     }
 
 }
