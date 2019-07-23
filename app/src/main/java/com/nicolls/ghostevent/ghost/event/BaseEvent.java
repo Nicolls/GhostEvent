@@ -1,6 +1,6 @@
 package com.nicolls.ghostevent.ghost.event;
 
-import com.nicolls.ghostevent.ghost.utils.LogUtil;
+import android.view.MotionEvent;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -14,7 +14,12 @@ import io.reactivex.Completable;
  */
 public abstract class BaseEvent {
     private static final String TAG = "BaseEvent";
-    protected String name;
+    private String name;
+    private ITarget target;
+
+    public BaseEvent(ITarget target) {
+        this.target = target;
+    }
 
     public abstract Completable exe(AtomicBoolean cancel);
 
@@ -40,6 +45,10 @@ public abstract class BaseEvent {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    protected MotionEvent mockMotionEvent(long downTime, long eventTime, int action, float x, float y) {
+        return MotionEvent.obtain(downTime, eventTime, action, x, y, 0.7f, 0.8f, 0, 1.0f, 1.0f, 4, 0);
     }
 
 }

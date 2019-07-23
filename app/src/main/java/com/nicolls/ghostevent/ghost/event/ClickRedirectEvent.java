@@ -1,14 +1,6 @@
 package com.nicolls.ghostevent.ghost.event;
 
-import android.os.Handler;
-import android.os.SystemClock;
-import android.view.MotionEvent;
-import android.view.View;
-import android.webkit.WebView;
-
-import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
-import com.nicolls.ghostevent.ghost.view.GhostWebView;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -31,9 +23,10 @@ public class ClickRedirectEvent extends ClickEvent {
     private final Semaphore semaphore = new Semaphore(0);
     private final RedirectHandler handler;
 
-    public ClickRedirectEvent(RedirectHandler handler, View view, float x, float y) {
-        super(view, x, y);
+    public ClickRedirectEvent(RedirectHandler handler, ITarget target, TouchPoint click) {
+        super(target, click);
         this.handler = handler;
+        this.setName(TAG);
     }
 
     private final RedirectHandler.RedirectListener listener = new RedirectHandler.RedirectListener() {

@@ -3,6 +3,7 @@ package com.nicolls.ghostevent.ghost;
 import android.app.Activity;
 import android.app.Application;
 import android.os.Bundle;
+import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -13,7 +14,7 @@ import com.nicolls.ghostevent.ghost.view.GhostWebView;
 import java.lang.ref.WeakReference;
 
 public class ActivityGhost extends Ghost {
-    private static final String TAG="ActivityGhost";
+    private static final String TAG = "ActivityGhost";
     private final WeakReference<Activity> activityRef;
     private GhostWebView ghostWebView;
 
@@ -25,7 +26,11 @@ public class ActivityGhost extends Ghost {
     public void init() {
         Activity activity = activityRef.get();
         if (activity != null) {
-            ViewGroup viewGroup = (ViewGroup) activity.getWindow().getDecorView();
+            View decorView = activity.getWindow().getDecorView();
+            ViewGroup viewGroup = decorView.findViewById(android.R.id.content);
+            if (viewGroup == null) {
+                viewGroup = (ViewGroup) decorView;
+            }
             ghostWebView = new GhostWebView(activity.getApplicationContext());
             ghostWebView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT));
@@ -53,21 +58,21 @@ public class ActivityGhost extends Ghost {
 
     @Override
     public void reload() {
-        if(ghostWebView!=null){
+        if (ghostWebView != null) {
             ghostWebView.reload(DEFAULT_URL);
         }
     }
 
     @Override
     public void record() {
-        if(ghostWebView!=null){
+        if (ghostWebView != null) {
             ghostWebView.record();
         }
     }
 
     @Override
     public void play() {
-        if(ghostWebView!=null){
+        if (ghostWebView != null) {
             ghostWebView.play();
         }
     }

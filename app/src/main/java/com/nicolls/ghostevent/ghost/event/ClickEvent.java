@@ -1,19 +1,15 @@
 package com.nicolls.ghostevent.ghost.event;
 
+import android.graphics.PointF;
 import android.os.SystemClock;
 import android.view.MotionEvent;
-import android.view.View;
 
 import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
-import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.Completable;
-import io.reactivex.Single;
-import io.reactivex.SingleObserver;
-import io.reactivex.SingleSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Action;
 
@@ -25,24 +21,23 @@ import io.reactivex.functions.Action;
  */
 public class ClickEvent extends BaseEvent {
     private static final String TAG = "ClickEvent";
-    static final int INTERVAL_TIME_CLICK = 100;
-    private float x;
-    private float y;
-    private View view;
+    public static final int CLICK_INTERVAL_TIME = 100;
+    private TouchPoint touchPoint;
+    private ITarget target;
 
-    public ClickEvent(View view, float x, float y) {
-        this.view = view;
-        this.x = x;
-        this.y = y;
-        this.name = TAG;
+    public ClickEvent(ITarget target) {
+        super(target);
+        this.target = target;
     }
 
-    public float getX() {
-        return x;
-    }
-
-    public float getY() {
-        return y;
+    public ClickEvent(ITarget target, TouchPoint touchPoint) {
+        super(target);
+        this.target = target;
+        if (touchPoint == null) {
+            touchPoint = new TouchPoint(new PointF(0, 0), CLICK_INTERVAL_TIME);
+        }
+        this.touchPoint = touchPoint;
+        this.setName(TAG);
     }
 
     @Override
@@ -60,33 +55,38 @@ public class ClickEvent extends BaseEvent {
     }
 
     protected void doEvent() {
-        long downTime = SystemClock.uptimeMillis();
-        MotionEvent downEvent = MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, getX(), getY(), 0);
-        view.dispatchTouchEvent(downEvent);
-        sleepTimes(INTERVAL_TIME_CLICK);
-        long upTime = SystemClock.uptimeMillis();
-        MotionEvent upEvent = MotionEvent.obtain(downTime, upTime, MotionEvent.ACTION_UP, getX(), getY(), 0);
-        view.dispatchTouchEvent(upEvent);
+        final long downTime = SystemClock.uptimeMillis();
+        MotionEvent downEvent = mockMotionEvent(downTime, downTime, MotionEvent.ACTION_DOWN, touchPoint.point.x, touchPoint.point.y);
+        target.doEvent(downEvent);
+        long clickSpentTime = touchPoint.spentTime;
+        if (clickSpentTime <= 0) {
+            clickSpentTime = CLICK_INTERVAL_TIME;
+        }
+        target.getMainHandler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                long upTime = SystemClock.uptimeMillis();
+                MotionEvent upEvent = mockMotionEvent(downTime, upTime, MotionEvent.ACTION_UP, touchPoint.point.x, touchPoint.point.y);
+                target.doEvent(upEvent);
+            }
+        }, clickSpentTime);
     }
 
     public static class Builder {
         private ClickEvent clickEvent;
 
-        public Builder(View view) {
-            clickEvent = new ClickEvent(view, 0, 0);
-            clickEvent.x = 0;
-            clickEvent.y = 0;
-
+        public Builder(ITarget target) {
+            clickEvent = new ClickEvent(target, new TouchPoint(new PointF(0, 0), CLICK_INTERVAL_TIME));
         }
 
         public static ClickEvent copy(ClickEvent clickEvent) {
-            ClickEvent copyEvent = new ClickEvent(clickEvent.view, clickEvent.x, clickEvent.y);
+            ClickEvent copyEvent = new ClickEvent(clickEvent.target, clickEvent.touchPoint);
             return copyEvent;
         }
 
         public Builder setLocation(float x, float y) {
-            clickEvent.x = x;
-            clickEvent.y = y;
+            clickEvent.touchPoint.point.x = x;
+            clickEvent.touchPoint.point.y = x;
             return this;
         }
 
@@ -97,8 +97,8 @@ public class ClickEvent extends BaseEvent {
             yRatio = yRatio < 0 ? 0 : yRatio;
             yRatio = yRatio > 1 ? 1 : yRatio;
 
-            clickEvent.x = GhostUtils.displayWidth * xRatio;
-            clickEvent.y = GhostUtils.displayHeight * yRatio;
+            clickEvent.touchPoint = new TouchPoint(new PointF(GhostUtils.displayWidth * xRatio,
+                    GhostUtils.displayHeight * yRatio), CLICK_INTERVAL_TIME);
             return this;
         }
 
@@ -109,11 +109,9 @@ public class ClickEvent extends BaseEvent {
 
     @Override
     public String toString() {
-        return getName() + "{" +
-                "x=" + x +
-                ", y=" + y +
+        return "ClickEvent{" +
+                "touchPoint=" + touchPoint.toString() +
+                ", name='" + getName() + '\'' +
                 '}';
     }
-
-
 }

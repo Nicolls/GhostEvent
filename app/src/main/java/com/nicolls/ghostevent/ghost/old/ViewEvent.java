@@ -1,6 +1,5 @@
 package com.nicolls.ghostevent.ghost.old;
 
-import android.graphics.Point;
 import android.graphics.PointF;
 import android.os.Handler;
 import android.os.Looper;
@@ -10,7 +9,7 @@ import android.view.View;
 
 import androidx.annotation.NonNull;
 
-import com.nicolls.ghostevent.ghost.utils.DisplayUtils;
+import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.ArrayList;
@@ -44,9 +43,8 @@ public class ViewEvent implements IEvent {
 
     public ViewEvent(@NonNull final View view) {
         this.view = view;
-        Point display = DisplayUtils.getDisplaySize(view.getContext());
-        sDisplayWidth = display.x;
-        sDisplayHeight = display.y;
+        sDisplayWidth = GhostUtils.displayWidth;
+        sDisplayHeight = GhostUtils.displayHeight;
     }
 
     @Override

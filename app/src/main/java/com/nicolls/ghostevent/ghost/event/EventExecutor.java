@@ -1,6 +1,7 @@
 package com.nicolls.ghostevent.ghost.event;
 
 
+import android.os.Handler;
 import android.os.HandlerThread;
 
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
@@ -69,7 +70,7 @@ public class EventExecutor {
         public void run() {
             try {
                 // 一直等待直到有新的命令
-                LogUtil.d(TAG,"executeEventTask start run");
+                LogUtil.d(TAG, "executeEventTask start run");
                 BaseEvent event;
                 while (!cancelAtom.get() && (event = eventBlockingQueue.take()) != null) {
                     LogUtil.d(TAG, "semaphore acquire waiting!");
@@ -82,7 +83,7 @@ public class EventExecutor {
                         semaphore.release();
                     }
                 }
-                LogUtil.d(TAG,"executeEventTask over");
+                LogUtil.d(TAG, "executeEventTask over");
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

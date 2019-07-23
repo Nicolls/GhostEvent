@@ -1,23 +1,14 @@
 package com.nicolls.ghostevent;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.graphics.Point;
-import android.graphics.PointF;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.nicolls.ghostevent.ghost.utils.DisplayUtils;
-import com.nicolls.ghostevent.ghost.utils.LogUtil;
-import com.nicolls.ghostevent.ghost.old.IEvent;
+import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG="MainActivity";

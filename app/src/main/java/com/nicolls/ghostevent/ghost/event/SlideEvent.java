@@ -1,15 +1,18 @@
 package com.nicolls.ghostevent.ghost.event;
 
 import android.graphics.PointF;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.SystemClock;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.nicolls.ghostevent.ghost.utils.LogUtil;
 import com.nicolls.ghostevent.ghost.utils.GhostUtils;
+import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.Completable;
@@ -26,23 +29,25 @@ public class SlideEvent extends BaseEvent {
     /**
      * 每一个滑动事件需要触发的move数
      */
-    private static final int SLIDE_MOVE_TIMES = 8;
+    private static final int DEFAULT_SLIDE_MOVE_SIZE = 8;
     /**
      * 每一个滑动事件触发的move所占用的时间
      */
-    private static final long INTERVAL_TIME_SLIDE_MOVE_UNIT = 16;
-    private PointF from = new PointF();
-    private PointF to = new PointF();
-    private List<PointF> moves = new ArrayList<>();
-    private View view;
+    public static final long DEFAULT_INTERVAL_SLIDE_MOVE_TIME_UNIT = 16;
+
+    private TouchPoint from = new TouchPoint(new PointF(0, 0), TouchPoint.INTERVAL_DOWN_UP_TIME);
+    private TouchPoint to = new TouchPoint(new PointF(0, 0), TouchPoint.INTERVAL_DOWN_UP_TIME);
+    private List<TouchPoint> moves = new ArrayList<>();
+    private ITarget target;
 
     public enum Direction {
         LEFT, RIGHT, TOP, BOTTOM
     }
 
-    public SlideEvent(View view, final Direction direct) {
-        this.name = TAG;
-        this.view = view;
+    public SlideEvent(ITarget target, final Direction direct) {
+        super(target);
+        this.target = target;
+        this.setName(TAG);
         LogUtil.i(TAG, "slide direct:" + direct);
         int distance = 0;
         switch (direct) {
@@ -55,73 +60,69 @@ public class SlideEvent extends BaseEvent {
                 distance = GhostUtils.displayHeight / 3;
                 break;
         }
-
-
         int centerX = GhostUtils.displayWidth / 2;
         int centerY = GhostUtils.displayHeight / 2;
-        int moveUnit = distance / SLIDE_MOVE_TIMES;
         int xStart = 0;
         int xEnd = 0;
         int yStart = 0;
         int yEnd = 0;
-        int moveUnitX = 0;
-        int moveUnitY = 0;
         switch (direct) {
             case TOP:
                 xStart = xEnd = centerX;
                 yStart = GhostUtils.displayHeight - GhostUtils.displayHeight / 4;
                 yEnd = yStart - distance;
-                moveUnitX = 0;
-                moveUnitY = -moveUnit;
                 break;
             case BOTTOM:
                 xStart = xEnd = centerX;
                 yStart = GhostUtils.displayHeight / 4;
                 yEnd = yStart + distance;
-                moveUnitX = 0;
-                moveUnitY = moveUnit;
                 break;
             case LEFT:
                 yStart = yEnd = centerY;
                 xStart = GhostUtils.displayWidth - GhostUtils.displayWidth / 4;
                 xEnd = xStart - distance;
-                moveUnitX = -moveUnit;
-                moveUnitY = 0;
                 break;
             case RIGHT:
                 yStart = yEnd = centerY;
                 xStart = GhostUtils.displayWidth / 4;
                 xEnd = xStart + distance;
-                moveUnitX = moveUnit;
-                moveUnitY = 0;
                 break;
 
         }
-        this.from.x = xStart;
-        this.from.y = yStart;
-        // 移动的点，包括up跟down
-        for (int i = 0; i < SLIDE_MOVE_TIMES; i++) {
-            int moveX = xStart + moveUnitX * i;
-            int moveY = yStart + moveUnitY * i;
-            PointF move = new PointF(moveX, moveY);
-            this.moves.add(move);
-        }
-        this.to.x = xEnd;
-        this.to.y = yEnd;
+        this.from.point.x = xStart;
+        this.from.point.y = yStart;
+        this.to.point.x = xEnd;
+        this.to.point.y = yEnd;
+        calculateMoveEvent(this.from, this.to, DEFAULT_SLIDE_MOVE_SIZE,DEFAULT_INTERVAL_SLIDE_MOVE_TIME_UNIT);
     }
 
-    public SlideEvent(View view, final PointF from, final PointF to) {
-        this.view = view;
-        this.from.x = from.x;
-        this.from.y = from.y;
-        this.to.x = to.x;
-        this.to.y = to.y;
-        if (from.x < 0 || from.y < 0 || to.x < 0 || to.y < 0) {
+    public SlideEvent(ITarget target, final TouchPoint from, final TouchPoint to) {
+        this(target, from, to, null);
+    }
+
+    public SlideEvent(ITarget target, final TouchPoint from, final TouchPoint to, final List<TouchPoint> moveList) {
+        super(target);
+        this.target = target;
+        this.from = from;
+        this.to = to;
+        if (from.point.x < 0 || from.point.y < 0 || to.point.x < 0 || to.point.y < 0) {
             LogUtil.e(TAG, "invalid params slide from - to");
             return;
         }
-        float horizontal = to.x - from.x;
-        float vertical = to.y - from.y;
+        moves.clear();
+        if (moveList != null) {
+            moves.addAll(moveList);
+            return;
+        }
+        calculateMoveEvent(this.from, this.to, DEFAULT_SLIDE_MOVE_SIZE,DEFAULT_INTERVAL_SLIDE_MOVE_TIME_UNIT);
+    }
+
+    protected void calculateMoveEvent(TouchPoint from, TouchPoint to, int moveSize,long moveSpentTime) {
+        moves.clear();
+        PointF toPoint = to.point;
+        PointF fromPoint = from.point;
+        float horizontal = toPoint.x - fromPoint.x;
+        float vertical = toPoint.y - fromPoint.y;
         float horizontalDistance = Math.abs(horizontal);
         float verticalDistance = Math.abs(vertical);
         float xUnit = 0;
@@ -132,40 +133,37 @@ public class SlideEvent extends BaseEvent {
         }
 
         if (ratio <= 1 && vertical != 0) { // 说明是一个偏y轴的滑动，则以y为distance
-            final float distanceUnit = verticalDistance / SLIDE_MOVE_TIMES;
+            final float distanceUnit = verticalDistance / moveSize;
             yUnit = distanceUnit;
             if (horizontalDistance > 5) { // 如果x轴只动了5，默认是一个直y轴的滑动
                 xUnit = ratio * distanceUnit;
             }
         } else {
-            final float distanceUnit = horizontalDistance / SLIDE_MOVE_TIMES;
+            final float distanceUnit = horizontalDistance / moveSize;
             xUnit = distanceUnit;
             if (verticalDistance > 5) { // 如果y轴只动了5，默认是一个直x轴的滑动
                 yUnit = ratio * distanceUnit;
             }
         }
 
-        for (int i = 0, j = 0, count = 0; count < SLIDE_MOVE_TIMES; i += xUnit, j += yUnit, count++) {
-            float moveX = horizontal > 0 ? (from.x + i) : (from.x - i);
-            float moveY = vertical > 0 ? (from.y + j) : (from.y - j);
-            PointF move = new PointF(moveX, moveY);
+        for (int i = 0, count = 0; count < moveSize; i++, count++) {
+            float moveX = horizontal > 0 ? (fromPoint.x + i * xUnit) : (fromPoint.x - i * xUnit);
+            float moveY = vertical > 0 ? (fromPoint.y + i * yUnit) : (fromPoint.y - i * yUnit);
+            TouchPoint move = new TouchPoint(new PointF(moveX, moveY), moveSpentTime);
             moves.add(move);
         }
+        LogUtil.d(TAG, "calculate move size:" + moves.size());
     }
 
-    public SlideEvent(View view, final PointF from, final PointF to, final List<PointF> moves) {
-        this.view = view;
-        this.from.x = from.x;
-        this.from.y = from.y;
-        this.to.x = to.x;
-        this.to.y = to.y;
-        if (from.x < 0 || from.y < 0 || to.x < 0 || to.y < 0) {
-            LogUtil.e(TAG, "invalid params slide from - to");
-            return;
+    public void setMoveSpentTime(long time) {
+        for (TouchPoint move : moves) {
+            move.spentTime = time;
         }
-        this.moves.addAll(moves);
     }
 
+    public void setMoveSize(int size) {
+        calculateMoveEvent(this.from, this.to, size,DEFAULT_INTERVAL_SLIDE_MOVE_TIME_UNIT);
+    }
 
     @Override
     public Completable exe(final AtomicBoolean cancel) {
@@ -176,26 +174,51 @@ public class SlideEvent extends BaseEvent {
                     LogUtil.d(TAG, "cancel!");
                     return;
                 }
-                doEvent();
+                doEvent(from, to);
             }
         }).subscribeOn(AndroidSchedulers.mainThread());
     }
 
-    protected void doEvent() {
+    protected void doEvent(TouchPoint from, TouchPoint to) {
         long downTime = SystemClock.uptimeMillis();
-        MotionEvent downEvent = MotionEvent.obtain(downTime, downTime, MotionEvent.ACTION_DOWN, from.x, from.y, 0);
-        view.dispatchTouchEvent(downEvent);
-
-        for (PointF move : moves) {
-            long moveTime = SystemClock.uptimeMillis();
-            MotionEvent moveEvent = MotionEvent.obtain(downTime, moveTime, MotionEvent.ACTION_MOVE, move.x, move.y, 0);
-            view.dispatchTouchEvent(moveEvent);
-            sleepTimes(INTERVAL_TIME_SLIDE_MOVE_UNIT);
+        MotionEvent downEvent = mockMotionEvent(downTime, downTime, MotionEvent.ACTION_DOWN, from.point.x, from.point.y);
+        LogUtil.d(TAG, "doEvent down:" + from.toString() + " up:" + to.toString());
+        LogUtil.d(TAG, "down event");
+        target.doEvent(downEvent);
+        final Semaphore semaphore = new Semaphore(1);
+        LogUtil.d(TAG, "moves event");
+        for (final TouchPoint move : moves) {
+            LogUtil.d(TAG, "start semaphore.acquire");
+            try {
+                semaphore.acquire();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            LogUtil.d(TAG, "semaphore acquired");
+            long moveEventTime = SystemClock.uptimeMillis();
+            ;
+            MotionEvent moveEvent = mockMotionEvent(downTime, moveEventTime, MotionEvent.ACTION_MOVE, move.point.x, move.point.y);
+            target.doEvent(moveEvent);
+            LogUtil.d(TAG, "start post delay:" + move.spentTime);
+            target.getEventHandler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    LogUtil.d(TAG, "semaphore release");
+                    semaphore.release();
+                }
+            }, move.spentTime);
         }
-
+        LogUtil.d(TAG, "up event");
         long upTime = SystemClock.uptimeMillis();
-        MotionEvent upEvent = MotionEvent.obtain(downTime, upTime, MotionEvent.ACTION_UP, to.x, to.y, 0);
-        view.dispatchTouchEvent(upEvent);
+        MotionEvent upEvent = mockMotionEvent(downTime, upTime, MotionEvent.ACTION_UP, to.point.x, to.point.y);
+        target.doEvent(upEvent);
     }
 
+    @Override
+    public String toString() {
+        return "SlideEvent{" +
+                "from=" + from.toString() +
+                ", to=" + to.toString() +
+                '}';
+    }
 }

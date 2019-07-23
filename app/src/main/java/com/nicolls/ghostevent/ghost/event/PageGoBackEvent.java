@@ -1,6 +1,5 @@
 package com.nicolls.ghostevent.ghost.event;
 
-import android.view.View;
 import android.webkit.WebView;
 
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
@@ -39,9 +38,11 @@ public class PageGoBackEvent extends BaseEvent {
         }
     };
 
-    public PageGoBackEvent(RedirectHandler handler, WebView webView) {
+    public PageGoBackEvent(RedirectHandler handler, IWebTarget target) {
+        super(target);
         this.handler = handler;
-        this.webView = webView;
+        this.webView = (WebView) target;
+        this.setName(TAG);
     }
 
     @Override
