@@ -1,22 +1,36 @@
 package com.nicolls.ghostevent.ghost.event;
 
-import android.graphics.Rect;
+import com.alibaba.fastjson.annotation.JSONField;
 
-public class WebNode {
+import java.io.Serializable;
+
+public class WebNode implements Serializable {
     public enum Type {
-        AD, VIDEO, NEWS
-    }
+        AD("ad"), NEWS("news"), VIDEO("video");
+        private String tag;
 
-    public String id;
-    public Rect position;
-    public Type type;
+        private Type(String tag) {
+            this.tag = tag;
+        }
+
+    }
+    @JSONField
+    public int left;
+    @JSONField
+    public int top;
+    @JSONField
+    public int right;
+    @JSONField
+    public int bottom;
+  
 
     @Override
     public String toString() {
         return "WebNode{" +
-                "id='" + id + '\'' +
-                ", position=" + position +
-                ", type=" + type +
+                "left=" + left +
+                ", top=" + top +
+                ", right=" + right +
+                ", bottom=" + bottom +
                 '}';
     }
 }

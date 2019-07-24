@@ -28,6 +28,7 @@ public class ClickEvent extends BaseEvent {
     public ClickEvent(ITarget target) {
         super(target);
         this.target = target;
+        this.setName(TAG);
     }
 
     public ClickEvent(ITarget target, TouchPoint touchPoint) {

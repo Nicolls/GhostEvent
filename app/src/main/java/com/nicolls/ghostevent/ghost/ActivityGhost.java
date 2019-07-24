@@ -6,14 +6,15 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
-import com.nicolls.ghostevent.ghost.view.TestGhostWebView1;
+import com.nicolls.ghostevent.ghost.view.GhostWebView;
 
 import java.lang.ref.WeakReference;
 
 public class ActivityGhost extends Ghost {
     private static final String TAG = "ActivityGhost";
     private final WeakReference<Activity> activityRef;
-    private TestGhostWebView1 ghostWebView;
+    private GhostWebView ghostWebView;
+    private String url=DEFAULT_URL;
 
     public ActivityGhost(@NonNull final Activity activity) {
         activityRef = new WeakReference<>(activity);
@@ -28,14 +29,14 @@ public class ActivityGhost extends Ghost {
             if (viewGroup == null) {
                 viewGroup = (ViewGroup) decorView;
             }
-            ghostWebView = new TestGhostWebView1(activity.getApplicationContext());
+            ghostWebView = new GhostWebView(activity.getApplicationContext());
             ghostWebView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT));
             // setAlpha(0.001f);//不能设置成0，设置成0，将收不到事件，只要还有值 就可以接收到事件
 
 //            ghostWebView.setTranslationX(500);
             viewGroup.addView(ghostWebView, 0);
-            ghostWebView.start(DEFAULT_URL);
+            ghostWebView.start(url);
         }
     }
 
@@ -56,7 +57,7 @@ public class ActivityGhost extends Ghost {
     @Override
     public void reload() {
         if (ghostWebView != null) {
-            ghostWebView.reload(DEFAULT_URL);
+            ghostWebView.reload();
         }
     }
 
@@ -78,6 +79,20 @@ public class ActivityGhost extends Ghost {
     public void goHome() {
         if(ghostWebView!=null){
             ghostWebView.goHome();
+        }
+    }
+
+    @Override
+    public void onParse() {
+        if(ghostWebView!=null){
+            ghostWebView.onParse();
+        }
+    }
+
+    @Override
+    public void onPlayParse() {
+        if(ghostWebView!=null){
+            ghostWebView.onPlayParse();
         }
     }
 

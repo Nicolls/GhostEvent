@@ -22,11 +22,13 @@ public class SmoothSlideEvent extends SlideEvent {
     public SmoothSlideEvent(ITarget target, Direction direct) {
         super(target, direct);
         this.target = target;
+        this.setName(TAG);
     }
 
     public SmoothSlideEvent(ITarget target, TouchPoint from, TouchPoint to) {
         super(target, from, to);
         this.target = target;
+        this.setName(TAG);
     }
 
     @Override

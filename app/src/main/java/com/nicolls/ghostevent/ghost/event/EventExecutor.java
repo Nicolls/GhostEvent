@@ -80,9 +80,9 @@ public class EventExecutor {
                 LogUtil.d(TAG, "executeEventTask start run");
                 BaseEvent event;
                 while (!cancelAtom.get() && (event = eventBlockingQueue.take()) != null) {
-                    LogUtil.d(TAG, "semaphore acquire waiting!");
+                    LogUtil.d(TAG, "start to acquire semaphore");
                     semaphore.acquire();
-                    LogUtil.d(TAG, "exe event " + event.getName());
+                    LogUtil.d(TAG, "acquired exe event " + event.getName());
                     if (!cancelAtom.get()) {
                         executeEvent(event);
                     } else {
@@ -132,7 +132,7 @@ public class EventExecutor {
                     return;
                 }
                 // 只要出现事件错误，则停止
-                shutDown();
+                cancelAtom.set(true);
                 semaphore.release();
                 executeCallBack.onFail(event.getId());
             }
@@ -142,10 +142,9 @@ public class EventExecutor {
     public void shutDown() {
         LogUtil.d(TAG, "shutDown");
         cancelAtom.set(true);
-        eventBlockingQueue.clear();
     }
 
-    public void retry(List<BaseEvent> events) {
+    public void retry() {
         shutDown();
         cancelAtom.set(false);
         executeThread = null;

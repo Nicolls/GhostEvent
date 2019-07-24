@@ -18,17 +18,17 @@ public class HomePageEvent extends BaseEvent {
     private static final long GO_BACK_WAIT_TIME = 10; // 秒
     private final RedirectHandler handler;
     private WebView webView;
-    private final Semaphore semaphore = new Semaphore(0);
+    private final Semaphore semaphore = new Semaphore(0,true);
 
     private final RedirectHandler.RedirectListener listener = new RedirectHandler.RedirectListener() {
         @Override
         public void onStart() {
-            LogUtil.d(TAG, "onStart");
+            LogUtil.d(TAG, "redirect load onStart");
         }
 
         @Override
         public void onSuccess() {
-            LogUtil.d(TAG, "onSuccess");
+            LogUtil.d(TAG, "redirect load onSuccess");
             if (webView.canGoBack()) {
                 LogUtil.d(TAG, "go back continue ");
                 webView.goBack();
@@ -40,7 +40,7 @@ public class HomePageEvent extends BaseEvent {
 
         @Override
         public void onFail() {
-            LogUtil.d(TAG, "onFail");
+            LogUtil.d(TAG, "redirect load onFail");
         }
     };
 
@@ -60,11 +60,16 @@ public class HomePageEvent extends BaseEvent {
                 Completable.fromRunnable(new Runnable() {
                     @Override
                     public void run() {
-                        webView.goBack();
-                        LogUtil.d(TAG, "do first go Home completed");
+                        if(webView.canGoBack()){
+                            webView.goBack();
+                            LogUtil.d(TAG, "do first go Home completed");
+                        }else {
+                            LogUtil.d(TAG, "already in home page ,end!");
+                            semaphore.release();
+                        }
                     }
                 }).subscribeOn(AndroidSchedulers.mainThread()).subscribe();
-                LogUtil.d(TAG, "first go home done ,wait web load success!");
+                LogUtil.d(TAG, "first go home run ,wait web load success!");
                 boolean ok = semaphore.tryAcquire(GO_BACK_WAIT_TIME, TimeUnit.SECONDS);
                 if (!ok) {
                     handler.unRegisterRedirectListener(listener);

@@ -14,6 +14,14 @@ public class LogUtil {
         Log.d(tag, message);
     }
 
+    public static void w(String tag, String message) {
+        Log.w(tag, message);
+    }
+
+    public static void v(String tag, String message) {
+        Log.v(tag, message);
+    }
+
     public static void e(String tag, String message) {
         Log.e(tag, message);
     }

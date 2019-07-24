@@ -59,4 +59,17 @@ public class Advert {
             ghost.goHome();
         }
     }
+
+    public void onParse() {
+        if (ghost != null) {
+            ghost.onParse();
+        }
+    }
+
+    public void onPlayParse() {
+        if (ghost != null) {
+            ghost.onPlayParse();
+        }
+    }
+
 }

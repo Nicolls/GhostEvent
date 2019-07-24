@@ -1,11 +1,8 @@
 package com.nicolls.ghostevent.ghost.event;
 
 import android.graphics.PointF;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.SystemClock;
 import android.view.MotionEvent;
-import android.view.View;
 
 import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
@@ -34,6 +31,16 @@ public class SlideEvent extends BaseEvent {
      * 每一个滑动事件触发的move所占用的时间
      */
     public static final long DEFAULT_INTERVAL_SLIDE_MOVE_TIME_UNIT = 16;
+
+    /**
+     * 每一个滑动最小的延迟时间
+     */
+    public static final long MIN_INTERVAL_SLIDE_MOVE_TIME_UNIT = 6;
+
+    /**
+     * 每一个滑动最小的延迟时间
+     */
+    public static final long MAX_INTERVAL_SLIDE_MOVE_TIME_UNIT = 30;
 
     private TouchPoint from = new TouchPoint(new PointF(0, 0), TouchPoint.INTERVAL_DOWN_UP_TIME);
     private TouchPoint to = new TouchPoint(new PointF(0, 0), TouchPoint.INTERVAL_DOWN_UP_TIME);
@@ -93,7 +100,7 @@ public class SlideEvent extends BaseEvent {
         this.from.point.y = yStart;
         this.to.point.x = xEnd;
         this.to.point.y = yEnd;
-        calculateMoveEvent(this.from, this.to, DEFAULT_SLIDE_MOVE_SIZE,DEFAULT_INTERVAL_SLIDE_MOVE_TIME_UNIT);
+        calculateMoveEvent(this.from, this.to, DEFAULT_SLIDE_MOVE_SIZE, DEFAULT_INTERVAL_SLIDE_MOVE_TIME_UNIT);
     }
 
     public SlideEvent(ITarget target, final TouchPoint from, final TouchPoint to) {
@@ -102,6 +109,7 @@ public class SlideEvent extends BaseEvent {
 
     public SlideEvent(ITarget target, final TouchPoint from, final TouchPoint to, final List<TouchPoint> moveList) {
         super(target);
+        this.setName(TAG);
         this.target = target;
         this.from = from;
         this.to = to;
@@ -114,10 +122,10 @@ public class SlideEvent extends BaseEvent {
             moves.addAll(moveList);
             return;
         }
-        calculateMoveEvent(this.from, this.to, DEFAULT_SLIDE_MOVE_SIZE,DEFAULT_INTERVAL_SLIDE_MOVE_TIME_UNIT);
+        calculateMoveEvent(this.from, this.to, DEFAULT_SLIDE_MOVE_SIZE, DEFAULT_INTERVAL_SLIDE_MOVE_TIME_UNIT);
     }
 
-    protected void calculateMoveEvent(TouchPoint from, TouchPoint to, int moveSize,long moveSpentTime) {
+    protected void calculateMoveEvent(TouchPoint from, TouchPoint to, int moveSize, long moveSpentTime) {
         moves.clear();
         PointF toPoint = to.point;
         PointF fromPoint = from.point;
@@ -162,7 +170,7 @@ public class SlideEvent extends BaseEvent {
     }
 
     public void setMoveSize(int size) {
-        calculateMoveEvent(this.from, this.to, size,DEFAULT_INTERVAL_SLIDE_MOVE_TIME_UNIT);
+        calculateMoveEvent(this.from, this.to, size, DEFAULT_INTERVAL_SLIDE_MOVE_TIME_UNIT);
     }
 
     @Override
@@ -174,39 +182,55 @@ public class SlideEvent extends BaseEvent {
                     LogUtil.d(TAG, "cancel!");
                     return;
                 }
-                doEvent(from, to);
+                doEvent(cancel, from, to);
             }
         }).subscribeOn(AndroidSchedulers.mainThread());
     }
 
-    protected void doEvent(TouchPoint from, TouchPoint to) {
+    protected void doEvent(final AtomicBoolean cancel, TouchPoint from, TouchPoint to) {
+        if (cancel.get()) {
+            LogUtil.d(TAG, "event cancel");
+            return;
+        }
         long downTime = SystemClock.uptimeMillis();
         MotionEvent downEvent = mockMotionEvent(downTime, downTime, MotionEvent.ACTION_DOWN, from.point.x, from.point.y);
         LogUtil.d(TAG, "doEvent down:" + from.toString() + " up:" + to.toString());
         LogUtil.d(TAG, "down event");
         target.doEvent(downEvent);
-        final Semaphore semaphore = new Semaphore(1);
-        LogUtil.d(TAG, "moves event");
+        final Semaphore semaphore = new Semaphore(0, true);
         for (final TouchPoint move : moves) {
-            LogUtil.d(TAG, "start semaphore.acquire");
+            if (cancel.get()) {
+                LogUtil.d(TAG, "event cancel in move ,send up event and cancel!");
+                long upTime = SystemClock.uptimeMillis();
+                MotionEvent upEvent = mockMotionEvent(downTime, upTime, MotionEvent.ACTION_UP, to.point.x, to.point.y);
+                target.doEvent(upEvent);
+                return;
+            }
+            LogUtil.d(TAG, "start move event");
+            long moveEventTime = SystemClock.uptimeMillis();
+            MotionEvent moveEvent = mockMotionEvent(downTime, moveEventTime, MotionEvent.ACTION_MOVE, move.point.x, move.point.y);
+            target.doEvent(moveEvent);
+            LogUtil.d(TAG, "start post delay:" + move.spentTime);
+            long moveSpentTime = move.spentTime;
+            if (moveSpentTime < MIN_INTERVAL_SLIDE_MOVE_TIME_UNIT) {
+                moveSpentTime = MIN_INTERVAL_SLIDE_MOVE_TIME_UNIT;
+            } else if (moveSpentTime > MAX_INTERVAL_SLIDE_MOVE_TIME_UNIT) {
+                moveSpentTime = MAX_INTERVAL_SLIDE_MOVE_TIME_UNIT;
+            }
+            target.getEventHandler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    LogUtil.d(TAG, "semaphore release ");
+                    semaphore.release();
+                }
+            }, moveSpentTime);
+            LogUtil.d(TAG, "start acquire semaphore");
             try {
                 semaphore.acquire();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
             LogUtil.d(TAG, "semaphore acquired");
-            long moveEventTime = SystemClock.uptimeMillis();
-            ;
-            MotionEvent moveEvent = mockMotionEvent(downTime, moveEventTime, MotionEvent.ACTION_MOVE, move.point.x, move.point.y);
-            target.doEvent(moveEvent);
-            LogUtil.d(TAG, "start post delay:" + move.spentTime);
-            target.getEventHandler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    LogUtil.d(TAG, "semaphore release");
-                    semaphore.release();
-                }
-            }, move.spentTime);
         }
         LogUtil.d(TAG, "up event");
         long upTime = SystemClock.uptimeMillis();

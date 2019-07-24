@@ -16,11 +16,11 @@ import io.reactivex.schedulers.Schedulers;
 public class LoadPageEvent extends BaseEvent {
     private static final String TAG="LoadPageEvent";
     private static final long LOAD_PAGE_WAIT_TIME = 6; // 秒
-    private final Semaphore semaphore = new Semaphore(0);
+    private final Semaphore semaphore = new Semaphore(0,true);
     private final RedirectHandler handler;
     private final String url;
     private final IWebTarget target;
-    public LoadPageEvent(RedirectHandler handler,IWebTarget target,String url) {
+    public LoadPageEvent(IWebTarget target,RedirectHandler handler,String url) {
         super(target);
         this.handler = handler;
         this.url=url;
@@ -31,18 +31,18 @@ public class LoadPageEvent extends BaseEvent {
     private final RedirectHandler.RedirectListener listener = new RedirectHandler.RedirectListener() {
         @Override
         public void onStart() {
-            LogUtil.d(TAG, "onStart");
+            LogUtil.d(TAG, "redirect load onStart");
         }
 
         @Override
         public void onSuccess() {
-            LogUtil.d(TAG, "onSuccess");
+            LogUtil.d(TAG, "redirect load onSuccess");
             semaphore.release();
         }
 
         @Override
         public void onFail() {
-            LogUtil.d(TAG, "onFail");
+            LogUtil.d(TAG, "redirect load onFail");
         }
     };
 
@@ -64,7 +64,7 @@ public class LoadPageEvent extends BaseEvent {
                         LogUtil.d(TAG,"load url completed");
                     }
                 }).subscribeOn(AndroidSchedulers.mainThread()).subscribe();
-                LogUtil.d(TAG,"click done ,wait web load success!");
+                LogUtil.d(TAG,"load url run ,wait web load success!");
                 boolean ok = semaphore.tryAcquire(LOAD_PAGE_WAIT_TIME, TimeUnit.SECONDS);
                 if (!ok) {
                     handler.unRegisterRedirectListener(listener);

@@ -1,10 +1,7 @@
 package com.nicolls.ghostevent.ghost.event;
 
-import android.graphics.Rect;
-import android.webkit.JavascriptInterface;
-import android.webkit.WebView;
-
-import com.nicolls.ghostevent.ghost.parse.JsGhostParser;
+import com.nicolls.ghostevent.ghost.parse.IWebParser;
+import com.nicolls.ghostevent.ghost.parse.JsParser;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.concurrent.Semaphore;
@@ -16,15 +13,16 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Action;
 import io.reactivex.schedulers.Schedulers;
 
-public class JSParseEvent extends BaseEvent {
-    private static final String TAG = "JSParseEvent";
+public class WebParseEvent extends BaseEvent {
+    private static final String TAG = "WebParseEvent";
     private static final long PARSE_WAIT_TIME = 6; // 秒
-    private final Semaphore semaphore = new Semaphore(0);
+    private final Semaphore semaphore = new Semaphore(0, true);
     private IWebTarget target;
 
-    public JSParseEvent(IWebTarget target) {
+    public WebParseEvent(IWebTarget target) {
         super(target);
         this.target = target;
+        this.setName(TAG);
     }
 
     @Override
@@ -37,20 +35,18 @@ public class JSParseEvent extends BaseEvent {
                     return;
                 }
                 LogUtil.d(TAG, "start to parse!");
-                final WebView webView = (WebView) target;
                 Completable.fromRunnable(new Runnable() {
                     @Override
                     public void run() {
-                        webView.addJavascriptInterface(new JsGhostParser(target, semaphore), "jsParse");
-//                        webView.loadUrl("javascript:alert(window.jsParse)");
-                        webView.loadUrl("javascript:alert('ljsfw')");
-                        LogUtil.d(TAG, "parse load js code wait to found");
+                        IWebParser parser = new JsParser(target, semaphore);
+                        parser.parse();
+                        LogUtil.d(TAG, "do parse");
                     }
                 }).subscribeOn(AndroidSchedulers.mainThread()).subscribe();
                 LogUtil.d(TAG, "exe parse subscribe ");
                 boolean ok = semaphore.tryAcquire(PARSE_WAIT_TIME, TimeUnit.SECONDS);
                 if (!ok) {
-                    throw new RuntimeException("parse page time out!");
+                    LogUtil.w(TAG, "parse page time out!");
                 } else {
                     LogUtil.d(TAG, "parse page completed");
                 }

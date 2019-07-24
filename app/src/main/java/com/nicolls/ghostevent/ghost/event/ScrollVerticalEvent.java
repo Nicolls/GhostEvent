@@ -29,6 +29,7 @@ public class ScrollVerticalEvent extends BaseEvent {
         this.target = target;
         this.from = from;
         this.to = to;
+        this.setName(TAG);
         isScrollByDistance = false;
     }
 
@@ -36,6 +37,7 @@ public class ScrollVerticalEvent extends BaseEvent {
         super(target);
         this.target = target;
         this.distance = distance;
+        this.setName(TAG);
         isScrollByDistance = true;
     }
 
@@ -64,7 +66,7 @@ public class ScrollVerticalEvent extends BaseEvent {
                 }
                 LogUtil.d(TAG, "scroll vertical event start anim duration:" + animDuration);
                 LogUtil.d(TAG, "anim from:" + from + " to:" + to);
-                final Semaphore semaphore = new Semaphore(0);
+                final Semaphore semaphore = new Semaphore(0,true);
 
                 final ObjectAnimator animator = ObjectAnimator.ofInt(webView, "scrollY", from, to);
                 animator.setDuration(animDuration);

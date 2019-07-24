@@ -1,7 +1,13 @@
 package com.nicolls.ghostevent.ghost.event;
 
 public interface IWebTarget extends ITarget {
-    void foundAd(WebNode webNode);
+    void onParseWebStart();
+
+    void foundAdvert(WebNode webNode);
 
     void foundItem(WebNode webNode);
+
+    void onParseWebSuccess();
+
+    void onParseWebFail();
 }

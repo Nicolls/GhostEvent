@@ -54,6 +54,14 @@ public class MainActivity extends AppCompatActivity {
         Advert.instance.goHome();
     }
 
+    public void onParse(View view) {
+        Advert.instance.onParse();
+    }
+
+    public void onPlayParse(View view) {
+        Advert.instance.onPlayParse();
+    }
+
     private final class MyAdapter extends BaseAdapter {
         String[] names={"a","b","b","b","b","b","b","r","b","b","b","b","b","q","b","b","b","b","b","r"};
 

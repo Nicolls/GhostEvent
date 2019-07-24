@@ -1,18 +1,11 @@
 package com.nicolls.ghostevent.ghost.view;
 
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
-import android.webkit.CookieManager;
-import android.webkit.WebChromeClient;
-import android.webkit.WebResourceError;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
-import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 import com.nicolls.ghostevent.ghost.event.BaseEvent;
 import com.nicolls.ghostevent.ghost.event.ClickEvent;
@@ -22,6 +15,7 @@ import com.nicolls.ghostevent.ghost.event.GroupEvent;
 import com.nicolls.ghostevent.ghost.event.HomePageEvent;
 import com.nicolls.ghostevent.ghost.event.IEventHandler;
 import com.nicolls.ghostevent.ghost.event.IWebTarget;
+import com.nicolls.ghostevent.ghost.event.LoadPageEvent;
 import com.nicolls.ghostevent.ghost.event.PageGoBackEvent;
 import com.nicolls.ghostevent.ghost.event.RedirectHandler;
 import com.nicolls.ghostevent.ghost.event.ScrollVerticalEvent;
@@ -30,9 +24,11 @@ import com.nicolls.ghostevent.ghost.event.SmoothSlideEvent;
 import com.nicolls.ghostevent.ghost.event.TouchPoint;
 import com.nicolls.ghostevent.ghost.event.ViewEventHandler;
 import com.nicolls.ghostevent.ghost.event.WebNode;
+import com.nicolls.ghostevent.ghost.event.WebParseEvent;
 import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
+import java.security.acl.LastOwnerException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,77 +38,31 @@ import java.util.List;
  * <p>
  * </p>
  */
-public class GhostWebView extends BaseWebView implements IWebTarget {
+public class GhostWebView extends WebView implements IWebTarget {
     private static final String TAG = "GhostWebView";
 
     private static final int MAX_TRY_TIMES = 5;
-    private int displayWidth;
-    private int displayHeight;
     private EventExecutor eventExecutor = new EventExecutor();
     private final RedirectHandler redirectHandler = new RedirectHandler();
     private final List<BaseEvent> ghostEventList = new ArrayList<>();
     private IEventHandler eventHandler;
     private int tryTimes = 0;
-
-    public GhostWebView(Context context) {
-        super(context);
-        init();
-    }
-
-    public GhostWebView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init();
-    }
-
-    public GhostWebView(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-        init();
-    }
-
-
-    private void init() {
-        CookieManager.getInstance().removeSessionCookie();
-        getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
-        setWebChromeClient(new GhostWebChromeClient());
-        setWebViewClient(new GhostWebViewClient());
-        clearCache(true);
-        clearHistory();
-        displayWidth = GhostUtils.displayWidth;
-        displayHeight = GhostUtils.displayHeight;
-        eventHandler = new ViewEventHandler(this);
-        eventExecutor.setExecuteCallBack(executeCallBack);
-        initEvents();
-    }
-
-    private void initEvents() {
-        final BaseEvent slideTop = new SlideEvent(this, SlideEvent.Direction.TOP);
-        final BaseEvent slideBottom = new SlideEvent(this, SlideEvent.Direction.BOTTOM);
-
-        final BaseEvent redirectClick = new ClickRedirectEvent(redirectHandler, GhostWebView.this, TouchPoint.obtainClick(displayWidth / 2, displayHeight / 2));
-
-        final BaseEvent click = new ClickEvent(this, TouchPoint.obtainClick(displayWidth / 2, displayHeight / 2));
-
-        final GroupEvent groupEvent = new GroupEvent(this, slideTop, slideBottom, slideTop, slideBottom);
-
-        final BaseEvent goBackEvent = new PageGoBackEvent(redirectHandler, GhostWebView.this);
-
-        final BaseEvent smoothSlide = new SmoothSlideEvent(this,
-                TouchPoint.obtainDown(displayWidth / 2, displayHeight - displayHeight / 4),
-                TouchPoint.obtainUp(displayWidth / 2, displayHeight / 3));
-
-        final BaseEvent scrollEvent = new ScrollVerticalEvent(this, displayHeight);
-        ghostEventList.add(scrollEvent);
-        ghostEventList.add(scrollEvent);
-        ghostEventList.add(click);
-//        ghostEventList.add(smoothSlide);
-//        ghostEventList.add(slideTop);
-//        ghostEventList.add(slideBottom);
-//        ghostEventList.add(groupEvent);
-//        ghostEventList.add(redirectClick);
-//        ghostEventList.add(slideTop);
-//        ghostEventList.add(goBackEvent);
-//        ghostEventList.add(click);
-    }
+    private boolean isRecord = false;
+    /**
+     * event
+     */
+    private SlideEvent slideTop;
+    private SlideEvent slideBottom;
+    private ClickEvent click;
+    private ClickRedirectEvent redirectClick;
+    private PageGoBackEvent goBackEvent;
+    private HomePageEvent homePageEvent;
+    private SmoothSlideEvent smoothSlide;
+    private ScrollVerticalEvent scrollEvent;
+    private GroupEvent recordEvent;
+    private LoadPageEvent loadPageEvent;
+    private WebParseEvent parseEvent;
+    private List<WebNode> webNodes=new ArrayList<>();
 
     private final EventExecutor.ExecuteCallBack executeCallBack = new EventExecutor.ExecuteCallBack() {
         @Override
@@ -129,49 +79,143 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         }
     };
 
-    private void retry() {
-        isRecord = false;
-        eventExecutor.retry(ghostEventList);
+    public GhostWebView(Context context) {
+        super(context);
+        init();
     }
 
+    public GhostWebView(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        init();
+    }
+
+    public GhostWebView(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        init();
+    }
+
+    private void init() {
+        eventHandler = new ViewEventHandler(this);
+        eventExecutor.setExecuteCallBack(executeCallBack);
+        initEvents();
+        initWebView();
+    }
+
+    private void initEvents() {
+        // single event
+        slideTop = new SlideEvent(this, SlideEvent.Direction.TOP);
+        slideBottom = new SlideEvent(this, SlideEvent.Direction.BOTTOM);
+
+        redirectClick = new ClickRedirectEvent(redirectHandler, GhostWebView.this, TouchPoint.obtainClick(GhostUtils.displayWidth / 2, GhostUtils.displayHeight / 2));
+
+        click = new ClickEvent(this, TouchPoint.obtainClick(GhostUtils.displayWidth / 2, GhostUtils.displayHeight / 2));
+
+        goBackEvent = new PageGoBackEvent(redirectHandler, GhostWebView.this);
+
+        homePageEvent = new HomePageEvent(redirectHandler, this);
+
+        smoothSlide = new SmoothSlideEvent(this,
+                TouchPoint.obtainDown(GhostUtils.displayWidth / 2, GhostUtils.displayHeight - GhostUtils.displayHeight / 4),
+                TouchPoint.obtainUp(GhostUtils.displayWidth / 2, GhostUtils.displayHeight / 3));
+        recordEvent=new GroupEvent(this);
+        scrollEvent = new ScrollVerticalEvent(this, GhostUtils.displayHeight);
+        loadPageEvent =new LoadPageEvent(this,redirectHandler,getUrl());
+        parseEvent =new WebParseEvent(this);
+        // add ghost event
+        ghostEventList.add(scrollEvent);
+        ghostEventList.add(scrollEvent);
+        ghostEventList.add(click);
+    }
+
+    private void initWebView(){
+        setWebViewClient(new GhostWebViewClient(redirectHandler));
+        setOnTouchListener(new GhostWebViewTouchEvent(this,redirectHandler,recordEvent));
+    }
+    /**
+     * 开始
+     *
+     * @param url
+     */
     public void start(String url) {
         isRecord = false;
-        loadUrl(url);
+        loadPageEvent = new LoadPageEvent(this,redirectHandler, url);
+        eventExecutor.execute(loadPageEvent);
+        eventExecutor.execute(parseEvent);
     }
 
-    public void reload(String url) {
-        isRecord = false;
-        loadUrl(url);
-    }
-
+    /**
+     * 停止
+     */
     public void stop() {
         isRecord = false;
         eventExecutor.shutDown();
     }
 
-    private HomePageEvent homePageEvent = new HomePageEvent(redirectHandler, this);
-
-    public void goHome() {
-        recordEvent.addEvent(homePageEvent);
-        eventExecutor.execute(homePageEvent);
-//        eventExecutor.execute(ghostEventList);
+    /**
+     * 重载
+     *
+     * @param url
+     */
+    public void reload(String url) {
+        isRecord = false;
+        loadUrl(url);
     }
 
-    private boolean isRecord = false;
+    /**
+     * 解析
+     */
+    public void onParse() {
+        eventExecutor.execute(parseEvent);
+    }
 
+    /**
+     * 播放解析
+     */
+    public void onPlayParse() {
+        LogUtil.d(TAG,"onPlayParse");
+        if(webNodes.size()>3){
+            WebNode webNode=webNodes.get(3);
+            ClickEvent clickEvent=new ClickEvent(this,TouchPoint.obtainClick(webNode.left+50,webNode.top+50));
+            eventExecutor.execute(clickEvent);
+
+        }
+
+    }
+
+    /**
+     * 录制
+     */
     public void record() {
         recordEvent.removeAllEvents();
         isRecord = true;
     }
 
+    public boolean isRecord() {
+        return this.isRecord;
+    }
+
+    /**
+     * 播放
+     */
     public void play() {
         isRecord = false;
         eventExecutor.execute(recordEvent);
     }
 
-    @Override
-    protected void onAttachedToWindow() {
-        super.onAttachedToWindow();
+    /**
+     * 回首页
+     */
+    public void goHome() {
+        recordEvent.addEvent(homePageEvent);
+        eventExecutor.execute(homePageEvent);
+    }
+
+    /**
+     * 重试
+     */
+    private void retry() {
+        isRecord = false;
+        eventExecutor.retry();
     }
 
     @Override
@@ -190,129 +234,31 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
     }
 
     @Override
-    public void foundAd(WebNode webNode) {
+    public void onParseWebStart() {
+        LogUtil.d(TAG,"onParseWebStart");
+        webNodes.clear();
+    }
 
+    @Override
+    public void foundAdvert(WebNode webNode) {
+        LogUtil.d(TAG,"foundAdvert "+webNode.toString());
     }
 
     @Override
     public void foundItem(WebNode webNode) {
-
+        LogUtil.d(TAG,"foundItem "+webNode.toString());
+        webNodes.add(webNode);
     }
-
-
-    private class GhostWebChromeClient extends WebChromeClient {
-        @Override
-        public void onReceivedTitle(WebView view, String title) {
-            super.onReceivedTitle(view, title);
-        }
-    }
-
-    private boolean first = true;
-
-    private class GhostWebViewClient extends WebViewClient {
-        private boolean isError = false;
-
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-            return super.shouldOverrideUrlLoading(view, request);
-        }
-
-        @Override
-        public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            super.onPageStarted(view, url, favicon);
-            isError = false;
-            redirectHandler.notifyStart();
-        }
-
-        @Override
-        public void onPageFinished(WebView view, String url) {
-            super.onPageFinished(view, url);
-            LogUtil.d(TAG, "onPageFinished");
-            LogUtil.d(TAG, "haha:" + getWidth() + " " + getHeight() + " " + displayWidth + " " + displayHeight);
-            if (!isError) {
-                onSuccess();
-            }
-        }
-
-        @Override
-        public void onLoadResource(WebView view, String url) {
-            super.onLoadResource(view, url);
-        }
-
-        @Override
-        public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
-            return super.shouldInterceptRequest(view, request);
-        }
-
-        @Override
-        public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-            super.onReceivedError(view, request, error);
-            LogUtil.d(TAG, "onReceivedError");
-            isError = true;
-            redirectHandler.notifyFail();
-        }
-
-        /**
-         * 加载成功
-         */
-        private void onSuccess() {
-            LogUtil.d(TAG, "load onSuccess");
-            redirectHandler.notifySuccess();
-            if (first) {
-                firstEvent();
-            }
-        }
-
-    }
-
-    private void firstEvent() {
-        first = false;
-//        eventExecutor.execute(ghostEventList);
-    }
-
-    private float downX;
-    private float downY;
-    private float upX;
-    private float upY;
-    private GroupEvent recordEvent = new GroupEvent(this);
-    private int lastScrollY = 0;
 
     @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-        LogUtil.d(TAG, "Web-dispatchTouchEvent ev:" + MotionEvent.actionToString(ev.getAction()));
-        LogUtil.d(TAG, "Web-dispatchTouchEvent x-y :" + ev.getX() + "-" + ev.getY() + " rawX-rawY:" + ev.getRawX() + "-" + ev.getRawY());
-
-        switch (ev.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                downX = ev.getX();
-                downY = ev.getY();
-                lastScrollY = getScrollY();
-                break;
-            case MotionEvent.ACTION_MOVE:
-
-                break;
-            case MotionEvent.ACTION_UP:
-                upX = ev.getX();
-                upY = ev.getY();
-                LogUtil.d(TAG, "Web-dispatchTouchEvent scrollY " + getScrollY());
-                if (!isRecord) {
-                    break;
-                }
-                if (Math.abs(upX - downX) < 5 && Math.abs(upY - downY) < 5) {
-                    // click
-                    BaseEvent clickRecdirect = new ClickRedirectEvent(redirectHandler, this, TouchPoint.obtainClick(upX, upY));
-                    LogUtil.d(TAG, "Web-dispatchTouchEvent add click:" + clickRecdirect.toString());
-                    recordEvent.addEvent(clickRecdirect);
-                } else {
-                    // scroll
-                    ScrollVerticalEvent scroll = new ScrollVerticalEvent(this, lastScrollY, getScrollY());
-                    recordEvent.addEvent(scroll);
-                    LogUtil.d(TAG, "Web-dispatchTouchEvent add scroll:" + scroll.toString());
-
-                }
-                break;
-        }
-        return super.dispatchTouchEvent(ev);
+    public void onParseWebSuccess() {
+        LogUtil.d(TAG,"onParseWebSuccess");
     }
+
+    @Override
+    public void onParseWebFail() {
+        LogUtil.d(TAG,"onParseWebFail");
+    }
+
 
 }
