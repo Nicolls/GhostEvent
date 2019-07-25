@@ -15,7 +15,7 @@ import io.reactivex.schedulers.Schedulers;
 
 public class LoadPageEvent extends BaseEvent {
     private static final String TAG="LoadPageEvent";
-    private static final long LOAD_PAGE_WAIT_TIME = 6; // 秒
+    private static final long LOAD_PAGE_WAIT_TIME = 15; // 秒
     private final Semaphore semaphore = new Semaphore(0,true);
     private final RedirectHandler handler;
     private final String url;
@@ -68,6 +68,8 @@ public class LoadPageEvent extends BaseEvent {
                 boolean ok = semaphore.tryAcquire(LOAD_PAGE_WAIT_TIME, TimeUnit.SECONDS);
                 if (!ok) {
                     handler.unRegisterRedirectListener(listener);
+                    // loadpage 事件如果都没有成功，则需要停止所有的
+                    cancel.set(true);
                     throw new RuntimeException("load page time out!");
                 } else {
                     LogUtil.d(TAG,"web load page completed");

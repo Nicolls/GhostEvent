@@ -1,9 +1,7 @@
 package com.nicolls.ghostevent.ghost.event;
 
 
-import android.os.Handler;
-import android.os.HandlerThread;
-
+import com.nicolls.ghostevent.ghost.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.List;
@@ -20,7 +18,8 @@ public class EventExecutor {
     private static final String TAG = "EventExecutor";
     private BlockingQueue<BaseEvent> eventBlockingQueue = new LinkedBlockingQueue<>();
     private Thread executeThread;
-    private final AtomicBoolean cancelAtom = new AtomicBoolean(false);
+    private volatile AtomicBoolean cancelAtom = new AtomicBoolean(false);
+    private Disposable lastDisposable;
     // 信号量，事件需要按顺序一个接一个的执行
     private final Semaphore semaphore = new Semaphore(1, true);
 
@@ -35,7 +34,7 @@ public class EventExecutor {
     private long eventIntervalTime;
 
     public EventExecutor() {
-        this(Constant.EVENT_INTERVAL_TIME);
+        this(Constants.EVENT_INTERVAL_TIME);
     }
 
     public EventExecutor(long eventIntervalTime) {
@@ -82,7 +81,7 @@ public class EventExecutor {
                 while (!cancelAtom.get() && (event = eventBlockingQueue.take()) != null) {
                     LogUtil.d(TAG, "start to acquire semaphore");
                     semaphore.acquire();
-                    LogUtil.d(TAG, "acquired exe event " + event.getName());
+                    LogUtil.d(TAG, "acquired exe event " + event.getName() + " cancel:" + cancelAtom.get());
                     if (!cancelAtom.get()) {
                         executeEvent(event);
                     } else {
@@ -103,6 +102,7 @@ public class EventExecutor {
             @Override
             public void onSubscribe(Disposable d) {
                 LogUtil.d(TAG, "onSubscribe");
+                lastDisposable = d;
             }
 
             @Override
@@ -132,7 +132,9 @@ public class EventExecutor {
                     return;
                 }
                 // 只要出现事件错误，则停止
-                cancelAtom.set(true);
+                if (lastDisposable != null) {
+                    lastDisposable.dispose();
+                }
                 semaphore.release();
                 executeCallBack.onFail(event.getId());
             }

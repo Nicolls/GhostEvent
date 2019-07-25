@@ -3,7 +3,6 @@ package com.nicolls.ghostevent.ghost.view;
 import android.content.Context;
 import android.os.Handler;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.webkit.WebView;
 
@@ -15,6 +14,7 @@ import com.nicolls.ghostevent.ghost.event.GroupEvent;
 import com.nicolls.ghostevent.ghost.event.HomePageEvent;
 import com.nicolls.ghostevent.ghost.event.IEventHandler;
 import com.nicolls.ghostevent.ghost.event.IWebTarget;
+import com.nicolls.ghostevent.ghost.event.LoadJsEvent;
 import com.nicolls.ghostevent.ghost.event.LoadPageEvent;
 import com.nicolls.ghostevent.ghost.event.PageGoBackEvent;
 import com.nicolls.ghostevent.ghost.event.RedirectHandler;
@@ -25,10 +25,10 @@ import com.nicolls.ghostevent.ghost.event.TouchPoint;
 import com.nicolls.ghostevent.ghost.event.ViewEventHandler;
 import com.nicolls.ghostevent.ghost.event.WebNode;
 import com.nicolls.ghostevent.ghost.event.WebParseEvent;
+import com.nicolls.ghostevent.ghost.parse.SingleParser;
 import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
-import java.security.acl.LastOwnerException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +38,7 @@ import java.util.List;
  * <p>
  * </p>
  */
-public class GhostWebView extends WebView implements IWebTarget {
+public class GhostWebView extends BaseWebView implements IWebTarget {
     private static final String TAG = "GhostWebView";
 
     private static final int MAX_TRY_TIMES = 5;
@@ -57,25 +57,27 @@ public class GhostWebView extends WebView implements IWebTarget {
     private ClickRedirectEvent redirectClick;
     private PageGoBackEvent goBackEvent;
     private HomePageEvent homePageEvent;
+    private LoadJsEvent loadJsEvent;
     private SmoothSlideEvent smoothSlide;
     private ScrollVerticalEvent scrollEvent;
     private GroupEvent recordEvent;
     private LoadPageEvent loadPageEvent;
     private WebParseEvent parseEvent;
-    private List<WebNode> webNodes=new ArrayList<>();
+    private List<WebNode> webNodes = new ArrayList<>();
 
     private final EventExecutor.ExecuteCallBack executeCallBack = new EventExecutor.ExecuteCallBack() {
         @Override
         public void onSuccess(int eventId) {
-
+            LogUtil.d(TAG,"onSuccess");
         }
 
         @Override
         public void onFail(int eventId) {
+            LogUtil.d(TAG,"onFail");
             tryTimes++;
-            if (tryTimes <= MAX_TRY_TIMES) {
-                retry();
-            }
+//            if (tryTimes <= MAX_TRY_TIMES) {
+//                retry();
+//            }
         }
     };
 
@@ -97,6 +99,7 @@ public class GhostWebView extends WebView implements IWebTarget {
     private void init() {
         eventHandler = new ViewEventHandler(this);
         eventExecutor.setExecuteCallBack(executeCallBack);
+        addJavascriptInterface(SingleParser.singleParser,"jsParser");
         initEvents();
         initWebView();
     }
@@ -117,36 +120,41 @@ public class GhostWebView extends WebView implements IWebTarget {
         smoothSlide = new SmoothSlideEvent(this,
                 TouchPoint.obtainDown(GhostUtils.displayWidth / 2, GhostUtils.displayHeight - GhostUtils.displayHeight / 4),
                 TouchPoint.obtainUp(GhostUtils.displayWidth / 2, GhostUtils.displayHeight / 3));
-        recordEvent=new GroupEvent(this);
+        recordEvent = new GroupEvent(this);
         scrollEvent = new ScrollVerticalEvent(this, GhostUtils.displayHeight);
-        loadPageEvent =new LoadPageEvent(this,redirectHandler,getUrl());
-        parseEvent =new WebParseEvent(this);
+        loadPageEvent = new LoadPageEvent(this, redirectHandler, getUrl());
+        loadJsEvent = new LoadJsEvent(this);
+        parseEvent = new WebParseEvent(this);
         // add ghost event
         ghostEventList.add(scrollEvent);
         ghostEventList.add(scrollEvent);
         ghostEventList.add(click);
     }
 
-    private void initWebView(){
+    private void initWebView() {
         setWebViewClient(new GhostWebViewClient(redirectHandler));
-        setOnTouchListener(new GhostWebViewTouchEvent(this,redirectHandler,recordEvent));
+        setOnTouchListener(new GhostWebViewTouchEvent(this, redirectHandler, recordEvent));
     }
+
     /**
      * 开始
      *
      * @param url
      */
     public void start(String url) {
+        LogUtil.d(TAG,"start");
         isRecord = false;
-        loadPageEvent = new LoadPageEvent(this,redirectHandler, url);
+        loadPageEvent = new LoadPageEvent(this, redirectHandler, url);
         eventExecutor.execute(loadPageEvent);
-        eventExecutor.execute(parseEvent);
+        eventExecutor.execute(loadJsEvent);
+        eventExecutor.execute(click);
     }
 
     /**
      * 停止
      */
     public void stop() {
+        LogUtil.d(TAG,"stop");
         isRecord = false;
         eventExecutor.shutDown();
     }
@@ -156,15 +164,17 @@ public class GhostWebView extends WebView implements IWebTarget {
      *
      * @param url
      */
-    public void reload(String url) {
-        isRecord = false;
-        loadUrl(url);
+    public void reLoad(String url) {
+        LogUtil.d(TAG,"reLoad");
+        start(url);
     }
 
     /**
      * 解析
      */
     public void onParse() {
+        LogUtil.d(TAG,"onParse");
+        webNodes.clear();
         eventExecutor.execute(parseEvent);
     }
 
@@ -172,12 +182,12 @@ public class GhostWebView extends WebView implements IWebTarget {
      * 播放解析
      */
     public void onPlayParse() {
-        LogUtil.d(TAG,"onPlayParse");
-        if(webNodes.size()>3){
-            WebNode webNode=webNodes.get(3);
-            ClickEvent clickEvent=new ClickEvent(this,TouchPoint.obtainClick(webNode.left+50,webNode.top+50));
+        LogUtil.d(TAG, "onPlayParse");
+        if (webNodes.size() > 3) {
+            WebNode webNode = webNodes.get(3);
+            LogUtil.d(TAG, "onPlayParse webNode:" + webNode.toString());
+            ClickEvent clickEvent = new ClickEvent(this, TouchPoint.obtainClick(webNode.left, webNode.top));
             eventExecutor.execute(clickEvent);
-
         }
 
     }
@@ -186,11 +196,13 @@ public class GhostWebView extends WebView implements IWebTarget {
      * 录制
      */
     public void record() {
+        LogUtil.d(TAG,"record");
         recordEvent.removeAllEvents();
         isRecord = true;
     }
 
     public boolean isRecord() {
+        LogUtil.d(TAG,"isRecord");
         return this.isRecord;
     }
 
@@ -198,6 +210,7 @@ public class GhostWebView extends WebView implements IWebTarget {
      * 播放
      */
     public void play() {
+        LogUtil.d(TAG,"play");
         isRecord = false;
         eventExecutor.execute(recordEvent);
     }
@@ -206,6 +219,7 @@ public class GhostWebView extends WebView implements IWebTarget {
      * 回首页
      */
     public void goHome() {
+        LogUtil.d(TAG,"goHome");
         recordEvent.addEvent(homePageEvent);
         eventExecutor.execute(homePageEvent);
     }
@@ -214,6 +228,7 @@ public class GhostWebView extends WebView implements IWebTarget {
      * 重试
      */
     private void retry() {
+        LogUtil.d(TAG,"retry");
         isRecord = false;
         eventExecutor.retry();
     }
@@ -235,29 +250,29 @@ public class GhostWebView extends WebView implements IWebTarget {
 
     @Override
     public void onParseWebStart() {
-        LogUtil.d(TAG,"onParseWebStart");
+        LogUtil.d(TAG, "onParseWebStart");
         webNodes.clear();
     }
 
     @Override
     public void foundAdvert(WebNode webNode) {
-        LogUtil.d(TAG,"foundAdvert "+webNode.toString());
+        LogUtil.d(TAG, "foundAdvert " + webNode.toString());
     }
 
     @Override
     public void foundItem(WebNode webNode) {
-        LogUtil.d(TAG,"foundItem "+webNode.toString());
+        LogUtil.d(TAG, "foundItem " + webNode.toString());
         webNodes.add(webNode);
     }
 
     @Override
     public void onParseWebSuccess() {
-        LogUtil.d(TAG,"onParseWebSuccess");
+        LogUtil.d(TAG, "onParseWebSuccess");
     }
 
     @Override
     public void onParseWebFail() {
-        LogUtil.d(TAG,"onParseWebFail");
+        LogUtil.d(TAG, "onParseWebFail");
     }
 
 

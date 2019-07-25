@@ -10,6 +10,7 @@ import android.webkit.WebView;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.parser.DefaultJSONParser;
+import com.nicolls.ghostevent.ghost.Constants;
 import com.nicolls.ghostevent.ghost.event.IWebTarget;
 import com.nicolls.ghostevent.ghost.event.WebNode;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
@@ -29,9 +30,6 @@ public class JsParser implements IWebParser {
     public JsParser(IWebTarget target, Semaphore semaphore) {
         this.semaphore = semaphore;
         this.target = target;
-        final WebView webView= (WebView) target;
-        webView.getSettings().setJavaScriptEnabled(true);
-        webView.addJavascriptInterface(this,"jsParser");
     }
 
     @JavascriptInterface
@@ -71,26 +69,7 @@ public class JsParser implements IWebParser {
     @Override
     public void parse() {
         final WebView webView = (WebView) target;
-        webView.loadUrl(getJsScript(webView.getContext()));
+        webView.loadUrl(Constants.JS_FUNCTION_FIND_ITEM);
         LogUtil.d(TAG, "parse load javascript wait to found");
-    }
-
-    private String getJsScript(Context context){
-        String html="file:////android_asset/advert.html";
-        String jsFile="parse.js";
-        String js="javascript:window.jsParser.foundItem('yes i am')";
-        try {
-            InputStream inputStream=context.getAssets().open(jsFile);
-            byte[] data=new byte[inputStream.available()];
-            inputStream.read(data,0,data.length);
-            String str=new String(data, Charset.forName("UTF-8"));
-            str=str.trim();
-            LogUtil.d(TAG,"js code:"+str);
-            js="javascript:"+str;
-
-        }catch (Exception e){
-            LogUtil.e(TAG,"load js file error ",e);
-        }
-        return js;
     }
 }

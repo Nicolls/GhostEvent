@@ -1,24 +1,20 @@
-var htmlContent = function() {
-    return document.getElementsByTagName('html')[0].outerHTML;
+var fetchHtmlContent = function() {
+    window.jsParser.onFetchHtml(document.getElementsByTagName('html')[0].outerHTML);
 };
 
-var itemText = function() {
+var findItemText = function() {
     var items=document.getElementsByClassName("figure flex-block");
     for(var i=0;i<items.length;i++){
         var item=items[i];
-        window.jsParser.foundItem(item.innerHTML);
+        window.jsParser.onFoundItemHtml(item.innerHTML);
     }
 };
 
-var parseCompleted = function() {
-    window.jsParser.parseCompleted(true);
-};
-
-var itemLocation = function() {
-    window.jsParser.parseStart();
+var findItemLocation = function() {
+    window.jsParser.onParseStart();
     var items=document.getElementsByClassName("figure flex-block");
     if(items.length<=0){
-        window.jsParser.parseFail();
+        window.jsParser.onParseFail();
         return;
     }
     for(var i=0;i<items.length;i++){
@@ -28,8 +24,7 @@ var itemLocation = function() {
         var right=item.getBoundingClientRect().right;
         var bottom=item.getBoundingClientRect().bottom;
         var rect='{"left":'+left+',"top":'+top+',"right":'+right+',"bottom":'+bottom+'}';
-        window.jsParser.foundItem(rect);
+        window.jsParser.onFoundItem(rect);
     }
-    window.jsParser.parseSuccess();
+    window.jsParser.onParseSuccess();
 };
-itemLocation();

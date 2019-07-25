@@ -1,5 +1,6 @@
 package com.nicolls.ghostevent.ghost.event;
 
+import com.nicolls.ghostevent.ghost.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.ArrayList;
@@ -18,7 +19,7 @@ public class GroupEvent extends BaseEvent {
     private static final String TAG = "GroupEvent";
     private final Semaphore semaphore = new Semaphore(1, true);
     private List<BaseEvent> childList = new ArrayList<>();
-    private long eventIntervalTime = Constant.EVENT_INTERVAL_TIME;
+    private long eventIntervalTime = Constants.EVENT_INTERVAL_TIME;
     private ITarget target;
 
     public GroupEvent(ITarget target) {
@@ -26,7 +27,7 @@ public class GroupEvent extends BaseEvent {
     }
 
     public GroupEvent(ITarget target, BaseEvent... events) {
-        this(target, Constant.EVENT_INTERVAL_TIME, events);
+        this(target, Constants.EVENT_INTERVAL_TIME, events);
     }
 
     public GroupEvent(ITarget target, long eventIntervalTime, BaseEvent... events) {
