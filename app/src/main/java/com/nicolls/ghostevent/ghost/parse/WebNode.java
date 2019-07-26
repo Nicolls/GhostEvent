@@ -1,4 +1,4 @@
-package com.nicolls.ghostevent.ghost.event;
+package com.nicolls.ghostevent.ghost.parse;
 
 import com.alibaba.fastjson.annotation.JSONField;
 

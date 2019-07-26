@@ -7,7 +7,7 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import com.nicolls.ghostevent.ghost.event.RedirectHandler;
+import com.nicolls.ghostevent.ghost.core.RedirectHandler;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 public class GhostWebViewClient extends WebViewClient {

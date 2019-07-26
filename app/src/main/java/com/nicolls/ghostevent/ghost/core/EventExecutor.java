@@ -1,7 +1,8 @@
-package com.nicolls.ghostevent.ghost.event;
+package com.nicolls.ghostevent.ghost.core;
 
 
-import com.nicolls.ghostevent.ghost.Constants;
+import com.nicolls.ghostevent.ghost.utils.Constants;
+import com.nicolls.ghostevent.ghost.event.BaseEvent;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.List;

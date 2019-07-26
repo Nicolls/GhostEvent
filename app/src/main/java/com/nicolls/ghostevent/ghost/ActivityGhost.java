@@ -10,11 +10,13 @@ import com.nicolls.ghostevent.ghost.view.GhostWebView;
 
 import java.lang.ref.WeakReference;
 
+import static com.nicolls.ghostevent.ghost.utils.Constants.DEFAULT_URL_ZAKER;
+
 public class ActivityGhost extends Ghost {
     private static final String TAG = "ActivityGhost";
     private final WeakReference<Activity> activityRef;
     private GhostWebView ghostWebView;
-    private String url=DEFAULT_URL;
+    private String url = DEFAULT_URL_ZAKER;
 
     public ActivityGhost(@NonNull final Activity activity) {
         activityRef = new WeakReference<>(activity);
@@ -77,21 +79,21 @@ public class ActivityGhost extends Ghost {
 
     @Override
     public void goHome() {
-        if(ghostWebView!=null){
+        if (ghostWebView != null) {
             ghostWebView.goHome();
         }
     }
 
     @Override
     public void onParse() {
-        if(ghostWebView!=null){
+        if (ghostWebView != null) {
             ghostWebView.onParse();
         }
     }
 
     @Override
     public void onPlayParse() {
-        if(ghostWebView!=null){
+        if (ghostWebView != null) {
             ghostWebView.onPlayParse();
         }
     }

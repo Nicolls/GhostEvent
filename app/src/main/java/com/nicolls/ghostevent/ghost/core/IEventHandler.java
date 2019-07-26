@@ -1,4 +1,4 @@
-package com.nicolls.ghostevent.ghost.event;
+package com.nicolls.ghostevent.ghost.core;
 
 import android.os.Handler;
 import android.view.MotionEvent;

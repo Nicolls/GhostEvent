@@ -6,7 +6,7 @@ import android.view.View;
 import com.nicolls.ghostevent.ghost.event.BaseEvent;
 import com.nicolls.ghostevent.ghost.event.ClickRedirectEvent;
 import com.nicolls.ghostevent.ghost.event.GroupEvent;
-import com.nicolls.ghostevent.ghost.event.RedirectHandler;
+import com.nicolls.ghostevent.ghost.core.RedirectHandler;
 import com.nicolls.ghostevent.ghost.event.ScrollVerticalEvent;
 import com.nicolls.ghostevent.ghost.event.TouchPoint;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;

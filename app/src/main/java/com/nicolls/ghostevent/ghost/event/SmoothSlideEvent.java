@@ -1,18 +1,9 @@
 package com.nicolls.ghostevent.ghost.event;
 
-import android.graphics.PointF;
-import android.os.SystemClock;
-import android.view.MotionEvent;
-
-import com.nicolls.ghostevent.ghost.utils.LogUtil;
+import com.nicolls.ghostevent.ghost.core.ITarget;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import io.reactivex.Completable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 
 public class SmoothSlideEvent extends SlideEvent {
     private static final String TAG = "SmoothSlideEvent";

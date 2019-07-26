@@ -1,4 +1,4 @@
-package com.nicolls.ghostevent.ghost.event;
+package com.nicolls.ghostevent.ghost.core;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;

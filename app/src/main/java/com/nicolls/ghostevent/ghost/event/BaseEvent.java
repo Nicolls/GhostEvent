@@ -2,6 +2,8 @@ package com.nicolls.ghostevent.ghost.event;
 
 import android.view.MotionEvent;
 
+import com.nicolls.ghostevent.ghost.core.ITarget;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.Completable;

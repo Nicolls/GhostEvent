@@ -5,6 +5,7 @@ import android.animation.ObjectAnimator;
 import android.view.animation.DecelerateInterpolator;
 import android.webkit.WebView;
 
+import com.nicolls.ghostevent.ghost.core.IWebTarget;
 import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 

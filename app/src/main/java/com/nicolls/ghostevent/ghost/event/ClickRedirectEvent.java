@@ -1,5 +1,7 @@
 package com.nicolls.ghostevent.ghost.event;
 
+import com.nicolls.ghostevent.ghost.core.ITarget;
+import com.nicolls.ghostevent.ghost.core.RedirectHandler;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.concurrent.Semaphore;

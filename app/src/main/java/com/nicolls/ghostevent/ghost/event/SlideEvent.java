@@ -4,6 +4,7 @@ import android.graphics.PointF;
 import android.os.SystemClock;
 import android.view.MotionEvent;
 
+import com.nicolls.ghostevent.ghost.core.ITarget;
 import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 

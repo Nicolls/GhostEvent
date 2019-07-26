@@ -1,6 +1,7 @@
 package com.nicolls.ghostevent.ghost.event;
 
-import com.nicolls.ghostevent.ghost.Constants;
+import com.nicolls.ghostevent.ghost.utils.Constants;
+import com.nicolls.ghostevent.ghost.core.ITarget;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.ArrayList;

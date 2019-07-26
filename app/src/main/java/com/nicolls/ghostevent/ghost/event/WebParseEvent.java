@@ -1,7 +1,7 @@
 package com.nicolls.ghostevent.ghost.event;
 
+import com.nicolls.ghostevent.ghost.core.IWebTarget;
 import com.nicolls.ghostevent.ghost.parse.IWebParser;
-import com.nicolls.ghostevent.ghost.parse.JsParser;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.concurrent.Semaphore;
@@ -18,10 +18,11 @@ public class WebParseEvent extends BaseEvent {
     private static final long PARSE_WAIT_TIME = 6; // 秒
     private final Semaphore semaphore = new Semaphore(0, true);
     private IWebTarget target;
-
-    public WebParseEvent(IWebTarget target) {
+    private IWebParser webParser;
+    public WebParseEvent(IWebTarget target,IWebParser webParser) {
         super(target);
         this.target = target;
+        this.webParser=webParser;
         this.setName(TAG);
     }
 
@@ -38,8 +39,7 @@ public class WebParseEvent extends BaseEvent {
                 Completable.fromRunnable(new Runnable() {
                     @Override
                     public void run() {
-                        IWebParser parser = new JsParser(target, semaphore);
-                        parser.parse();
+                        webParser.parse(target,semaphore);
                         LogUtil.d(TAG, "do parse");
                     }
                 }).subscribeOn(AndroidSchedulers.mainThread()).subscribe();
