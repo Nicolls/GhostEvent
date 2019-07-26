@@ -52,9 +52,13 @@ public class AdvertJsInterface extends JsBaseInterface {
     @JavascriptInterface
     public void onFoundItem(String item){
         LogUtil.d(TAG,"onFoundItem "+item);
-        WebNode webNode= JSON.parseObject(item,WebNode.class);
-        target.onFoundItem(webNode);
-
+        try {
+            WebNode webNode= JSON.parseObject(item,WebNode.class);
+            target.onFoundItem(webNode);
+        }catch (Exception e){
+            LogUtil.e(TAG,"onFoundItem json parse error "+e);
+            target.onJsCallBackHandleError();
+        }
     }
 
     @JavascriptInterface
@@ -67,7 +71,13 @@ public class AdvertJsInterface extends JsBaseInterface {
     @JavascriptInterface
     public void onFoundAdvert(String item){
         LogUtil.d(TAG,"onFoundAdvert "+item);
-        WebNode webNode=JSON.parseObject(item,WebNode.class);
-        target.onFoundAdvert(webNode);
+        try {
+            WebNode webNode=JSON.parseObject(item,WebNode.class);
+            target.onFoundAdvert(webNode);
+        }catch (Exception e){
+            LogUtil.e(TAG,"onFoundItem json parse error "+e);
+            target.onJsCallBackHandleError();
+        }
+
     }
 }

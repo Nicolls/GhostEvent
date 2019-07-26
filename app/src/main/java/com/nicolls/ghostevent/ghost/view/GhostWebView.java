@@ -3,6 +3,7 @@ package com.nicolls.ghostevent.ghost.view;
 import android.content.Context;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 
 import com.nicolls.ghostevent.ghost.core.EventExecutor;
@@ -15,7 +16,8 @@ import com.nicolls.ghostevent.ghost.event.ClickEvent;
 import com.nicolls.ghostevent.ghost.event.ClickRedirectEvent;
 import com.nicolls.ghostevent.ghost.event.GroupEvent;
 import com.nicolls.ghostevent.ghost.event.HomePageEvent;
-import com.nicolls.ghostevent.ghost.event.LoadJsInfEvent;
+import com.nicolls.ghostevent.ghost.event.LoadJsInterfaceEvent;
+import com.nicolls.ghostevent.ghost.event.LoadJsScriptInfEvent;
 import com.nicolls.ghostevent.ghost.event.LoadPageEvent;
 import com.nicolls.ghostevent.ghost.event.PageGoBackEvent;
 import com.nicolls.ghostevent.ghost.event.ScrollVerticalEvent;
@@ -60,11 +62,12 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
     private ClickRedirectEvent redirectClick;
     private PageGoBackEvent goBackEvent;
     private HomePageEvent homePageEvent;
-    private LoadJsInfEvent loadJsInfEvent;
+    private LoadJsScriptInfEvent loadJsInfEvent;
     private SmoothSlideEvent smoothSlide;
     private ScrollVerticalEvent scrollEvent;
     private GroupEvent recordEvent;
     private LoadPageEvent loadPageEvent;
+    private LoadJsInterfaceEvent loadJsInterfaceEvent;
     private List<WebNode> webNodes = new ArrayList<>();
 
     /**
@@ -106,13 +109,15 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
     private void init() {
         eventHandler = new ViewEventHandler(this);
         eventExecutor.setExecuteCallBack(executeCallBack);
-        advertInterface = new AdvertJsInterface(getContext(), advertTarget);
         initEvents();
         initWebView();
     }
 
     private void initEvents() {
         // single event
+        advertInterface = new AdvertJsInterface(getContext(), advertTarget);
+        loadJsInterfaceEvent = new LoadJsInterfaceEvent(this, advertInterface);
+
         slideTop = new SlideEvent(this, SlideEvent.Direction.TOP);
         slideBottom = new SlideEvent(this, SlideEvent.Direction.BOTTOM);
 
@@ -130,7 +135,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         recordEvent = new GroupEvent(this);
         scrollEvent = new ScrollVerticalEvent(this, GhostUtils.displayHeight);
         loadPageEvent = new LoadPageEvent(this, redirectHandler, getUrl());
-        loadJsInfEvent = new LoadJsInfEvent(this, advertInterface);
+        loadJsInfEvent = new LoadJsScriptInfEvent(this, advertInterface);
         // add ghost event
         ghostEventList.add(scrollEvent);
         ghostEventList.add(scrollEvent);
@@ -150,6 +155,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
     public void start(String url) {
         LogUtil.d(TAG, "start");
         isRecord = false;
+        eventExecutor.execute(loadJsInterfaceEvent);
         loadPageEvent = new LoadPageEvent(this, redirectHandler, url);
         eventExecutor.execute(loadPageEvent);
         eventExecutor.execute(loadJsInfEvent);
@@ -277,6 +283,11 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         public void onCurrentPageHtml(String result) {
             LogUtil.d(TAG, "onCurrentPageHtml");
             LogUtil.d(TAG, result);
+        }
+
+        @Override
+        public void onJsCallBackHandleError() {
+            LogUtil.d(TAG,"onJsCallBackHandleError");
         }
 
         @Override

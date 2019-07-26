@@ -5,4 +5,5 @@ public interface IJsTarget {
     void onParseSuccess();
     void onParseFail();
     void onCurrentPageHtml(String result);
+    void onJsCallBackHandleError();
 }

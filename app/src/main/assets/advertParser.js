@@ -3,7 +3,7 @@ var currentPageHtml = function() {
 };
 
 var findItemText = function() {
-    var items=document.getElementsByClassName("figure flex-block");
+    var items=document.getElementsByClassName("cell");
     for(var i=0;i<items.length;i++){
         var item=items[i];
         window.advertParser.onFoundItemHtml(item.innerHTML);
@@ -12,7 +12,7 @@ var findItemText = function() {
 
 var findItemLocation = function() {
     window.advertParser.onParseStart();
-    var items=document.getElementsByClassName("figure flex-block");
+    var items=document.getElementsByClassName("cell");
     if(items.length<=0){
         window.advertParser.onParseFail();
         return;
@@ -23,8 +23,9 @@ var findItemLocation = function() {
         var top=item.getBoundingClientRect().top;
         var right=item.getBoundingClientRect().right;
         var bottom=item.getBoundingClientRect().bottom;
-        var rect='{"left":'+left+',"top":'+top+',"right":'+right+',"bottom":'+bottom+'}';
+        var rect='{"position":'+i+',"left":'+left+',"top":'+top+',"right":'+right+',"bottom":'+bottom+'}';
         window.advertParser.onFoundItem(rect);
+        window.advertParser.onFoundItemHtml(item.innerHTML);
     }
     window.advertParser.onParseSuccess();
 };

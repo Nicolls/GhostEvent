@@ -16,7 +16,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Action;
 import io.reactivex.schedulers.Schedulers;
 
-public class LoadJsInfEvent extends BaseEvent {
+public class LoadJsScriptInfEvent extends BaseEvent {
     private static final String TAG = "LoadJsInfEvent";
     private static final long PARSE_WAIT_JS_INIT_TIME = 2; // 秒
     private static final long PARSE_WAIT_TIME = PARSE_WAIT_JS_INIT_TIME + 2; // 秒
@@ -24,12 +24,10 @@ public class LoadJsInfEvent extends BaseEvent {
     private IWebTarget target;
     private JsBaseInterface jsInterface;
 
-    @SuppressLint("JavascriptInterface")
-    public LoadJsInfEvent(IWebTarget target, JsBaseInterface jsInterface) {
+    public LoadJsScriptInfEvent(IWebTarget target, JsBaseInterface jsInterface) {
         super(target);
         this.target = target;
         this.jsInterface = jsInterface;
-        final WebView webView = (WebView) target;
         this.setName(TAG);
     }
 
@@ -44,11 +42,9 @@ public class LoadJsInfEvent extends BaseEvent {
                 }
                 LogUtil.d(TAG, "start to load js!");
                 Completable.fromRunnable(new Runnable() {
-                    @SuppressLint("JavascriptInterface")
                     @Override
                     public void run() {
                         final WebView webView = (WebView) target;
-                        webView.addJavascriptInterface(jsInterface, jsInterface.getName());
                         webView.loadUrl(jsInterface.getJsText());
                         LogUtil.d(TAG, "do load js");
                         target.getEventHandler().postDelayed(new Runnable() {

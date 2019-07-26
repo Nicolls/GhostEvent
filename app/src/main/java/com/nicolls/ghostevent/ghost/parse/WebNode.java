@@ -15,18 +15,21 @@ public class WebNode implements Serializable {
 
     }
     @JSONField
-    public int left;
+    public float position;
     @JSONField
-    public int top;
+    public float left;
     @JSONField
-    public int right;
+    public float top;
     @JSONField
-    public int bottom;
+    public float right;
+    @JSONField
+    public float bottom;
   
 
     @Override
     public String toString() {
         return "WebNode{" +
+                "position=" + position +
                 "left=" + left +
                 ", top=" + top +
                 ", right=" + right +
