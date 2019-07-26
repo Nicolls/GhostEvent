@@ -6,7 +6,6 @@ public class Constants {
      * test
      */
     // url
-    public static final String REAL_URL = "https://cpu.baidu.com/1001/be900f73?scid=33854";
     public static final String DEFAULT_URL = "http://jandan.net/";
     public static final String DEFAULT_URL_ZAKER = "http://www.myzaker.com/";
     public static final String LOCAL_URL = "file:////android_asset/advert.html";
