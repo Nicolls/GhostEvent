@@ -35,7 +35,7 @@ public class BaseWebView extends WebView {
         }
         webSettings = this.getSettings();
         webSettings.setAppCacheEnabled(false);
-        webSettings.setJavaScriptCanOpenWindowsAutomatically(true);
+        webSettings.setJavaScriptCanOpenWindowsAutomatically(false);
         webSettings.setJavaScriptEnabled(true);
         webSettings.setUseWideViewPort(true);
         webSettings.setLoadWithOverviewMode(true);

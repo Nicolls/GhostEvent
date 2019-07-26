@@ -12,6 +12,7 @@ public class AdvertParser extends WebBaseParser {
 
     public void foundItem(IWebTarget target, Semaphore semaphore) {
         LogUtil.d(TAG, "execute foundItem ");
+        target.executeJs(Constants.JS_FUNCTION_MESSAGE);
         target.executeJs(Constants.JS_FUNCTION_FIND_ITEM);
         target.getEventHandler().postDelayed(new Runnable() {
             @Override

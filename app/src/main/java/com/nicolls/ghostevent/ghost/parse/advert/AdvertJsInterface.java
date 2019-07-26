@@ -4,24 +4,28 @@ import android.content.Context;
 import android.webkit.JavascriptInterface;
 
 import com.alibaba.fastjson.JSON;
-import com.nicolls.ghostevent.ghost.parse.WebNode;
+import com.nicolls.ghostevent.ghost.parse.DomNode;
 import com.nicolls.ghostevent.ghost.parse.JsBaseInterface;
+import com.nicolls.ghostevent.ghost.parse.ViewNode;
+import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
 public class AdvertJsInterface extends JsBaseInterface {
-    private static final String TAG="AdvertJsInterface";
-    private static final String NAME="advertParser";
-    private static final String FILE_NAME="advertParser.js";
+    private static final String TAG = "AdvertJsInterface";
+    private static final String NAME = "advertParser";
+    private static final String FILE_NAME = "advertParser.js";
     private final Context context;
     private final IAdvertTarget target;
-    public AdvertJsInterface(Context context, IAdvertTarget target){
-        super(context,target);
-        this.context=context.getApplicationContext();
-        this.target=target;
+
+    public AdvertJsInterface(Context context, IAdvertTarget target) {
+        super(context, target);
+        this.context = context.getApplicationContext();
+        this.target = target;
     }
+
     @Override
     public String getName() {
         return NAME;
@@ -40,7 +44,7 @@ public class AdvertJsInterface extends JsBaseInterface {
             inputStream.read(data, 0, data.length);
             String str = new String(data, Charset.forName("UTF-8"));
             str = str.trim();
-            LogUtil.d(TAG, "js code:" + str);
+//            LogUtil.d(TAG, "js code:" + str);
             js = "javascript:" + str;
 
         } catch (Exception e) {
@@ -50,34 +54,50 @@ public class AdvertJsInterface extends JsBaseInterface {
     }
 
     @JavascriptInterface
-    public void onFoundItem(String item){
-        LogUtil.d(TAG,"onFoundItem "+item);
+    public void onFoundItem(String item) {
+        LogUtil.d(TAG, "onFoundItem " + item);
         try {
-            WebNode webNode= JSON.parseObject(item,WebNode.class);
-            target.onFoundItem(webNode);
-        }catch (Exception e){
-            LogUtil.e(TAG,"onFoundItem json parse error "+e);
+            DomNode domNode = JSON.parseObject(item, DomNode.class);
+            ViewNode.Type type = ViewNode.Type.OTHER;
+            if (domNode.className.contains(Constants.DIV_CLASSNAME_NEWS)) {
+                type = ViewNode.Type.NEWS;
+            } else if (domNode.className.contains(Constants.DIV_CLASSNAME_ADVERT)) {
+                type = ViewNode.Type.ADVERT;
+            } else if (domNode.className.contains(Constants.DIV_CLASSNAME_VIDEO)) {
+                type = ViewNode.Type.VIDEO;
+            }
+            ViewNode viewNode = new ViewNode(domNode, type);
+            LogUtil.d(TAG,"onFoundItem :"+viewNode.toString());
+            target.onFoundItem(viewNode);
+        } catch (Exception e) {
+            LogUtil.e(TAG, "onFoundItem json parse error " + e);
             target.onJsCallBackHandleError();
         }
     }
 
     @JavascriptInterface
-    public void onFoundItemHtml(String item){
-        LogUtil.d(TAG,"onFoundItemHtml "+item);
+    public void onFoundItemHtml(String item) {
+        LogUtil.d(TAG, "onFoundItemHtml " + item);
         target.onFoundItemHtml(item);
 
     }
 
     @JavascriptInterface
-    public void onFoundAdvert(String item){
-        LogUtil.d(TAG,"onFoundAdvert "+item);
+    public void onFoundAdvert(String item) {
+        LogUtil.d(TAG, "onFoundAdvert " + item);
         try {
-            WebNode webNode=JSON.parseObject(item,WebNode.class);
-            target.onFoundAdvert(webNode);
-        }catch (Exception e){
-            LogUtil.e(TAG,"onFoundItem json parse error "+e);
+            DomNode domNode = JSON.parseObject(item, DomNode.class);
+            ViewNode viewNode = new ViewNode(domNode, ViewNode.Type.ADVERT);
+//            LogUtil.d(TAG,"onFoundAdvert viewNode:"+viewNode.toString());
+            target.onFoundAdvert(viewNode);
+        } catch (Exception e) {
+            LogUtil.e(TAG, "onFoundItem json parse error " + e);
             target.onJsCallBackHandleError();
         }
+    }
 
+    @JavascriptInterface
+    public void onMessage(String message) {
+        LogUtil.d(TAG, "onMessage:" + message);
     }
 }

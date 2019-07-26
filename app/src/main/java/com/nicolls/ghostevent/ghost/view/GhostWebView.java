@@ -3,8 +3,8 @@ package com.nicolls.ghostevent.ghost.view;
 import android.content.Context;
 import android.os.Handler;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
+import android.view.View;
 
 import com.nicolls.ghostevent.ghost.core.EventExecutor;
 import com.nicolls.ghostevent.ghost.core.IEventHandler;
@@ -27,7 +27,7 @@ import com.nicolls.ghostevent.ghost.event.TouchPoint;
 import com.nicolls.ghostevent.ghost.event.WebParseEvent;
 import com.nicolls.ghostevent.ghost.parse.IWebParser;
 import com.nicolls.ghostevent.ghost.parse.JsBaseInterface;
-import com.nicolls.ghostevent.ghost.parse.WebNode;
+import com.nicolls.ghostevent.ghost.parse.ViewNode;
 import com.nicolls.ghostevent.ghost.parse.advert.AdvertJsInterface;
 import com.nicolls.ghostevent.ghost.parse.advert.AdvertParser;
 import com.nicolls.ghostevent.ghost.parse.advert.IAdvertTarget;
@@ -68,7 +68,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
     private GroupEvent recordEvent;
     private LoadPageEvent loadPageEvent;
     private LoadJsInterfaceEvent loadJsInterfaceEvent;
-    private List<WebNode> webNodes = new ArrayList<>();
+    private List<ViewNode> viewNodes = new ArrayList<>();
 
     /**
      * js interface
@@ -159,6 +159,11 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         loadPageEvent = new LoadPageEvent(this, redirectHandler, url);
         eventExecutor.execute(loadPageEvent);
         eventExecutor.execute(loadJsInfEvent);
+
+        // 解析
+        IWebParser parseAdvert = new AdvertParser();
+        WebParseEvent parseEvent = new WebParseEvent(this, parseAdvert);
+        eventExecutor.execute(parseEvent);
     }
 
     /**
@@ -185,7 +190,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
      */
     public void onParse() {
         LogUtil.d(TAG, "onParse");
-        webNodes.clear();
+        viewNodes.clear();
         IWebParser parseAdvert = new AdvertParser();
         WebParseEvent parseEvent = new WebParseEvent(this, parseAdvert);
         eventExecutor.execute(parseEvent);
@@ -196,10 +201,10 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
      */
     public void onPlayParse() {
         LogUtil.d(TAG, "onPlayParse");
-        if (webNodes.size() > 3) {
-            WebNode webNode = webNodes.get(3);
-            LogUtil.d(TAG, "onPlayParse webNode:" + webNode.toString());
-            ClickEvent clickEvent = new ClickEvent(this, TouchPoint.obtainClick(webNode.left, webNode.top));
+        if (viewNodes.size() > 3) {
+            ViewNode domNode = viewNodes.get(3);
+            LogUtil.d(TAG, "onPlayParse webNode:" + domNode.toString());
+            ClickEvent clickEvent = new ClickEvent(this, TouchPoint.obtainClick(domNode.left, domNode.top));
             eventExecutor.execute(clickEvent);
         }
 
@@ -265,7 +270,8 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         @Override
         public void onParseStart() {
             LogUtil.d(TAG, "onParseWebStart");
-            webNodes.clear();
+            LogUtil.d(TAG, "webview width-height:" + getWidth() + "-" + getHeight());
+            viewNodes.clear();
         }
 
         @Override
@@ -276,7 +282,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         @Override
         public void onParseFail() {
             LogUtil.d(TAG, "onParseFail");
-            webNodes.clear();
+            viewNodes.clear();
         }
 
         @Override
@@ -287,13 +293,13 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
 
         @Override
         public void onJsCallBackHandleError() {
-            LogUtil.d(TAG,"onJsCallBackHandleError");
+            LogUtil.d(TAG, "onJsCallBackHandleError");
         }
 
         @Override
-        public void onFoundItem(WebNode result) {
+        public void onFoundItem(ViewNode result) {
             LogUtil.d(TAG, "foundItem " + result.toString());
-            webNodes.add(result);
+            viewNodes.add(result);
         }
 
         @Override
@@ -302,9 +308,9 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         }
 
         @Override
-        public void onFoundAdvert(WebNode result) {
+        public void onFoundAdvert(ViewNode result) {
             LogUtil.d(TAG, "onFoundAdvert " + result.toString());
-            webNodes.add(result);
+            viewNodes.add(result);
         }
     };
 

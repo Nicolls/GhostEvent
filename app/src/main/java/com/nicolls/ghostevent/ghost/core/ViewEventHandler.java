@@ -27,6 +27,11 @@ public class ViewEventHandler implements IEventHandler {
     }
 
     @Override
+    public void quit() {
+        eventThread.quit();
+    }
+
+    @Override
     public Handler getEventHandler() {
         return eventHandler;
     }

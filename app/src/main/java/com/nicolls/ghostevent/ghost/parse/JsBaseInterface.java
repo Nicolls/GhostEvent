@@ -35,8 +35,7 @@ public abstract class JsBaseInterface implements IJsInterface {
     @JavascriptInterface
     public void onCurrentPageHtml(String html){
         LogUtil.d(TAG,"onCurrentPageHtml");
-        LogUtil.d(TAG,html);
+//        LogUtil.d(TAG,html);
         target.onCurrentPageHtml(html);
     }
-
 }

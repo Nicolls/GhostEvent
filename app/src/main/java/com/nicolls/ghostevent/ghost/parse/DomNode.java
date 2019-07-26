@@ -4,7 +4,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 
 import java.io.Serializable;
 
-public class WebNode implements Serializable {
+public class DomNode implements Serializable {
     public enum Type {
         AD("ad"), NEWS("news"), VIDEO("video");
         private String tag;
@@ -14,8 +14,11 @@ public class WebNode implements Serializable {
         }
 
     }
+
     @JSONField
-    public float position;
+    public int position;
+    @JSONField
+    public int childIndex;
     @JSONField
     public float left;
     @JSONField
@@ -24,16 +27,20 @@ public class WebNode implements Serializable {
     public float right;
     @JSONField
     public float bottom;
-  
+    @JSONField
+    public String className;
+
 
     @Override
     public String toString() {
         return "WebNode{" +
                 "position=" + position +
-                "left=" + left +
+                ", childIndex=" + childIndex +
+                ", left=" + left +
                 ", top=" + top +
                 ", right=" + right +
                 ", bottom=" + bottom +
+                ", className=" + className +
                 '}';
     }
 }

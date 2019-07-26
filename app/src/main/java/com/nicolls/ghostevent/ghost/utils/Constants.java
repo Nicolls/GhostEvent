@@ -7,7 +7,7 @@ public class Constants {
      */
     // url
     public static final String DEFAULT_URL = "http://jandan.net/";
-    public static final String DEFAULT_URL_ZAKER = "http://www.myzaker.com/";
+    public static final String DEFAULT_URL_ZAKER = "***";
     public static final String LOCAL_URL = "file:////android_asset/advert.html";
 
     /**
@@ -22,6 +22,12 @@ public class Constants {
     public static final String JS_CURRENT_PAGE_HTML = "javascript:window.currentPageHtml()";
     // find item
     public static final String JS_FUNCTION_FIND_ITEM = "javascript:window.findItemLocation()";
+    // message
+    public static final String JS_FUNCTION_MESSAGE = "javascript:window.printMessage()";
 
+    // div class name
+    public static final String DIV_CLASSNAME_ADVERT = "ad-item";
+    public static final String DIV_CLASSNAME_NEWS = "news-item";
+    public static final String DIV_CLASSNAME_VIDEO = "video-item";
 
 }

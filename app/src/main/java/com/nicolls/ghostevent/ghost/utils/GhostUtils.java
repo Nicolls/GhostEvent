@@ -6,6 +6,7 @@ import android.util.DisplayMetrics;
 public class GhostUtils {
     public static int displayWidth = 0;
     public static int displayHeight = 0;
+    public static float density=1;
     private static boolean isInit = false;
 
     public static void init(Context context) {
@@ -15,6 +16,7 @@ public class GhostUtils {
         DisplayMetrics dm = context.getResources().getDisplayMetrics();
         displayWidth = dm.widthPixels;
         displayHeight = dm.heightPixels;
+        density=dm.density;
         isInit = true;
     }
 }
