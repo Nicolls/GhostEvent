@@ -5,32 +5,14 @@ import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 
+import com.nicolls.ghostevent.ghost.core.EventBuilder;
 import com.nicolls.ghostevent.ghost.core.EventExecutor;
 import com.nicolls.ghostevent.ghost.core.IEventHandler;
 import com.nicolls.ghostevent.ghost.core.IWebTarget;
 import com.nicolls.ghostevent.ghost.core.RedirectHandler;
 import com.nicolls.ghostevent.ghost.core.ViewEventHandler;
 import com.nicolls.ghostevent.ghost.event.BaseEvent;
-import com.nicolls.ghostevent.ghost.event.ClickEvent;
-import com.nicolls.ghostevent.ghost.event.ClickRedirectEvent;
-import com.nicolls.ghostevent.ghost.event.GroupEvent;
-import com.nicolls.ghostevent.ghost.event.HomePageEvent;
-import com.nicolls.ghostevent.ghost.event.LoadJsInterfaceEvent;
-import com.nicolls.ghostevent.ghost.event.LoadJsScriptInfEvent;
-import com.nicolls.ghostevent.ghost.event.LoadPageEvent;
-import com.nicolls.ghostevent.ghost.event.PageGoBackEvent;
-import com.nicolls.ghostevent.ghost.event.ScrollVerticalEvent;
-import com.nicolls.ghostevent.ghost.event.SlideEvent;
-import com.nicolls.ghostevent.ghost.event.SmoothSlideEvent;
-import com.nicolls.ghostevent.ghost.event.TouchPoint;
-import com.nicolls.ghostevent.ghost.event.WebParseEvent;
-import com.nicolls.ghostevent.ghost.parse.IWebParser;
-import com.nicolls.ghostevent.ghost.parse.JsBaseInterface;
 import com.nicolls.ghostevent.ghost.parse.ViewNode;
-import com.nicolls.ghostevent.ghost.parse.advert.AdvertJsInterface;
-import com.nicolls.ghostevent.ghost.parse.advert.AdvertParser;
-import com.nicolls.ghostevent.ghost.parse.advert.IAdvertTarget;
-import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.ArrayList;
@@ -46,34 +28,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
     private static final String TAG = "GhostWebView";
 
     private static final int MAX_TRY_TIMES = 5;
-    private EventExecutor eventExecutor = new EventExecutor();
-    private final RedirectHandler redirectHandler = new RedirectHandler();
-    private final List<BaseEvent> ghostEventList = new ArrayList<>();
-    private IEventHandler eventHandler;
     private int tryTimes = 0;
-    private boolean isRecord = false;
-    /**
-     * event
-     */
-    private SlideEvent slideTop;
-    private SlideEvent slideBottom;
-    private ClickEvent click;
-    private ClickRedirectEvent redirectClick;
-    private PageGoBackEvent goBackEvent;
-    private HomePageEvent homePageEvent;
-    private LoadJsScriptInfEvent loadJsInfEvent;
-    private SmoothSlideEvent smoothSlide;
-    private ScrollVerticalEvent scrollEvent;
-    private GroupEvent recordEvent;
-    private LoadPageEvent loadPageEvent;
-    private LoadJsInterfaceEvent loadJsInterfaceEvent;
-    private List<ViewNode> viewNodes = new ArrayList<>();
-
-    /**
-     * js interface
-     */
-    private JsBaseInterface advertInterface;
-
     private final EventExecutor.ExecuteCallBack executeCallBack = new EventExecutor.ExecuteCallBack() {
         @Override
         public void onSuccess(int eventId) {
@@ -84,9 +39,6 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         public void onFail(int eventId) {
             LogUtil.d(TAG, "onFail");
             tryTimes++;
-//            if (tryTimes <= MAX_TRY_TIMES) {
-//                retry();
-//            }
         }
 
         @Override
@@ -94,6 +46,13 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
             LogUtil.d(TAG, "onTimeOut");
         }
     };
+    private final IEventHandler eventHandler = new ViewEventHandler(this);
+    private EventExecutor eventExecutor = new EventExecutor();
+    private final RedirectHandler redirectHandler = new RedirectHandler();
+    private final EventBuilder eventBuilder = new EventBuilder(getContext(), redirectHandler, executeCallBack);
+    private final List<BaseEvent> ghostEventList = new ArrayList<>();
+    private boolean isRecord = false;
+    private GhostWebViewTriggerEvent ghostWebViewTriggerEvent;
 
     public GhostWebView(Context context) {
         super(context);
@@ -111,45 +70,11 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
     }
 
     private void init() {
-        eventHandler = new ViewEventHandler(this);
         eventExecutor.setExecuteCallBack(executeCallBack);
-        initEvents();
-        initWebView();
-    }
-
-    private void initEvents() {
-        // single event
-        advertInterface = new AdvertJsInterface(getContext(), advertTarget);
-        loadJsInterfaceEvent = new LoadJsInterfaceEvent(this, advertInterface);
-
-        slideTop = new SlideEvent(this, SlideEvent.Direction.TOP);
-        slideBottom = new SlideEvent(this, SlideEvent.Direction.BOTTOM);
-
-        redirectClick = new ClickRedirectEvent(redirectHandler, GhostWebView.this, TouchPoint.obtainClick(GhostUtils.displayWidth / 2, GhostUtils.displayHeight / 2));
-
-        click = new ClickEvent(this, TouchPoint.obtainClick(GhostUtils.displayWidth / 2, GhostUtils.displayHeight / 2));
-
-        goBackEvent = new PageGoBackEvent(redirectHandler, GhostWebView.this);
-
-        homePageEvent = new HomePageEvent(redirectHandler, this);
-
-        smoothSlide = new SmoothSlideEvent(this,
-                TouchPoint.obtainDown(GhostUtils.displayWidth / 2, GhostUtils.displayHeight - GhostUtils.displayHeight / 4),
-                TouchPoint.obtainUp(GhostUtils.displayWidth / 2, GhostUtils.displayHeight / 3));
-        recordEvent = new GroupEvent(this, executeCallBack);
-        scrollEvent = new ScrollVerticalEvent(this, GhostUtils.displayHeight);
-        loadPageEvent = new LoadPageEvent(this, redirectHandler, getUrl());
-        loadJsInfEvent = new LoadJsScriptInfEvent(this, advertInterface);
-        // add ghost event
-        ghostEventList.add(scrollEvent);
-        ghostEventList.add(scrollEvent);
-        ghostEventList.add(click);
-    }
-
-    private void initWebView() {
         setWebChromeClient(new GhostWebChromeClient());
         setWebViewClient(new GhostWebViewClient(redirectHandler));
-        setOnTouchListener(new GhostWebViewTouchEvent(this, redirectHandler, recordEvent));
+        ghostWebViewTriggerEvent = new GhostWebViewTriggerEvent(this, redirectHandler, executeCallBack);
+        setOnTouchListener(ghostWebViewTriggerEvent);
     }
 
     /**
@@ -160,15 +85,8 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
     public void start(String url) {
         LogUtil.d(TAG, "start");
         isRecord = false;
-        eventExecutor.execute(loadJsInterfaceEvent);
-        loadPageEvent = new LoadPageEvent(this, redirectHandler, url);
-        eventExecutor.execute(loadPageEvent);
-        eventExecutor.execute(loadJsInfEvent);
-
-        // 解析
-        IWebParser parseAdvert = new AdvertParser();
-        WebParseEvent parseEvent = new WebParseEvent(this, parseAdvert);
-        eventExecutor.execute(parseEvent);
+        eventExecutor.execute(eventBuilder.getLoadPageEvent(this, url));
+//        random();
     }
 
     /**
@@ -179,6 +97,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         isRecord = false;
         eventExecutor.shutDown();
         eventHandler.quit();
+        eventBuilder.quit();
     }
 
     /**
@@ -195,25 +114,19 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
      * 解析
      */
     public void onParse() {
-        LogUtil.d(TAG, "onParse");
-        viewNodes.clear();
-        IWebParser parseAdvert = new AdvertParser();
-        WebParseEvent parseEvent = new WebParseEvent(this, parseAdvert);
-        eventExecutor.execute(parseEvent);
+        LogUtil.d(TAG, "parse");
+        eventExecutor.execute(eventBuilder.getParseEvent(this));
     }
 
     /**
      * 播放解析
      */
     public void onPlayParse() {
-        LogUtil.d(TAG, "onPlayParse");
-        if (viewNodes.size() > 3) {
-            ViewNode domNode = viewNodes.get(3);
-            LogUtil.d(TAG, "onPlayParse webNode:" + domNode.toString());
-            ClickEvent clickEvent = new ClickEvent(this, TouchPoint.obtainClick(domNode.left, domNode.top));
-            eventExecutor.execute(clickEvent);
+        LogUtil.d(TAG, "playParse");
+        BaseEvent event = eventBuilder.getCloseAdvertClickEvent(this);
+        if (event != null) {
+            eventExecutor.execute(event);
         }
-
     }
 
     /**
@@ -221,8 +134,8 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
      */
     public void record() {
         LogUtil.d(TAG, "record");
-        recordEvent.removeAllEvents();
         isRecord = true;
+        ghostWebViewTriggerEvent.startRecord();
     }
 
     public boolean isRecord() {
@@ -236,7 +149,16 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
     public void play() {
         LogUtil.d(TAG, "play");
         isRecord = false;
-        eventExecutor.execute(recordEvent);
+        eventExecutor.execute(ghostWebViewTriggerEvent.getRecordEvent());
+    }
+
+    /**
+     * 随机
+     */
+    public void random() {
+        LogUtil.d(TAG, "random");
+        List<BaseEvent> randomEvents = eventBuilder.getRandomEvents(this, 10, true);
+        eventExecutor.execute(randomEvents);
     }
 
     /**
@@ -244,8 +166,15 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
      */
     public void goHome() {
         LogUtil.d(TAG, "goHome");
-        recordEvent.addEvent(homePageEvent);
-        eventExecutor.execute(homePageEvent);
+        eventExecutor.execute(eventBuilder.getHomeEvent(this));
+    }
+
+    /**
+     * 返回
+     */
+    public void runGoBack() {
+        LogUtil.d(TAG, "runGoBack");
+        eventExecutor.execute(eventBuilder.getGoBackEvent(this));
     }
 
     /**
@@ -272,57 +201,25 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         eventHandler.doEvent(event);
     }
 
-    private final IAdvertTarget advertTarget = new IAdvertTarget() {
-        @Override
-        public void onParseStart() {
-            LogUtil.d(TAG, "onParseWebStart");
-            LogUtil.d(TAG, "webview width-height:" + getWidth() + "-" + getHeight());
-            viewNodes.clear();
-        }
-
-        @Override
-        public void onParseSuccess() {
-            LogUtil.d(TAG, "onParseSuccess");
-        }
-
-        @Override
-        public void onParseFail() {
-            LogUtil.d(TAG, "onParseFail");
-            viewNodes.clear();
-        }
-
-        @Override
-        public void onCurrentPageHtml(String result) {
-            LogUtil.d(TAG, "onCurrentPageHtml");
-            LogUtil.d(TAG, result);
-        }
-
-        @Override
-        public void onJsCallBackHandleError() {
-            LogUtil.d(TAG, "onJsCallBackHandleError");
-        }
-
-        @Override
-        public void onFoundItem(ViewNode result) {
-            LogUtil.d(TAG, "foundItem " + result.toString());
-            viewNodes.add(result);
-        }
-
-        @Override
-        public void onFoundItemHtml(String result) {
-            LogUtil.d(TAG, "onFoundItemHtml " + result);
-        }
-
-        @Override
-        public void onFoundAdvert(ViewNode result) {
-            LogUtil.d(TAG, "onFoundAdvert " + result.toString());
-            viewNodes.add(result);
-        }
-    };
 
     @Override
     public void executeJs(String js) {
         LogUtil.d(TAG, "executeJs " + js);
         loadUrl(js);
+    }
+
+    @Override
+    public List<ViewNode> getViewNodes() {
+        return eventBuilder.getViewNodes();
+    }
+
+    @Override
+    protected void onScrollChanged(int l, int t, int oldl, int oldt) {
+        super.onScrollChanged(l, t, oldl, oldt);
+        ghostWebViewTriggerEvent.onScrollChanged(l, t, oldl, oldt);
+    }
+
+    public void onScrollStateChanged(ScrollState state) {
+        LogUtil.d(TAG, "onScrollStateChanged " + state);
     }
 }

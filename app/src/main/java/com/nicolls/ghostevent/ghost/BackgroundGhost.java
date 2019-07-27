@@ -41,12 +41,22 @@ public class BackgroundGhost extends Ghost {
     }
 
     @Override
-    public void onParse() {
+    public void goBack() {
 
     }
 
     @Override
-    public void onPlayParse() {
+    public void parse() {
+
+    }
+
+    @Override
+    public void playParse() {
+
+    }
+
+    @Override
+    public void random() {
 
     }
 }

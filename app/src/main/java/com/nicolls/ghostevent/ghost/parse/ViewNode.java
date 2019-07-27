@@ -19,8 +19,12 @@ public class ViewNode implements Serializable {
     public float top;
     public float right;
     public float bottom;
-
+    public String title;
     public Type type;
+    public float centerX;
+    public float centerY;
+    public float clientWidth;
+    public float clientHeight;
 
     public ViewNode(DomNode domNode, Type type) {
         this.type = type;
@@ -30,6 +34,11 @@ public class ViewNode implements Serializable {
         this.top = domNode.top;
         this.right = domNode.right;
         this.bottom = domNode.bottom;
+        this.clientWidth=domNode.clientWidth;
+        this.clientHeight=domNode.clientHeight;
+        this.title=domNode.title;
+        this.centerX = this.left + (this.right - this.left) / 2;
+        this.centerY = this.top + (this.bottom - this.top) / 2;
     }
 
     @Override
@@ -42,6 +51,11 @@ public class ViewNode implements Serializable {
                 ", right=" + right +
                 ", bottom=" + bottom +
                 ", type=" + type +
+                ", centerX=" + centerX +
+                ", centerY=" + centerY +
+                ", clientWidth=" + clientWidth +
+                ", clientHeight=" + clientHeight +
+                ", title=" + title +
                 '}';
     }
 }

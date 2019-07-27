@@ -62,6 +62,14 @@ public class MainActivity extends AppCompatActivity {
         Advert.instance.onPlayParse();
     }
 
+    public void onGoBack(View view) {
+        Advert.instance.goBack();
+    }
+
+    public void onRandom(View view) {
+        Advert.instance.random();
+    }
+
     private final class MyAdapter extends BaseAdapter {
         String[] names={"a","b","b","b","b","b","b","r","b","b","b","b","b","q","b","b","b","b","b","r"};
 

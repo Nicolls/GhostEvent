@@ -27,6 +27,7 @@ public class GhostWebViewClient extends WebViewClient {
     @Override
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
         super.onPageStarted(view, url, favicon);
+        LogUtil.d(TAG,"onPageStarted");
         isError = false;
         redirectHandler.notifyStart();
     }

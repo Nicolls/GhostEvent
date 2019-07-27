@@ -2,6 +2,7 @@ package com.nicolls.ghostevent.ghost.event;
 
 import com.nicolls.ghostevent.ghost.core.EventExecutor;
 import com.nicolls.ghostevent.ghost.core.ITarget;
+import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.ArrayList;
@@ -78,6 +79,10 @@ public class GroupEvent extends BaseEvent {
                         break;
                     }
                     LogUtil.d(TAG, "execute child event");
+                    boolean isOk=onChildStart(event);
+                    if(!isOk){
+                        break;
+                    }
                     event.exe(cancel).observeOn(Schedulers.io()).subscribe(new CompletableObserver() {
                         @Override
                         public void onSubscribe(Disposable d) {
@@ -87,12 +92,14 @@ public class GroupEvent extends BaseEvent {
                         @Override
                         public void onComplete() {
                             LogUtil.d(TAG, "child event completed,release semaphore");
+                            onChildCompleted(event);
                             semaphore.release();
                         }
 
                         @Override
                         public void onError(Throwable e) {
                             LogUtil.e(TAG, "group event child completed error", e);
+                            onChildFail(event);
                             if (event.needRetry()) {
                                 LogUtil.d(TAG, "onError, event need retry again");
                                 event.exe(cancel);
@@ -120,6 +127,21 @@ public class GroupEvent extends BaseEvent {
     @Override
     public long getExecuteTimeOut() {
         return timeOut;
+    }
+
+    public boolean onChildStart(BaseEvent event){
+        LogUtil.d(TAG,"onChildStart");
+        return true;
+    }
+
+    public void onChildCompleted(BaseEvent event){
+        LogUtil.d(TAG,"onChildCompleted");
+
+    }
+
+    public void onChildFail(BaseEvent event){
+        LogUtil.d(TAG,"onChildFail");
+
     }
 
     @Override

@@ -13,8 +13,12 @@ public abstract class Ghost {
 
     public abstract void goHome();
 
-    public abstract void onParse();
+    public abstract void goBack();
 
-    public abstract void onPlayParse();
+    public abstract void parse();
+
+    public abstract void playParse();
+
+    public abstract void random();
 
 }

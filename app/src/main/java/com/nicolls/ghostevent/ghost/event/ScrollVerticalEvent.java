@@ -19,7 +19,7 @@ import io.reactivex.schedulers.Schedulers;
 
 public class ScrollVerticalEvent extends BaseEvent {
     private static final String TAG = "ScrollVerticalEvent";
-    private static final long DEFAULT_ANIM_DURATION = 800; // 毫秒
+    private static final long DEFAULT_ANIM_DURATION = 1000; // 毫秒
     private IWebTarget target;
     private int from;
     private int to;
@@ -49,8 +49,8 @@ public class ScrollVerticalEvent extends BaseEvent {
     private void init() {
         final WebView webView = (WebView) target;
         if (isScrollByDistance) {
-            from = webView.getScrollY();
-            to = from + distance;
+            // 如果不是绝对坐标，则在触发时再取值
+            return;
         }
         int distance = Math.abs(to - from);
         int displayHeight = GhostUtils.displayHeight;
@@ -72,6 +72,10 @@ public class ScrollVerticalEvent extends BaseEvent {
             @Override
             public void run() throws Exception {
                 final WebView webView = (WebView) target;
+                if (isScrollByDistance) {
+                    from = webView.getScrollY();
+                    to = from + distance;
+                }
                 LogUtil.d(TAG, "scroll vertical event start anim duration:" + animDuration);
                 LogUtil.d(TAG, "anim from:" + from + " to:" + to);
                 final Semaphore semaphore = new Semaphore(0, true);

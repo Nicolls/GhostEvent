@@ -2,6 +2,7 @@ package com.nicolls.ghostevent.ghost.event;
 
 import android.webkit.WebView;
 
+import com.nicolls.ghostevent.ghost.core.ITarget;
 import com.nicolls.ghostevent.ghost.core.IWebTarget;
 import com.nicolls.ghostevent.ghost.core.RedirectHandler;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
@@ -17,10 +18,12 @@ import io.reactivex.schedulers.Schedulers;
 
 public class HomePageEvent extends BaseEvent {
     private static final String TAG = "HomePageEvent";
-    private static final long GO_BACK_WAIT_TIME = 10*1000; // 毫秒
+    private static final long GO_BACK_WAIT_TIME = 10 * 1000; // 毫秒
+    private static final long WAIT_PAGE_LOADED_TIME = 3 * 1000; // 毫秒
     private final RedirectHandler handler;
     private WebView webView;
-    private final Semaphore semaphore = new Semaphore(0,true);
+    private ITarget target;
+    private final Semaphore semaphore = new Semaphore(0, true);
 
     private final RedirectHandler.RedirectListener listener = new RedirectHandler.RedirectListener() {
         @Override
@@ -36,7 +39,13 @@ public class HomePageEvent extends BaseEvent {
                 webView.goBack();
             } else {
                 LogUtil.d(TAG, "can not go back ,to Home");
-                semaphore.release();
+                target.getMainHandler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        LogUtil.d(TAG, "semaphore release");
+                        semaphore.release();
+                    }
+                }, WAIT_PAGE_LOADED_TIME);
             }
         }
 
@@ -46,9 +55,10 @@ public class HomePageEvent extends BaseEvent {
         }
     };
 
-    public HomePageEvent(RedirectHandler handler, IWebTarget target) {
+    public HomePageEvent(IWebTarget target, RedirectHandler handler) {
         super(target);
         this.handler = handler;
+        this.target = target;
         this.webView = (WebView) target;
         this.setName(TAG);
     }
@@ -62,10 +72,10 @@ public class HomePageEvent extends BaseEvent {
                 Completable.fromRunnable(new Runnable() {
                     @Override
                     public void run() {
-                        if(webView.canGoBack()){
+                        if (webView.canGoBack()) {
                             webView.goBack();
                             LogUtil.d(TAG, "do first go Home completed");
-                        }else {
+                        } else {
                             LogUtil.d(TAG, "already in home page ,end!");
                             semaphore.release();
                         }

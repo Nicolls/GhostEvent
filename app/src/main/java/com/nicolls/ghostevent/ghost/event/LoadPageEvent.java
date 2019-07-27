@@ -18,6 +18,7 @@ import io.reactivex.schedulers.Schedulers;
 public class LoadPageEvent extends BaseEvent {
     private static final String TAG="LoadPageEvent";
     private static final long LOAD_PAGE_TIME_OUT = 15*1000; // 毫秒
+    private static final long WAIT_PAGE_LOADED_TIME = 3 * 1000; // 毫秒
     private final Semaphore semaphore = new Semaphore(0,true);
     private final RedirectHandler handler;
     private final String url;
@@ -39,7 +40,13 @@ public class LoadPageEvent extends BaseEvent {
         @Override
         public void onSuccess() {
             LogUtil.d(TAG, "redirect load onSuccess");
-            semaphore.release();
+            target.getMainHandler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    LogUtil.d(TAG, "semaphore release");
+                    semaphore.release();
+                }
+            }, WAIT_PAGE_LOADED_TIME);
         }
 
         @Override
@@ -67,7 +74,7 @@ public class LoadPageEvent extends BaseEvent {
                     }
                 }).subscribeOn(AndroidSchedulers.mainThread()).subscribe();
                 LogUtil.d(TAG,"load url run ,wait web load success!");
-                boolean ok = semaphore.tryAcquire(getExecuteTimeOut(), TimeUnit.MILLISECONDS);
+                boolean ok = semaphore.tryAcquire(getExecuteTimeOut()+WAIT_PAGE_LOADED_TIME, TimeUnit.MILLISECONDS);
                 if (!ok) {
                     handler.unRegisterRedirectListener(listener);
                     // loadpage 事件如果都没有成功，则需要停止所有的

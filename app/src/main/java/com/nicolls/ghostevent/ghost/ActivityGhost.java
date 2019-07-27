@@ -36,7 +36,7 @@ public class ActivityGhost extends Ghost {
                     ViewGroup.LayoutParams.MATCH_PARENT));
             // setAlpha(0.001f);//不能设置成0，设置成0，将收不到事件，只要还有值 就可以接收到事件
 
-//            ghostWebView.setTranslationX(500);
+//            ghostWebView.setTranslationX(2500);
             viewGroup.addView(ghostWebView, 0);
             ghostWebView.start(url);
         }
@@ -85,16 +85,30 @@ public class ActivityGhost extends Ghost {
     }
 
     @Override
-    public void onParse() {
+    public void goBack() {
+        if (ghostWebView != null) {
+            ghostWebView.runGoBack();
+        }
+    }
+
+    @Override
+    public void parse() {
         if (ghostWebView != null) {
             ghostWebView.onParse();
         }
     }
 
     @Override
-    public void onPlayParse() {
+    public void playParse() {
         if (ghostWebView != null) {
             ghostWebView.onPlayParse();
+        }
+    }
+
+    @Override
+    public void random() {
+        if (ghostWebView != null) {
+            ghostWebView.random();
         }
     }
 

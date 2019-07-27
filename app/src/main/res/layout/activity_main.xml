@@ -36,7 +36,7 @@
             android:layout_height="wrap_content"
             android:onClick="onReload"
             android:layout_marginLeft="15dp"
-            android:layout_marginTop="100dp"
+            android:layout_marginTop="50dp"
             android:text="重载" />
         <Button
             android:layout_width="wrap_content"
@@ -59,7 +59,7 @@
             android:layout_height="wrap_content"
             android:onClick="onRecord"
             android:layout_marginLeft="15dp"
-            android:layout_marginTop="100dp"
+            android:layout_marginTop="40dp"
             android:text="录制" />
 
         <Button
@@ -72,9 +72,25 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:onClick="onRandom"
+            android:layout_marginLeft="15dp"
+            android:layout_marginTop="15dp"
+            android:text="随机" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onGoBack"
+            android:layout_marginLeft="15dp"
+            android:layout_marginTop="30dp"
+            android:text="返回" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:onClick="onGoHome"
             android:layout_marginLeft="15dp"
-            android:layout_marginTop="50dp"
+            android:layout_marginTop="15dp"
             android:text="首页" />
     </LinearLayout>
 </RelativeLayout>

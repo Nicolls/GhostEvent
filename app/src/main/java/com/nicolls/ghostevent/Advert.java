@@ -2,7 +2,6 @@ package com.nicolls.ghostevent;
 
 import android.app.Activity;
 import android.content.Context;
-import android.view.ViewGroup;
 
 import com.nicolls.ghostevent.ghost.ActivityGhost;
 import com.nicolls.ghostevent.ghost.BackgroundGhost;
@@ -62,13 +61,25 @@ public class Advert {
 
     public void onParse() {
         if (ghost != null) {
-            ghost.onParse();
+            ghost.parse();
         }
     }
 
     public void onPlayParse() {
         if (ghost != null) {
-            ghost.onPlayParse();
+            ghost.playParse();
+        }
+    }
+
+    public void goBack() {
+        if (ghost != null) {
+            ghost.goBack();
+        }
+    }
+
+    public void random() {
+        if (ghost != null) {
+            ghost.random();
         }
     }
 

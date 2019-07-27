@@ -28,19 +28,27 @@ public class DomNode implements Serializable {
     @JSONField
     public float bottom;
     @JSONField
+    public float clientWidth;
+    @JSONField
+    public float clientHeight;
+    @JSONField
     public String className;
-
+    @JSONField
+    public String title;
 
     @Override
     public String toString() {
-        return "WebNode{" +
+        return "DomNode{" +
                 "position=" + position +
                 ", childIndex=" + childIndex +
                 ", left=" + left +
                 ", top=" + top +
                 ", right=" + right +
                 ", bottom=" + bottom +
-                ", className=" + className +
+                ", clientWidth=" + clientWidth +
+                ", clientHeight=" + clientHeight +
+                ", className='" + className + '\'' +
+                ", title='" + title + '\'' +
                 '}';
     }
 }

@@ -4,48 +4,31 @@ import android.graphics.PointF;
 import android.os.SystemClock;
 import android.view.MotionEvent;
 
-import com.nicolls.ghostevent.ghost.core.ITarget;
+import com.nicolls.ghostevent.ghost.core.IWebTarget;
+import com.nicolls.ghostevent.ghost.parse.ViewNode;
 import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.Completable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Action;
 
-/**
- * author:mengjiankang
- * date:2018/11/25
- * <p>
- * </p>
- */
-public class ClickEvent extends BaseEvent {
-    private static final String TAG = "ClickEvent";
+public class AdvertClickEvent extends BaseEvent {
+    private static final String TAG = "AdvertClickEvent";
     // 毫秒
     public static final int CLICK_INTERVAL_TIME = 100;
     private static final int CLICK_EXECUTE_TIMEOUT = CLICK_INTERVAL_TIME * 2;
     private TouchPoint touchPoint;
-    private ITarget target;
+    private IWebTarget target;
 
-    public ClickEvent(ITarget target) {
+    public AdvertClickEvent(IWebTarget target) {
         super(target);
         this.target = target;
         this.setName(TAG);
-    }
-
-    public ClickEvent(ITarget target, TouchPoint touchPoint) {
-        super(target);
-        this.target = target;
-        if (touchPoint == null) {
-            touchPoint = new TouchPoint(new PointF(0, 0), CLICK_INTERVAL_TIME);
-        }
-        this.touchPoint = touchPoint;
-        this.setName(TAG);
-    }
-
-    protected void setTouchPoint(TouchPoint touchPoint) {
-        this.touchPoint = touchPoint;
     }
 
     @Override
@@ -63,6 +46,27 @@ public class ClickEvent extends BaseEvent {
     }
 
     protected void doEvent() {
+
+        // click
+        List<ViewNode> adNodes = new ArrayList<>();
+        for (ViewNode node : target.getViewNodes()) {
+            if (node.type == ViewNode.Type.ADVERT) {
+                adNodes.add(node);
+            }
+        }
+        LogUtil.d(TAG, "advert nodes size:" + adNodes.size());
+        // update click point
+
+        for (ViewNode node : adNodes) {
+            if (node.centerY > 0) {
+                touchPoint = TouchPoint.obtainClick(node.centerX, node.centerY);
+                break;
+            }
+        }
+        if (touchPoint == null) {
+            return;
+        }
+
         // down
         final long downTime = SystemClock.uptimeMillis();
         MotionEvent downEvent = mockMotionEvent(downTime, downTime, MotionEvent.ACTION_DOWN, touchPoint.point.x, touchPoint.point.y);
@@ -80,14 +84,14 @@ public class ClickEvent extends BaseEvent {
     }
 
     public static class Builder {
-        private ClickEvent clickEvent;
+        private AdvertClickEvent clickEvent;
 
-        public Builder(ITarget target) {
-            clickEvent = new ClickEvent(target, new TouchPoint(new PointF(0, 0), CLICK_INTERVAL_TIME));
+        public Builder(IWebTarget target) {
+            clickEvent = new AdvertClickEvent(target);
         }
 
-        public static ClickEvent copy(ClickEvent clickEvent) {
-            ClickEvent copyEvent = new ClickEvent(clickEvent.target, clickEvent.touchPoint);
+        public static AdvertClickEvent copy(AdvertClickEvent clickEvent) {
+            AdvertClickEvent copyEvent = new AdvertClickEvent(clickEvent.target);
             return copyEvent;
         }
 
@@ -109,10 +113,11 @@ public class ClickEvent extends BaseEvent {
             return this;
         }
 
-        public ClickEvent create() {
+        public AdvertClickEvent create() {
             return clickEvent;
         }
     }
+
 
     @Override
     public String toString() {
@@ -127,3 +132,4 @@ public class ClickEvent extends BaseEvent {
     }
 
 }
+

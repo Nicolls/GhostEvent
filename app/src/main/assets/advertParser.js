@@ -26,13 +26,17 @@ var findItemLocation = function() {
         var item=items[i];
         var className=item.className;
         var contents=item.getElementsByClassName("content");
+        var titleDiv=item.getElementsByClassName("n-title element");
+        var title=titleDiv[0].getElementsByTagName("span")[0].innerHTML;
         for (var j=0;j<contents.length;j++){
             var content=contents[j];
             var left=content.getBoundingClientRect().left*window.devicePixelRatio;
             var top=content.getBoundingClientRect().top*window.devicePixelRatio;
             var right=content.getBoundingClientRect().right*window.devicePixelRatio;
             var bottom=content.getBoundingClientRect().bottom*window.devicePixelRatio;
-            var node='{"position":'+i+',"childIndex":'+j+',"left":'+left+',"top":'+top+',"right":'+right+',"bottom":'+bottom+',"className":"'+className+'"}';
+            var clientWidth = (document.documentElement.clientWidth || document.body.clientWidth)*window.devicePixelRatio;
+            var clientHeight = (document.documentElement.clientHeight || document.body.clientHeight)*window.devicePixelRatio;
+            var node='{"position":'+i+',"childIndex":'+j+',"left":'+left+',"top":'+top+',"right":'+right+',"bottom":'+bottom+',"clientWidth":'+clientWidth+',"clientHeight":'+clientHeight+',"className":"'+className+'","title":"'+title+'"}';
             window.advertParser.onFoundItem(node);
             window.advertParser.onFoundItemHtml(content.outerHTML);
         }
