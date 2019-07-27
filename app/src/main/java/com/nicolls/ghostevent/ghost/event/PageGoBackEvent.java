@@ -17,7 +17,7 @@ import io.reactivex.schedulers.Schedulers;
 
 public class PageGoBackEvent extends BaseEvent {
     private static final String TAG="PageGoBackEvent";
-    private static final long GO_BACK_WAIT_TIME = 6; // 秒
+    private static final long GO_BACK_WAIT_TIME = 6*1000; // 秒
     private final RedirectHandler handler;
     private WebView webView;
     private final Semaphore semaphore = new Semaphore(0,true);
@@ -61,7 +61,7 @@ public class PageGoBackEvent extends BaseEvent {
                     }
                 }).subscribeOn(AndroidSchedulers.mainThread()).subscribe();
                 LogUtil.d(TAG,"go back run ,wait web load success!");
-                boolean ok = semaphore.tryAcquire(GO_BACK_WAIT_TIME, TimeUnit.SECONDS);
+                boolean ok = semaphore.tryAcquire(getExecuteTimeOut(), TimeUnit.MILLISECONDS);
                 if (!ok) {
                     handler.unRegisterRedirectListener(listener);
                     throw new RuntimeException("go back time out!");
@@ -71,6 +71,11 @@ public class PageGoBackEvent extends BaseEvent {
                 }
             }
         }).subscribeOn(Schedulers.io());
+    }
+
+    @Override
+    public long getExecuteTimeOut() {
+        return GO_BACK_WAIT_TIME;
     }
 
 

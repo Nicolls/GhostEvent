@@ -19,7 +19,6 @@ public class LoadJsInterfaceEvent extends BaseEvent {
     private static final String TAG = "LoadJsInterfaceEvent";
     private IWebTarget target;
     private List<JsBaseInterface> jsInterfaces=new ArrayList<>();
-
     public LoadJsInterfaceEvent(IWebTarget target, JsBaseInterface jsInterface) {
         super(target);
         this.target = target;
@@ -61,5 +60,9 @@ public class LoadJsInterfaceEvent extends BaseEvent {
 
     public boolean needRetry() {
         return true;
+    }
+
+    public long getExecuteTimeOut() {
+        return 0;
     }
 }

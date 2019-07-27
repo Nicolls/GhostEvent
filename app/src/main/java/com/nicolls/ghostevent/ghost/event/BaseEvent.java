@@ -16,6 +16,8 @@ import io.reactivex.Completable;
  */
 public abstract class BaseEvent {
     private static final String TAG = "BaseEvent";
+    // 默认的超时时长 毫秒
+    protected static final long DEFAULT_EVENT_EXECUTE_TIMEOUT = 10 * 1000;
     private String name;
     private ITarget target;
 
@@ -53,4 +55,11 @@ public abstract class BaseEvent {
         return MotionEvent.obtain(downTime, eventTime, action, x, y, 0.7f, 0.8f, 0, 1.0f, 1.0f, 4, 0);
     }
 
+    /**
+     * 毫秒
+     * 每个event允许执行的最大时长，如果超过这个时长还没有执行完，则认为是失败的 ，单位：毫秒
+     *
+     * @return
+     */
+    public abstract long getExecuteTimeOut();
 }

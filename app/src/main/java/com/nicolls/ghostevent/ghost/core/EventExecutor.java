@@ -1,14 +1,15 @@
 package com.nicolls.ghostevent.ghost.core;
 
 
-import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.event.BaseEvent;
+import com.nicolls.ghostevent.ghost.event.CancelEvent;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.CompletableObserver;
@@ -17,6 +18,8 @@ import io.reactivex.schedulers.Schedulers;
 
 public class EventExecutor {
     private static final String TAG = "EventExecutor";
+    // 使用这个延长来确保，上层executor运行每一个event时的超时判断一定大于，每一个event本身的超时判断
+    private static final long EVENT_EXECUTE_TIME_OUT_EXTEND = 1000; // 毫秒
     private BlockingQueue<BaseEvent> eventBlockingQueue = new LinkedBlockingQueue<>();
     private Thread executeThread;
     private volatile AtomicBoolean cancelAtom = new AtomicBoolean(false);
@@ -28,22 +31,17 @@ public class EventExecutor {
         void onSuccess(int eventId);
 
         void onFail(int eventId);
+
+        void onTimeOut(int eventId);
     }
 
     private ExecuteCallBack executeCallBack;
 
-    private long eventIntervalTime;
-
     public EventExecutor() {
-        this(Constants.EVENT_INTERVAL_TIME);
+        init();
     }
 
-    public EventExecutor(long eventIntervalTime) {
-        init(eventIntervalTime);
-    }
-
-    private void init(long eventIntervalTime) {
-        this.eventIntervalTime = eventIntervalTime;
+    private void init() {
         this.executeThread = new Thread(executeEventTask);
         this.executeThread.start();
     }
@@ -81,12 +79,19 @@ public class EventExecutor {
                 BaseEvent event;
                 while (!cancelAtom.get() && (event = eventBlockingQueue.take()) != null) {
                     LogUtil.d(TAG, "start to acquire semaphore");
-                    semaphore.acquire();
-                    LogUtil.d(TAG, "acquired exe event " + event.getName() + " cancel:" + cancelAtom.get());
-                    if (!cancelAtom.get()) {
-                        executeEvent(event);
+                    boolean ok = semaphore.tryAcquire(event.getExecuteTimeOut()
+                            + EVENT_EXECUTE_TIME_OUT_EXTEND, TimeUnit.MILLISECONDS);
+                    if (ok) {
+                        if (!cancelAtom.get()) {
+                            LogUtil.d(TAG, "acquired exe event " + event.getName());
+                            executeEvent(event);
+                        } else {
+                            LogUtil.d(TAG, "exe event " + event.getName() + " fail because of cancel!");
+                            semaphore.release();
+                        }
                     } else {
-                        LogUtil.d(TAG, "exe fail because of shutdown!");
+                        LogUtil.d(TAG, "exe event " + event.getName() + " time out!");
+                        executeCallBack.onFail(event.getId());
                         semaphore.release();
                     }
                 }
@@ -109,18 +114,14 @@ public class EventExecutor {
             @Override
             public void onComplete() {
                 if (cancelAtom.get()) {
-                    LogUtil.d(TAG, "event call back ,executor have been shutdown!");
+                    LogUtil.d(TAG, "event " + event.getName()
+                            + " completed ,but executor have been cancel!");
                     semaphore.release();
                     return;
                 }
                 LogUtil.d(TAG, "event " + event.getName() + " execute completed");
-                try {
-                    Thread.sleep(eventIntervalTime);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                LogUtil.d(TAG, "semaphore release");
                 executeCallBack.onSuccess(event.getId());
+                LogUtil.d(TAG, "semaphore release");
                 semaphore.release();
             }
 
@@ -128,7 +129,7 @@ public class EventExecutor {
             public void onError(Throwable e) {
                 LogUtil.e(TAG, "event call back onError " + e);
                 if (event.needRetry()) {
-                    LogUtil.d(TAG, "need retry!");
+                    LogUtil.d(TAG, event.getName() + "need retry!");
                     executeEvent(event);
                     return;
                 }
@@ -136,8 +137,8 @@ public class EventExecutor {
                 if (lastDisposable != null) {
                     lastDisposable.dispose();
                 }
-                semaphore.release();
                 executeCallBack.onFail(event.getId());
+                semaphore.release();
             }
         });
     }
@@ -145,13 +146,19 @@ public class EventExecutor {
     public void shutDown() {
         LogUtil.d(TAG, "shutDown");
         cancelAtom.set(true);
+        try {
+            eventBlockingQueue.put(CancelEvent.instance);
+        } catch (InterruptedException e) {
+            LogUtil.e(TAG,"invoke shutdown exe cancel event error ",e);
+            e.printStackTrace();
+        }
     }
 
     public void retry() {
         shutDown();
         cancelAtom.set(false);
         executeThread = null;
-        init(eventIntervalTime);
+        init();
     }
 
 }

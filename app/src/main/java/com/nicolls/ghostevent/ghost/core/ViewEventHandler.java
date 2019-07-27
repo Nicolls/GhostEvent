@@ -6,8 +6,10 @@ import android.os.Looper;
 import android.view.MotionEvent;
 import android.view.View;
 
-public class ViewEventHandler implements IEventHandler {
+import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
+public class ViewEventHandler implements IEventHandler {
+    private static final String TAG="ViewEventHandler";
     private Handler mainHandler = new Handler(Looper.getMainLooper());
     private HandlerThread eventThread;
     private Handler eventHandler;
@@ -23,11 +25,13 @@ public class ViewEventHandler implements IEventHandler {
 
     @Override
     public void doEvent(MotionEvent event) {
+        LogUtil.d(TAG,"doEvent");
         view.dispatchTouchEvent(event);
     }
 
     @Override
     public void quit() {
+        LogUtil.d(TAG,"quit");
         eventThread.quit();
     }
 

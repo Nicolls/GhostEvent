@@ -22,7 +22,9 @@ import io.reactivex.functions.Action;
  */
 public class ClickEvent extends BaseEvent {
     private static final String TAG = "ClickEvent";
+    // 毫秒
     public static final int CLICK_INTERVAL_TIME = 100;
+    private static final int CLICK_EXECUTE_TIMEOUT = CLICK_INTERVAL_TIME * 2;
     private TouchPoint touchPoint;
     private ITarget target;
 
@@ -57,21 +59,20 @@ public class ClickEvent extends BaseEvent {
     }
 
     protected void doEvent() {
+        // down
         final long downTime = SystemClock.uptimeMillis();
         MotionEvent downEvent = mockMotionEvent(downTime, downTime, MotionEvent.ACTION_DOWN, touchPoint.point.x, touchPoint.point.y);
         target.doEvent(downEvent);
+        // interval
         long clickSpentTime = touchPoint.spentTime;
         if (clickSpentTime <= 0) {
             clickSpentTime = CLICK_INTERVAL_TIME;
         }
-        target.getMainHandler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                long upTime = SystemClock.uptimeMillis();
-                MotionEvent upEvent = mockMotionEvent(downTime, upTime, MotionEvent.ACTION_UP, touchPoint.point.x, touchPoint.point.y);
-                target.doEvent(upEvent);
-            }
-        }, clickSpentTime);
+        sleepTimes(clickSpentTime);
+        // up
+        long upTime = SystemClock.uptimeMillis();
+        MotionEvent upEvent = mockMotionEvent(downTime, upTime, MotionEvent.ACTION_UP, touchPoint.point.x, touchPoint.point.y);
+        target.doEvent(upEvent);
     }
 
     public static class Builder {
@@ -116,4 +117,9 @@ public class ClickEvent extends BaseEvent {
                 ", name='" + getName() + '\'' +
                 '}';
     }
+
+    public long getExecuteTimeOut() {
+        return CLICK_EXECUTE_TIMEOUT;
+    }
+
 }

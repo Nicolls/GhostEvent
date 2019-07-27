@@ -11,6 +11,7 @@ import com.nicolls.ghostevent.ghost.utils.LogUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.Completable;
@@ -39,14 +40,20 @@ public class SlideEvent extends BaseEvent {
     public static final long MIN_INTERVAL_SLIDE_MOVE_TIME_UNIT = 6;
 
     /**
-     * 每一个滑动最小的延迟时间
+     * 每一个滑动最大的延迟时间
      */
     public static final long MAX_INTERVAL_SLIDE_MOVE_TIME_UNIT = 30;
+
+    /**
+     * 10 毫秒
+     */
+    private static final long TIME_MOVE_SPACE_MILLISECONDS = 20;
 
     private TouchPoint from = new TouchPoint(new PointF(0, 0), TouchPoint.INTERVAL_DOWN_UP_TIME);
     private TouchPoint to = new TouchPoint(new PointF(0, 0), TouchPoint.INTERVAL_DOWN_UP_TIME);
     private List<TouchPoint> moves = new ArrayList<>();
     private ITarget target;
+    private long timeOut = 0;
 
     public enum Direction {
         LEFT, RIGHT, TOP, BOTTOM
@@ -128,6 +135,7 @@ public class SlideEvent extends BaseEvent {
 
     protected void calculateMoveEvent(TouchPoint from, TouchPoint to, int moveSize, long moveSpentTime) {
         moves.clear();
+        timeOut = 0;
         PointF toPoint = to.point;
         PointF fromPoint = from.point;
         float horizontal = toPoint.x - fromPoint.x;
@@ -154,11 +162,20 @@ public class SlideEvent extends BaseEvent {
                 yUnit = ratio * distanceUnit;
             }
         }
-
+        timeOut = 0;
         for (int i = 0, count = 0; count < moveSize; i++, count++) {
             float moveX = horizontal > 0 ? (fromPoint.x + i * xUnit) : (fromPoint.x - i * xUnit);
             float moveY = vertical > 0 ? (fromPoint.y + i * yUnit) : (fromPoint.y - i * yUnit);
             TouchPoint move = new TouchPoint(new PointF(moveX, moveY), moveSpentTime);
+
+            long spentTime = moveSpentTime;
+            if (spentTime < MIN_INTERVAL_SLIDE_MOVE_TIME_UNIT) {
+                spentTime = MIN_INTERVAL_SLIDE_MOVE_TIME_UNIT;
+            } else if (spentTime > MAX_INTERVAL_SLIDE_MOVE_TIME_UNIT) {
+                spentTime = MAX_INTERVAL_SLIDE_MOVE_TIME_UNIT;
+            }
+            move.spentTime = spentTime;
+            timeOut += spentTime;
             moves.add(move);
         }
         LogUtil.d(TAG, "calculate move size:" + moves.size());
@@ -188,6 +205,11 @@ public class SlideEvent extends BaseEvent {
         }).subscribeOn(AndroidSchedulers.mainThread());
     }
 
+    @Override
+    public long getExecuteTimeOut() {
+        return timeOut + moves.size() * TIME_MOVE_SPACE_MILLISECONDS;
+    }
+
     protected void doEvent(final AtomicBoolean cancel, TouchPoint from, TouchPoint to) {
         if (cancel.get()) {
             LogUtil.d(TAG, "event cancel");
@@ -212,26 +234,25 @@ public class SlideEvent extends BaseEvent {
             MotionEvent moveEvent = mockMotionEvent(downTime, moveEventTime, MotionEvent.ACTION_MOVE, move.point.x, move.point.y);
             target.doEvent(moveEvent);
             LogUtil.d(TAG, "start post delay:" + move.spentTime);
-            long moveSpentTime = move.spentTime;
-            if (moveSpentTime < MIN_INTERVAL_SLIDE_MOVE_TIME_UNIT) {
-                moveSpentTime = MIN_INTERVAL_SLIDE_MOVE_TIME_UNIT;
-            } else if (moveSpentTime > MAX_INTERVAL_SLIDE_MOVE_TIME_UNIT) {
-                moveSpentTime = MAX_INTERVAL_SLIDE_MOVE_TIME_UNIT;
-            }
+
             target.getEventHandler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     LogUtil.d(TAG, "semaphore release ");
                     semaphore.release();
                 }
-            }, moveSpentTime);
+            }, move.spentTime);
             LogUtil.d(TAG, "start acquire semaphore");
             try {
-                semaphore.acquire();
+                boolean ok = semaphore.tryAcquire(move.spentTime + TIME_MOVE_SPACE_MILLISECONDS, TimeUnit.MILLISECONDS);
+                if (!ok) {
+                    LogUtil.d(TAG, "semaphore acquire time out");
+                } else {
+                    LogUtil.d(TAG, "semaphore acquired");
+                }
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            LogUtil.d(TAG, "semaphore acquired");
         }
         LogUtil.d(TAG, "up event");
         long upTime = SystemClock.uptimeMillis();

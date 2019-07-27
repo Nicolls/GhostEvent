@@ -18,8 +18,8 @@ import io.reactivex.schedulers.Schedulers;
 
 public class LoadJsScriptInfEvent extends BaseEvent {
     private static final String TAG = "LoadJsInfEvent";
-    private static final long PARSE_WAIT_JS_INIT_TIME = 2; // 秒
-    private static final long PARSE_WAIT_TIME = PARSE_WAIT_JS_INIT_TIME + 2; // 秒
+    private static final long LOAD_JS_INIT_TIME = 2 * 1000; // 毫秒
+    private static final long LOAD_JS_EXECUTE_TIMEOUT = LOAD_JS_INIT_TIME * 2; // 毫秒
     private final Semaphore semaphore = new Semaphore(0, true);
     private IWebTarget target;
     private JsBaseInterface jsInterface;
@@ -53,13 +53,14 @@ public class LoadJsScriptInfEvent extends BaseEvent {
                                 LogUtil.d(TAG, "semaphore release");
                                 semaphore.release();
                             }
-                        }, PARSE_WAIT_JS_INIT_TIME * 1000);
+                        }, LOAD_JS_INIT_TIME);
                     }
                 }).subscribeOn(AndroidSchedulers.mainThread()).subscribe();
                 LogUtil.d(TAG, "exe load js subscribe ");
-                boolean ok = semaphore.tryAcquire(PARSE_WAIT_TIME, TimeUnit.SECONDS);
+                boolean ok = semaphore.tryAcquire(getExecuteTimeOut(), TimeUnit.MILLISECONDS);
                 if (!ok) {
                     LogUtil.w(TAG, "load js time out!");
+                    throw new RuntimeException("load js time out");
                 } else {
                     LogUtil.d(TAG, "load js completed");
                 }
@@ -69,5 +70,10 @@ public class LoadJsScriptInfEvent extends BaseEvent {
 
     public boolean needRetry() {
         return true;
+    }
+
+    @Override
+    public long getExecuteTimeOut() {
+        return LOAD_JS_EXECUTE_TIMEOUT;
     }
 }

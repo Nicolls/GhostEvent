@@ -21,8 +21,8 @@ import io.reactivex.schedulers.Schedulers;
  */
 public class ClickRedirectEvent extends ClickEvent {
     private static final String TAG = "ClickRedirectEvent";
-    private static final long REDIRECT_WAIT_TIME = 6; // 秒
-    private final Semaphore semaphore = new Semaphore(0,true);
+    private static final long REDIRECT_WAIT_TIME = 6 * 1000; // 毫秒
+    private final Semaphore semaphore = new Semaphore(0, true);
     private final RedirectHandler handler;
 
     public ClickRedirectEvent(RedirectHandler handler, ITarget target, TouchPoint click) {
@@ -63,20 +63,24 @@ public class ClickRedirectEvent extends ClickEvent {
                     @Override
                     public void run() {
                         doEvent();
-                        LogUtil.d(TAG,"doEvent completed");
+                        LogUtil.d(TAG, "doEvent completed");
                     }
                 }).subscribeOn(AndroidSchedulers.mainThread()).subscribe();
-                LogUtil.d(TAG,"click run ,wait web load success!");
-                boolean ok = semaphore.tryAcquire(REDIRECT_WAIT_TIME, TimeUnit.SECONDS);
+                LogUtil.d(TAG, "click run ,wait web load success!");
+                boolean ok = semaphore.tryAcquire(REDIRECT_WAIT_TIME, TimeUnit.MILLISECONDS);
                 if (!ok) {
                     handler.unRegisterRedirectListener(listener);
                     throw new RuntimeException("redirect time out!");
                 } else {
-                    LogUtil.d(TAG,"web load completed");
+                    LogUtil.d(TAG, "web load completed");
                     handler.unRegisterRedirectListener(listener);
                 }
             }
         }).subscribeOn(Schedulers.io());
+    }
+
+    public long getExecuteTimeOut() {
+        return REDIRECT_WAIT_TIME + super.getExecuteTimeOut();
     }
 
 }

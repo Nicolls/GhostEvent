@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.View;
 
 import com.nicolls.ghostevent.ghost.core.EventExecutor;
 import com.nicolls.ghostevent.ghost.core.IEventHandler;
@@ -89,6 +88,11 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
 //                retry();
 //            }
         }
+
+        @Override
+        public void onTimeOut(int eventId) {
+            LogUtil.d(TAG, "onTimeOut");
+        }
     };
 
     public GhostWebView(Context context) {
@@ -132,7 +136,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         smoothSlide = new SmoothSlideEvent(this,
                 TouchPoint.obtainDown(GhostUtils.displayWidth / 2, GhostUtils.displayHeight - GhostUtils.displayHeight / 4),
                 TouchPoint.obtainUp(GhostUtils.displayWidth / 2, GhostUtils.displayHeight / 3));
-        recordEvent = new GroupEvent(this);
+        recordEvent = new GroupEvent(this, executeCallBack);
         scrollEvent = new ScrollVerticalEvent(this, GhostUtils.displayHeight);
         loadPageEvent = new LoadPageEvent(this, redirectHandler, getUrl());
         loadJsInfEvent = new LoadJsScriptInfEvent(this, advertInterface);
@@ -174,6 +178,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         LogUtil.d(TAG, "stop");
         isRecord = false;
         eventExecutor.shutDown();
+        eventHandler.quit();
     }
 
     /**

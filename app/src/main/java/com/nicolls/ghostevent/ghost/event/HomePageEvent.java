@@ -17,7 +17,7 @@ import io.reactivex.schedulers.Schedulers;
 
 public class HomePageEvent extends BaseEvent {
     private static final String TAG = "HomePageEvent";
-    private static final long GO_BACK_WAIT_TIME = 10; // 秒
+    private static final long GO_BACK_WAIT_TIME = 10*1000; // 毫秒
     private final RedirectHandler handler;
     private WebView webView;
     private final Semaphore semaphore = new Semaphore(0,true);
@@ -72,17 +72,20 @@ public class HomePageEvent extends BaseEvent {
                     }
                 }).subscribeOn(AndroidSchedulers.mainThread()).subscribe();
                 LogUtil.d(TAG, "first go home run ,wait web load success!");
-                boolean ok = semaphore.tryAcquire(GO_BACK_WAIT_TIME, TimeUnit.SECONDS);
+                boolean ok = semaphore.tryAcquire(getExecuteTimeOut(), TimeUnit.MILLISECONDS);
                 if (!ok) {
                     handler.unRegisterRedirectListener(listener);
                     throw new RuntimeException("go home time out!");
                 } else {
-                    LogUtil.d(TAG, "web go home completed");
                     handler.unRegisterRedirectListener(listener);
+                    LogUtil.d(TAG, "web go home completed");
                 }
             }
         }).subscribeOn(Schedulers.io());
     }
 
+    public long getExecuteTimeOut() {
+        return GO_BACK_WAIT_TIME;
+    }
 
 }
