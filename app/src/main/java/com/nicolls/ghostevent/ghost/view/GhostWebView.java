@@ -143,6 +143,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
     }
 
     private void initWebView() {
+        setWebChromeClient(new GhostWebChromeClient());
         setWebViewClient(new GhostWebViewClient(redirectHandler));
         setOnTouchListener(new GhostWebViewTouchEvent(this, redirectHandler, recordEvent));
     }
