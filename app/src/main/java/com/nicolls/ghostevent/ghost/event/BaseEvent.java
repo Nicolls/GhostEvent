@@ -3,6 +3,7 @@ package com.nicolls.ghostevent.ghost.event;
 import android.view.MotionEvent;
 
 import com.nicolls.ghostevent.ghost.core.ITarget;
+import com.nicolls.ghostevent.ghost.utils.Constants;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -16,8 +17,6 @@ import io.reactivex.Completable;
  */
 public abstract class BaseEvent {
     private static final String TAG = "BaseEvent";
-    // 默认的超时时长 毫秒
-    protected static final long DEFAULT_EVENT_EXECUTE_TIMEOUT = 10 * 1000;
     private String name;
     private ITarget target;
 
@@ -62,4 +61,14 @@ public abstract class BaseEvent {
      * @return
      */
     public abstract long getExecuteTimeOut();
+
+    /**
+     * 获取延长的时长
+     *
+     * @return
+     */
+    protected long getExtendsTime() {
+        return Constants.DEFAULT_EVENT_EXECUTE_TIMEOUT_EXTEND;
+    }
+
 }

@@ -16,4 +16,9 @@ public abstract class WebBaseParser implements IWebParser {
         // fetch html
         target.executeJs(Constants.JS_CURRENT_PAGE_HTML);
     }
+
+    @Override
+    public long getParsedDelay() {
+        return Constants.TIME_DEFAULT_JS_PARSED_DELAY;
+    }
 }

@@ -1,7 +1,9 @@
 package com.nicolls.ghostevent.ghost.event;
 
-import com.nicolls.ghostevent.ghost.core.ITarget;
+import com.nicolls.ghostevent.ghost.core.IWebTarget;
 import com.nicolls.ghostevent.ghost.core.RedirectHandler;
+import com.nicolls.ghostevent.ghost.event.model.LoadPageRedirectListener;
+import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.concurrent.Semaphore;
@@ -9,8 +11,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.Completable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.schedulers.Schedulers;
 
@@ -22,46 +22,22 @@ import io.reactivex.schedulers.Schedulers;
  */
 public class RedirectClickEvent extends ClickEvent {
     private static final String TAG = "RedirectClickEvent";
-    private static final long WAIT_PAGE_LOADED_TIME = 2 * 1000; // 毫秒
-    private static final long REDIRECT_WAIT_TIME = WAIT_PAGE_LOADED_TIME + 1 * 1000; // 毫秒
     private final Semaphore semaphore = new Semaphore(0, true);
     private final RedirectHandler handler;
-    private final ITarget target;
+    private final IWebTarget target;
+    private final LoadPageRedirectListener listener;
 
-    public RedirectClickEvent(ClickEvent clickEvent, RedirectHandler handler) {
+    public RedirectClickEvent(ClickWebEvent clickEvent, RedirectHandler handler) {
         super(clickEvent);
         this.handler = handler;
-        this.target = clickEvent.getTarget();
+        this.target = clickEvent.getWebTarget();
+        this.listener = new LoadPageRedirectListener(target, semaphore);
         this.setName(TAG);
     }
 
-    private final RedirectHandler.RedirectListener listener = new RedirectHandler.RedirectListener() {
-        @Override
-        public void onStart() {
-            LogUtil.d(TAG, "redirect load onStart");
-        }
-
-        @Override
-        public void onSuccess() {
-            LogUtil.d(TAG, "redirect load onSuccess");
-            target.getMainHandler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    LogUtil.d(TAG, "semaphore release");
-                    semaphore.release();
-                }
-            }, WAIT_PAGE_LOADED_TIME);
-        }
-
-        @Override
-        public void onFail() {
-            LogUtil.d(TAG, "redirect load onFail");
-        }
-    };
-
     @Override
     public Completable exe(final AtomicBoolean cancel) {
-        final Completable clickCompletable=super.exe(cancel);
+        final Completable clickCompletable = super.exe(cancel);
         return Completable.fromAction(new Action() {
             @Override
             public void run() throws Exception {
@@ -85,7 +61,7 @@ public class RedirectClickEvent extends ClickEvent {
     }
 
     public long getExecuteTimeOut() {
-        return REDIRECT_WAIT_TIME + super.getExecuteTimeOut();
+        return listener.getLoadPageRedirectTimeOut() + super.getExecuteTimeOut();
     }
 
 }

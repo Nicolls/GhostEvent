@@ -6,6 +6,7 @@ import android.view.MotionEvent;
 import com.nicolls.ghostevent.ghost.core.ITarget;
 import com.nicolls.ghostevent.ghost.event.model.TouchPoint;
 import com.nicolls.ghostevent.ghost.event.provider.EventParamsProvider;
+import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,7 +25,6 @@ public class ClickEvent extends BaseEvent {
     private static final String TAG = "ClickEvent";
     // 毫秒
     public static final int CLICK_INTERVAL_TIME = 100;
-    private static final int CLICK_EXECUTE_TIMEOUT = CLICK_INTERVAL_TIME * 2;
     private ITarget target;
     private EventParamsProvider<TouchPoint> provider;
 
@@ -76,7 +76,7 @@ public class ClickEvent extends BaseEvent {
     protected void doEvent() {
         TouchPoint touchPoint = provider.getParams();
         if (touchPoint == null) {
-            LogUtil.w(TAG, "touchPoint null!");
+            LogUtil.w(TAG, "touch point null!");
             return;
         }
         // down
@@ -96,7 +96,7 @@ public class ClickEvent extends BaseEvent {
     }
 
     public long getExecuteTimeOut() {
-        return CLICK_EXECUTE_TIMEOUT;
+        return getExtendsTime() + CLICK_INTERVAL_TIME;
     }
 
     ITarget getTarget() {

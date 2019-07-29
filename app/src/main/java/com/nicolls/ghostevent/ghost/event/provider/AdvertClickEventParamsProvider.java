@@ -1,6 +1,7 @@
 package com.nicolls.ghostevent.ghost.event.provider;
 
 import com.nicolls.ghostevent.ghost.core.IWebTarget;
+import com.nicolls.ghostevent.ghost.event.ClickEvent;
 import com.nicolls.ghostevent.ghost.event.model.TouchPoint;
 import com.nicolls.ghostevent.ghost.event.provider.EventParamsProvider;
 import com.nicolls.ghostevent.ghost.parse.ViewNode;
@@ -38,4 +39,5 @@ public class AdvertClickEventParamsProvider extends EventParamsProvider<TouchPoi
     public String getName() {
         return TAG;
     }
+
 }

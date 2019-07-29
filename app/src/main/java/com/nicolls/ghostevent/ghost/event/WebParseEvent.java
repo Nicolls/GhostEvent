@@ -15,7 +15,7 @@ import io.reactivex.schedulers.Schedulers;
 
 public class WebParseEvent extends BaseEvent {
     private static final String TAG = "WebParseEvent";
-    private static final long PARSE_WAIT_TIME = 4 * 1000; // 毫秒
+
     private final Semaphore semaphore = new Semaphore(0, true);
     private IWebTarget target;
     private IWebParser webParser;
@@ -57,6 +57,6 @@ public class WebParseEvent extends BaseEvent {
 
     @Override
     public long getExecuteTimeOut() {
-        return PARSE_WAIT_TIME;
+        return webParser.getParsedDelay() + getExtendsTime();
     }
 }

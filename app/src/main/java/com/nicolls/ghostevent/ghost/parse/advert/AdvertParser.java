@@ -17,10 +17,10 @@ public class AdvertParser extends WebBaseParser {
         target.getEventHandler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                LogUtil.d(TAG,"semaphore release");
+                LogUtil.d(TAG, "semaphore release");
                 semaphore.release();
             }
-        },100);
+        }, getParsedDelay());
     }
 
     @Override

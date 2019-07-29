@@ -55,7 +55,7 @@ public class AdvertJsInterface extends JsBaseInterface {
 
     @JavascriptInterface
     public void onFoundItem(String item) {
-        LogUtil.d(TAG, "onFoundItem " + item);
+//        LogUtil.d(TAG, "onFoundItem " + item);
         try {
             DomNode domNode = JSON.parseObject(item, DomNode.class);
             ViewNode.Type type = ViewNode.Type.OTHER;
@@ -77,7 +77,7 @@ public class AdvertJsInterface extends JsBaseInterface {
 
     @JavascriptInterface
     public void onFoundItemHtml(String item) {
-        LogUtil.d(TAG, "onFoundItemHtml " + item);
+//        LogUtil.d(TAG, "onFoundItemHtml " + item);
         target.onFoundItemHtml(item);
 
     }

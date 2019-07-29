@@ -2,7 +2,7 @@ package com.nicolls.ghostevent.ghost.event;
 
 import com.nicolls.ghostevent.ghost.core.EventExecutor;
 import com.nicolls.ghostevent.ghost.core.ITarget;
-import com.nicolls.ghostevent.ghost.event.provider.EventParamsProvider;
+import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.ArrayList;
@@ -21,36 +21,29 @@ import io.reactivex.schedulers.Schedulers;
 public class GroupEvent extends BaseEvent {
     private static final String TAG = "GroupEvent";
     // 使用这个延长来确保，执行child event时的超时判断一定大于，child event本身的超时判断
-    private static final long EVENT_EXECUTE_TIME_OUT_EXTEND = 100; // 毫秒
     private final Semaphore semaphore = new Semaphore(0, true);
     private List<BaseEvent> childList = new ArrayList<>();
-    private long timeOut = DEFAULT_EVENT_EXECUTE_TIMEOUT;
-    private ITarget target;
+    private long timeOut = Constants.DEFAULT_EVENT_EXECUTE_TIMEOUT;
     private EventExecutor.ExecuteCallBack executeCallBack;
-    private EventParamsProvider<List<BaseEvent>> provider;
 
     public GroupEvent(ITarget target, EventExecutor.ExecuteCallBack executeCallBack) {
         this(target, executeCallBack, new BaseEvent[]{});
     }
 
     public GroupEvent(ITarget target, EventExecutor.ExecuteCallBack executeCallBack, BaseEvent... events) {
-        super(target);
-        this.target = target;
-        this.executeCallBack = executeCallBack;
-        this.setName(TAG);
-        if (events != null) {
-            for (BaseEvent event : events) {
-                childList.add(event);
-                timeOut += event.getExecuteTimeOut();
-                timeOut += EVENT_EXECUTE_TIME_OUT_EXTEND;
-            }
-        }
+        this(target, executeCallBack, Arrays.asList(events));
     }
 
-    public GroupEvent(ITarget target, EventExecutor.ExecuteCallBack executeCallBack,
-                      EventParamsProvider<List<BaseEvent>> provider) {
-        this(target, executeCallBack, new BaseEvent[]{});
-        this.provider = provider;
+    public GroupEvent(ITarget target, EventExecutor.ExecuteCallBack executeCallBack, List<BaseEvent> list) {
+        super(target);
+        this.executeCallBack = executeCallBack;
+        this.setName(TAG);
+        if (list != null) {
+            for (BaseEvent event : list) {
+                childList.add(event);
+                timeOut += event.getExecuteTimeOut();
+            }
+        }
     }
 
     public void addEvent(BaseEvent event) {
@@ -79,20 +72,12 @@ public class GroupEvent extends BaseEvent {
                     LogUtil.d(TAG, "cancel!");
                     return;
                 }
-                if (provider != null) {
-                    if (childList == null) {
-                        childList = new ArrayList<>();
-                    }
-                    childList.clear();
-                    childList.addAll(provider.getParams());
-                }
                 for (final BaseEvent event : childList) {
-                    LogUtil.d(TAG, "start child event:" + event.getName());
+                    LogUtil.d(TAG, "execute child event:" + event.getName());
                     if (cancel.get()) {
-                        LogUtil.d(TAG, "start child executor have been cancel!");
+                        LogUtil.d(TAG, "execute child executor have been cancel!");
                         break;
                     }
-                    LogUtil.d(TAG, "execute child event");
                     boolean isOk = onChildStart(event);
                     if (!isOk) {
                         break;
@@ -100,35 +85,37 @@ public class GroupEvent extends BaseEvent {
                     event.exe(cancel).observeOn(Schedulers.io()).subscribe(new CompletableObserver() {
                         @Override
                         public void onSubscribe(Disposable d) {
-                            LogUtil.d(TAG, "onSubscribe");
+                            LogUtil.d(TAG, "onSubscribe " + event.getName());
                         }
 
                         @Override
                         public void onComplete() {
-                            LogUtil.d(TAG, "child event completed,release semaphore");
+                            LogUtil.d(TAG, "child event completed " + event.getName() + ",release semaphore");
                             onChildCompleted(event);
                             semaphore.release();
                         }
 
                         @Override
                         public void onError(Throwable e) {
-                            LogUtil.e(TAG, "group event child completed error", e);
+                            LogUtil.e(TAG, "group execute child event error " + event.getName(), e);
                             onChildFail(event);
                             if (event.needRetry()) {
-                                LogUtil.d(TAG, "onError, event need retry again");
+                                LogUtil.d(TAG, "onError, event " + event.getName() + " need retry again");
                                 event.exe(cancel);
                                 return;
                             }
                             if (executeCallBack != null) {
                                 executeCallBack.onFail(event.getId());
                             }
+                            LogUtil.d(TAG, "semaphore release");
+                            semaphore.release();
                         }
                     });
-                    LogUtil.d(TAG, "child try acquire");
-                    boolean ok = semaphore.tryAcquire(event.getExecuteTimeOut()
-                            + EVENT_EXECUTE_TIME_OUT_EXTEND, TimeUnit.MILLISECONDS);
+                    long timeOut = event.getExecuteTimeOut();
+                    LogUtil.d(TAG, "next child try acquire wait timeOut:" + timeOut);
+                    boolean ok = semaphore.tryAcquire(timeOut, TimeUnit.MILLISECONDS);
                     if (!ok) {
-                        LogUtil.d(TAG, "child acquired time out");
+                        LogUtil.d(TAG, "child acquired time out!");
                         executeCallBack.onTimeOut(event.getId());
                     } else if (executeCallBack != null) {
                         LogUtil.d(TAG, "child acquired semaphore");
@@ -140,7 +127,7 @@ public class GroupEvent extends BaseEvent {
 
     @Override
     public long getExecuteTimeOut() {
-        return timeOut;
+        return timeOut + getExtendsTime();
     }
 
     public boolean onChildStart(BaseEvent event) {

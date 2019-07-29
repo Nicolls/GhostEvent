@@ -4,7 +4,7 @@ import android.webkit.WebView;
 
 import com.nicolls.ghostevent.ghost.core.IWebTarget;
 import com.nicolls.ghostevent.ghost.core.RedirectHandler;
-import com.nicolls.ghostevent.ghost.utils.Constants;
+import com.nicolls.ghostevent.ghost.event.model.LoadPageRedirectListener;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.concurrent.Semaphore;
@@ -18,43 +18,20 @@ import io.reactivex.schedulers.Schedulers;
 
 public class LoadPageEvent extends BaseEvent {
     private static final String TAG = "LoadPageEvent";
-    private static final long LOAD_PAGE_TIME_OUT = Constants.TIME_NOTIFY_PAGE_LOADED_DELAY * 4; // 毫秒
     private final Semaphore semaphore = new Semaphore(0, true);
     private final RedirectHandler handler;
     private final String url;
     private final IWebTarget target;
+    private final LoadPageRedirectListener listener;
 
     public LoadPageEvent(IWebTarget target, RedirectHandler handler, String url) {
         super(target);
         this.handler = handler;
         this.url = url;
         this.target = target;
+        this.listener = new LoadPageRedirectListener(target, semaphore);
         this.setName(TAG);
     }
-
-    private final RedirectHandler.RedirectListener listener = new RedirectHandler.RedirectListener() {
-        @Override
-        public void onStart() {
-            LogUtil.d(TAG, "redirect load onStart");
-        }
-
-        @Override
-        public void onSuccess() {
-            LogUtil.d(TAG, "redirect load onSuccess");
-            target.getMainHandler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    LogUtil.d(TAG, "semaphore release");
-                    semaphore.release();
-                }
-            }, Constants.TIME_NOTIFY_PAGE_LOADED_DELAY);
-        }
-
-        @Override
-        public void onFail() {
-            LogUtil.d(TAG, "redirect load onFail");
-        }
-    };
 
     @Override
     public Completable exe(final AtomicBoolean cancel) {
@@ -91,6 +68,6 @@ public class LoadPageEvent extends BaseEvent {
 
     @Override
     public long getExecuteTimeOut() {
-        return LOAD_PAGE_TIME_OUT;
+        return getExtendsTime() + listener.getLoadPageRedirectTimeOut();
     }
 }

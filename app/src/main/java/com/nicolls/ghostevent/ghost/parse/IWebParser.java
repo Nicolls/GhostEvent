@@ -6,4 +6,6 @@ import java.util.concurrent.Semaphore;
 
 public interface IWebParser {
     void parse(IWebTarget target,Semaphore semaphore);
+
+    long getParsedDelay();
 }

@@ -11,9 +11,9 @@ import androidx.annotation.NonNull;
 import com.nicolls.ghostevent.ghost.core.EventExecutor;
 import com.nicolls.ghostevent.ghost.core.RedirectHandler;
 import com.nicolls.ghostevent.ghost.event.BaseEvent;
-import com.nicolls.ghostevent.ghost.event.ClickEvent;
-import com.nicolls.ghostevent.ghost.event.RedirectClickEvent;
+import com.nicolls.ghostevent.ghost.event.ClickWebEvent;
 import com.nicolls.ghostevent.ghost.event.GroupEvent;
+import com.nicolls.ghostevent.ghost.event.RedirectClickEvent;
 import com.nicolls.ghostevent.ghost.event.ScrollVerticalEvent;
 import com.nicolls.ghostevent.ghost.event.model.TouchPoint;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
@@ -92,7 +92,7 @@ public class GhostWebViewTriggerEvent implements View.OnTouchListener {
                     final float moveYSize = Math.abs(upY - downY);
                     if (moveXSize < 5 && moveYSize < 5) {
                         // click
-                        BaseEvent clickRedirect = new RedirectClickEvent(new ClickEvent(ghostWebView,TouchPoint.obtainClick(upX, upY)), redirectHandler);
+                        BaseEvent clickRedirect = new RedirectClickEvent(new ClickWebEvent(ghostWebView, TouchPoint.obtainClick(upX, upY)), redirectHandler);
                         LogUtil.d(TAG, "dispatchTouchEvent add click:" + clickRedirect.toString());
                         recordEvent.addEvent(clickRedirect);
                     } else {

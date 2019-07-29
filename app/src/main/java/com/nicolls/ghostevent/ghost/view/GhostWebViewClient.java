@@ -1,6 +1,8 @@
 package com.nicolls.ghostevent.ghost.view;
 
 import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Build;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -21,7 +23,27 @@ public class GhostWebViewClient extends WebViewClient {
 
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+        String scheme = request.getUrl().getScheme();
+        // 拦截非http / https类型请求
+        if (!isHttpUrl(scheme)){
+            return true;
+        }
         return super.shouldOverrideUrlLoading(view, request);
+    }
+
+    @Override
+    public boolean shouldOverrideUrlLoading(WebView view, String url) {
+        Uri uri = Uri.parse(url);
+        String scheme = uri.getScheme();
+        // 拦截非http / https类型请求
+        if (!isHttpUrl(scheme)){
+            return true;
+        }
+        return super.shouldOverrideUrlLoading(view, url);
+    }
+
+    private boolean isHttpUrl(String scheme) {
+        return scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https");
     }
 
     @Override
@@ -55,8 +77,23 @@ public class GhostWebViewClient extends WebViewClient {
     public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
         super.onReceivedError(view, request, error);
         LogUtil.d(TAG, "onReceivedError");
-        isError = true;
-        redirectHandler.notifyFail();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            LogUtil.d(TAG, "onReceivedError errorCode:" + error.getErrorCode()
+                    + " description:" + error.getDescription());
+        } else {
+            LogUtil.d(TAG, "onReceivedError");
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            LogUtil.d(TAG, "new api");
+            if (request.isForMainFrame()) {
+                isError = true;
+                redirectHandler.notifyFail();
+            }
+        } else {
+            isError = true;
+            redirectHandler.notifyFail();
+        }
+
     }
 
     /**

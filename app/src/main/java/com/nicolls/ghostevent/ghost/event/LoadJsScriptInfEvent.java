@@ -1,6 +1,5 @@
 package com.nicolls.ghostevent.ghost.event;
 
-import android.annotation.SuppressLint;
 import android.webkit.WebView;
 
 import com.nicolls.ghostevent.ghost.core.IWebTarget;
@@ -19,7 +18,6 @@ import io.reactivex.schedulers.Schedulers;
 
 public class LoadJsScriptInfEvent extends BaseEvent {
     private static final String TAG = "LoadJsInfEvent";
-    private static final long LOAD_JS_EXECUTE_TIMEOUT = Constants.TIME_LOAD_JS_INIT * 2; // 毫秒
     private final Semaphore semaphore = new Semaphore(0, true);
     private IWebTarget target;
     private JsBaseInterface jsInterface;
@@ -53,7 +51,7 @@ public class LoadJsScriptInfEvent extends BaseEvent {
                                 LogUtil.d(TAG, "semaphore release");
                                 semaphore.release();
                             }
-                        }, Constants.TIME_LOAD_JS_INIT);
+                        }, Constants.TIME_DEFAULT_LOAD_JS_INIT);
                     }
                 }).subscribeOn(AndroidSchedulers.mainThread()).subscribe();
                 LogUtil.d(TAG, "exe load js subscribe ");
@@ -74,6 +72,6 @@ public class LoadJsScriptInfEvent extends BaseEvent {
 
     @Override
     public long getExecuteTimeOut() {
-        return LOAD_JS_EXECUTE_TIMEOUT;
+        return getExtendsTime() + Constants.TIME_DEFAULT_LOAD_JS_INIT;
     }
 }

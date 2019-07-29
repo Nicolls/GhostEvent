@@ -21,9 +21,10 @@ import io.reactivex.schedulers.Schedulers;
 
 public class ScrollVerticalEvent extends BaseEvent {
     private static final String TAG = "ScrollVerticalEvent";
-    private static final long DEFAULT_ANIM_DURATION = 1000; // 毫秒
     private IWebTarget target;
     private EventParamsProvider<Line> provider;
+    private static final long DEFAULT_ANIM_DURATION = 1000;
+    private static final long MAX_ANIM_DURATION = 6 * 1000;
     private long animDuration = DEFAULT_ANIM_DURATION;
 
     public ScrollVerticalEvent(ScrollVerticalEvent event) {
@@ -46,9 +47,11 @@ public class ScrollVerticalEvent extends BaseEvent {
             public String getName() {
                 return TAG;
             }
+
         };
         this.setName(TAG);
     }
+
     public ScrollVerticalEvent(IWebTarget target, EventParamsProvider<Line> provider) {
         super(target);
         this.target = target;
@@ -72,6 +75,7 @@ public class ScrollVerticalEvent extends BaseEvent {
             public String getName() {
                 return TAG;
             }
+
         };
         this.setName(TAG);
     }
@@ -90,6 +94,9 @@ public class ScrollVerticalEvent extends BaseEvent {
                 int displayHeight = GhostUtils.displayHeight;
                 if (distance >= displayHeight) {
                     animDuration = (distance / displayHeight) * DEFAULT_ANIM_DURATION;
+                    if (animDuration > MAX_ANIM_DURATION) {
+                        animDuration = MAX_ANIM_DURATION;
+                    }
                 } else if (distance > displayHeight / 2) {
                     animDuration = DEFAULT_ANIM_DURATION;
                 } else {
@@ -149,7 +156,7 @@ public class ScrollVerticalEvent extends BaseEvent {
 
     @Override
     public long getExecuteTimeOut() {
-        return animDuration + 200; // 毫秒
+        return MAX_ANIM_DURATION + getExtendsTime(); // 毫秒
     }
 
     @Override

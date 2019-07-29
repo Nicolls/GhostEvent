@@ -18,14 +18,12 @@ import io.reactivex.schedulers.Schedulers;
 
 public class EventExecutor {
     private static final String TAG = "EventExecutor";
-    // 使用这个延长来确保，上层executor运行每一个event时的超时判断一定大于，每一个event本身的超时判断
-    private static final long EVENT_EXECUTE_TIME_OUT_EXTEND = 1000; // 毫秒
     private BlockingQueue<BaseEvent> eventBlockingQueue = new LinkedBlockingQueue<>();
     private Thread executeThread;
     private volatile AtomicBoolean cancelAtom = new AtomicBoolean(false);
     private Disposable lastDisposable;
     // 信号量，事件需要按顺序一个接一个的执行
-    private final Semaphore semaphore = new Semaphore(1, true);
+    private final Semaphore semaphore = new Semaphore(0, true);
 
     public interface ExecuteCallBack {
         void onSuccess(int eventId);
@@ -78,21 +76,17 @@ public class EventExecutor {
                 LogUtil.d(TAG, "executeEventTask start run");
                 BaseEvent event;
                 while (!cancelAtom.get() && (event = eventBlockingQueue.take()) != null) {
-                    LogUtil.d(TAG, "start to acquire semaphore");
-                    boolean ok = semaphore.tryAcquire(event.getExecuteTimeOut()
-                            + EVENT_EXECUTE_TIME_OUT_EXTEND, TimeUnit.MILLISECONDS);
-                    if (ok) {
-                        if (!cancelAtom.get()) {
-                            LogUtil.d(TAG, "acquired exe event " + event.getName());
-                            executeEvent(event);
-                        } else {
-                            LogUtil.d(TAG, "exe event " + event.getName() + " fail because of cancel!");
-                            semaphore.release();
-                        }
-                    } else {
-                        LogUtil.d(TAG, "exe event " + event.getName() + " time out!");
-                        executeCallBack.onFail(event.getId());
-                        semaphore.release();
+
+                    LogUtil.d(TAG, "execute event " + event.getName());
+                    executeEvent(event);
+                    long timeOut = event.getExecuteTimeOut();
+                    LogUtil.d(TAG, event.getName() + " wait timeOut:" + timeOut);
+                    boolean ok = semaphore.tryAcquire(timeOut, TimeUnit.MILLISECONDS);
+                    if (!ok) {
+                        LogUtil.d(TAG, "event " + event.getName() + " time out !");
+                        executeCallBack.onTimeOut(event.getId());
+                    }else {
+                        LogUtil.d(TAG, "semaphore acquired");
                     }
                 }
                 LogUtil.d(TAG, "executeEventTask over");
@@ -119,7 +113,7 @@ public class EventExecutor {
                     semaphore.release();
                     return;
                 }
-                LogUtil.d(TAG, "event " + event.getName() + " execute completed");
+                LogUtil.d(TAG, "execute event " + event.getName() + " completed");
                 executeCallBack.onSuccess(event.getId());
                 LogUtil.d(TAG, "semaphore release");
                 semaphore.release();
@@ -127,7 +121,7 @@ public class EventExecutor {
 
             @Override
             public void onError(Throwable e) {
-                LogUtil.e(TAG, "event call back onError " + e);
+                LogUtil.e(TAG, "execute event " + event.getName() + " fail!" + e);
                 if (event.needRetry()) {
                     LogUtil.d(TAG, event.getName() + "need retry!");
                     executeEvent(event);
@@ -138,6 +132,7 @@ public class EventExecutor {
                     lastDisposable.dispose();
                 }
                 executeCallBack.onFail(event.getId());
+                LogUtil.d(TAG, "semaphore release");
                 semaphore.release();
             }
         });
@@ -149,7 +144,7 @@ public class EventExecutor {
         try {
             eventBlockingQueue.put(CancelEvent.instance);
         } catch (InterruptedException e) {
-            LogUtil.e(TAG,"invoke shutdown exe cancel event error ",e);
+            LogUtil.e(TAG, "invoke shutdown exe cancel event error ", e);
             e.printStackTrace();
         }
     }

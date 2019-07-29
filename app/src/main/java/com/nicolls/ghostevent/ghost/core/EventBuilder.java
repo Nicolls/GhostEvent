@@ -1,10 +1,9 @@
 package com.nicolls.ghostevent.ghost.core;
 
 import android.content.Context;
-import android.webkit.WebView;
 
 import com.nicolls.ghostevent.ghost.event.BaseEvent;
-import com.nicolls.ghostevent.ghost.event.ClickEvent;
+import com.nicolls.ghostevent.ghost.event.ClickWebEvent;
 import com.nicolls.ghostevent.ghost.event.GroupEvent;
 import com.nicolls.ghostevent.ghost.event.PageGoBackEvent;
 import com.nicolls.ghostevent.ghost.event.RedirectClickEvent;
@@ -19,6 +18,7 @@ import com.nicolls.ghostevent.ghost.parse.IWebParser;
 import com.nicolls.ghostevent.ghost.parse.ViewNode;
 import com.nicolls.ghostevent.ghost.parse.advert.AdvertParser;
 import com.nicolls.ghostevent.ghost.parse.advert.IAdvertTarget;
+import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.ArrayList;
@@ -38,10 +38,10 @@ public class EventBuilder {
         this.executeCallBack = executeCallBack;
     }
 
-    public List<BaseEvent> buildAutoEvent(IWebTarget target, String url,int size, boolean haveAdvert){
-        List<BaseEvent> list=new ArrayList<>();
-        BaseEvent loadPageEvent=getLoadPageEvent(target,url);
-        List<BaseEvent> randomEvents=getRandomEvents(target,size,haveAdvert);
+    public List<BaseEvent> buildAutoEvent(IWebTarget target, String url, int size, boolean haveAdvert) {
+        List<BaseEvent> list = new ArrayList<>();
+        BaseEvent loadPageEvent = getLoadPageEvent(target, url);
+        List<BaseEvent> randomEvents = getRandomEvents(target, size, haveAdvert);
         list.add(loadPageEvent);
         list.addAll(randomEvents);
         return list;
@@ -49,16 +49,16 @@ public class EventBuilder {
 
     public GroupEvent getLoadPageEvent(IWebTarget target, String url) {
         return new GroupEvent(target, executeCallBack,
-                new LoadPageEventProvider(target, advertTarget, redirectHandler, url));
+                new LoadPageEventProvider(target, advertTarget, redirectHandler, url).getParams());
     }
 
     public GroupEvent getGoBackEvent(IWebTarget target) {
 
-        return new GroupEvent(target,executeCallBack,new GoBackEventProvider(target,advertTarget,redirectHandler));
+        return new GroupEvent(target, executeCallBack, new GoBackEventProvider(target, advertTarget, redirectHandler).getParams());
     }
 
     public GroupEvent getHomeEvent(IWebTarget target) {
-        return new GroupEvent(target,executeCallBack,new GoHomeEventProvider(target,advertTarget,redirectHandler));
+        return new GroupEvent(target, executeCallBack, new GoHomeEventProvider(target, advertTarget, redirectHandler).getParams());
     }
 
 
@@ -70,30 +70,33 @@ public class EventBuilder {
 
     public GroupEvent getCloseAdvertClickEvent(IWebTarget target) {
 
-        return new GroupEvent(target,executeCallBack,new SlideToAdvertAndClickProvider(target,redirectHandler));
+        return new GroupEvent(target, executeCallBack, new SlideToAdvertAndClickProvider(target, redirectHandler).getParams());
     }
 
     public List<BaseEvent> getRandomEvents(IWebTarget target, int size, boolean haveAdvert) {
         List<BaseEvent> list = new ArrayList<>();
-        final WebView webView = (WebView) target;
-        ScrollVerticalEvent scrollVerticalUpEvent = new ScrollVerticalEvent(target, webView.getHeight() / 3);
-        ScrollVerticalEvent scrollVerticalDownEvent = new ScrollVerticalEvent(target, webView.getHeight() / -4);
-        BaseEvent clickRedirect = new RedirectClickEvent(new ClickEvent(target,TouchPoint.obtainClick(webView.getWidth() / 4, webView.getHeight() - webView.getHeight() / 4)), redirectHandler);
+        int displayWidth = GhostUtils.displayWidth;
+        int displayHeight = GhostUtils.displayHeight;
+        TouchPoint clickCenter = TouchPoint.obtainClick(displayWidth / 4, displayHeight - displayHeight / 4);
+        ScrollVerticalEvent scrollVerticalUpEvent = new ScrollVerticalEvent(target, displayHeight / 3);
+        ScrollVerticalEvent scrollVerticalDownEvent = new ScrollVerticalEvent(target, displayHeight / -4);
+        BaseEvent clickRedirect = new RedirectClickEvent(new ClickWebEvent(target, clickCenter), redirectHandler);
         BaseEvent backEvent = new PageGoBackEvent(target, redirectHandler);
-        BaseEvent advertEvent = getCloseAdvertClickEvent(target);
+        BaseEvent closeAdvertClickEvent = getCloseAdvertClickEvent(target);
 
         list.add(scrollVerticalUpEvent);
-        list.add(clickRedirect);
-        list.add(backEvent);
         list.add(scrollVerticalUpEvent);
-        list.add(scrollVerticalUpEvent);
-        list.add(scrollVerticalDownEvent);
-        if (haveAdvert && advertEvent != null) {
-            list.add(advertEvent);
-        }
-        list.add(scrollVerticalUpEvent);
-        list.add(backEvent);
-        list.add(scrollVerticalUpEvent);
+//        list.add(clickRedirect);
+//        list.add(backEvent);
+//        list.add(scrollVerticalUpEvent);
+//        list.add(scrollVerticalUpEvent);
+//        list.add(scrollVerticalDownEvent);
+//        if (haveAdvert && closeAdvertClickEvent != null) {
+//            list.add(closeAdvertClickEvent);
+//        }
+//        list.add(scrollVerticalUpEvent);
+//        list.add(backEvent);
+//        list.add(scrollVerticalUpEvent);
 
 //        list.add(scrollVerticalUpEvent);
 //        list.add(scrollVerticalUpEvent);
@@ -147,7 +150,7 @@ public class EventBuilder {
 
         @Override
         public void onFoundItem(ViewNode result) {
-            LogUtil.d(TAG, "foundItem " + result.toString());
+//            LogUtil.d(TAG, "foundItem " + result.toString());
             viewNodes.add(result);
         }
 
@@ -158,7 +161,7 @@ public class EventBuilder {
 
         @Override
         public void onFoundAdvert(ViewNode result) {
-            LogUtil.d(TAG, "onFoundAdvert " + result.toString());
+//            LogUtil.d(TAG, "onFoundAdvert " + result.toString());
             viewNodes.add(result);
         }
     };

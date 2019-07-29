@@ -4,6 +4,7 @@ import android.webkit.WebView;
 
 import com.nicolls.ghostevent.ghost.core.IWebTarget;
 import com.nicolls.ghostevent.ghost.core.RedirectHandler;
+import com.nicolls.ghostevent.ghost.event.model.LoadPageRedirectListener;
 import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
@@ -18,39 +19,17 @@ import io.reactivex.schedulers.Schedulers;
 
 public class PageGoBackEvent extends BaseEvent {
     private static final String TAG = "PageGoBackEvent";
-    private static final long GO_BACK_WAIT_TIME = Constants.TIME_NOTIFY_PAGE_LOADED_DELAY * 2; // 毫秒
     private final RedirectHandler handler;
     private IWebTarget target;
     private final Semaphore semaphore = new Semaphore(0, true);
 
-    private final RedirectHandler.RedirectListener listener = new RedirectHandler.RedirectListener() {
-        @Override
-        public void onStart() {
-            LogUtil.d(TAG, "redirect load onStart");
-        }
-
-        @Override
-        public void onSuccess() {
-            LogUtil.d(TAG, "redirect load onSuccess");
-            target.getMainHandler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    LogUtil.d(TAG, "semaphore release");
-                    semaphore.release();
-                }
-            }, Constants.TIME_NOTIFY_PAGE_LOADED_DELAY);
-        }
-
-        @Override
-        public void onFail() {
-            LogUtil.d(TAG, "redirect load onFail");
-        }
-    };
+    private final LoadPageRedirectListener listener;
 
     public PageGoBackEvent(IWebTarget target, RedirectHandler handler) {
         super(target);
         this.handler = handler;
         this.target = target;
+        this.listener = new LoadPageRedirectListener(target, semaphore);
         this.setName(TAG);
     }
 
@@ -83,7 +62,7 @@ public class PageGoBackEvent extends BaseEvent {
 
     @Override
     public long getExecuteTimeOut() {
-        return GO_BACK_WAIT_TIME;
+        return getExtendsTime() + listener.getLoadPageRedirectTimeOut();
     }
 
 

@@ -48,4 +48,5 @@ public class GoBackEventProvider extends EventParamsProvider<List<BaseEvent>> {
     public String getName() {
         return TAG;
     }
+
 }

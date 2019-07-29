@@ -18,7 +18,8 @@ import io.reactivex.functions.Action;
 public class LoadJsInterfaceEvent extends BaseEvent {
     private static final String TAG = "LoadJsInterfaceEvent";
     private IWebTarget target;
-    private List<JsBaseInterface> jsInterfaces=new ArrayList<>();
+    private List<JsBaseInterface> jsInterfaces = new ArrayList<>();
+
     public LoadJsInterfaceEvent(IWebTarget target, JsBaseInterface jsInterface) {
         super(target);
         this.target = target;
@@ -35,7 +36,6 @@ public class LoadJsInterfaceEvent extends BaseEvent {
         this.jsInterfaces.addAll(jsInterfaces);
         this.setName(TAG);
     }
-
 
     @SuppressLint("JavascriptInterface")
     @Override
@@ -63,6 +63,6 @@ public class LoadJsInterfaceEvent extends BaseEvent {
     }
 
     public long getExecuteTimeOut() {
-        return 0;
+        return getExtendsTime();
     }
 }

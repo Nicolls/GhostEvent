@@ -208,7 +208,7 @@ public class SlideEvent extends BaseEvent {
 
     @Override
     public long getExecuteTimeOut() {
-        return timeOut + moves.size() * TIME_MOVE_SPACE_MILLISECONDS;
+        return timeOut + moves.size() * TIME_MOVE_SPACE_MILLISECONDS + getExtendsTime();
     }
 
     protected void doEvent(final AtomicBoolean cancel, TouchPoint from, TouchPoint to) {

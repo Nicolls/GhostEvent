@@ -5,6 +5,7 @@ import android.webkit.WebView;
 import com.nicolls.ghostevent.ghost.core.ITarget;
 import com.nicolls.ghostevent.ghost.core.IWebTarget;
 import com.nicolls.ghostevent.ghost.core.RedirectHandler;
+import com.nicolls.ghostevent.ghost.event.model.HomePageRedirectListener;
 import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
@@ -19,52 +20,19 @@ import io.reactivex.schedulers.Schedulers;
 
 public class PageGoHomeEvent extends BaseEvent {
     private static final String TAG = "HomePageEvent";
-    private static final long GO_HOME_WAIT_TIME = Constants.TIME_NOTIFY_PAGE_LOADED_DELAY * 2; // 毫秒
     private final RedirectHandler handler;
     private WebView webView;
     private ITarget target;
     private final Semaphore semaphore = new Semaphore(0, true);
 
-    private final RedirectHandler.RedirectListener listener = new RedirectHandler.RedirectListener() {
-        @Override
-        public void onStart() {
-            LogUtil.d(TAG, "redirect load onStart");
-        }
-
-        @Override
-        public void onSuccess() {
-            LogUtil.d(TAG, "redirect load onSuccess");
-            check();
-        }
-
-        @Override
-        public void onFail() {
-            LogUtil.d(TAG, "redirect load onFail");
-            check();
-        }
-
-        private void check() {
-            if (webView.canGoBack()) {
-                LogUtil.d(TAG, "go back continue ");
-                webView.goBack();
-            } else {
-                LogUtil.d(TAG, "can not go back ,to Home");
-                target.getMainHandler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        LogUtil.d(TAG, "semaphore release");
-                        semaphore.release();
-                    }
-                }, Constants.TIME_NOTIFY_PAGE_LOADED_DELAY);
-            }
-        }
-    };
+    private final HomePageRedirectListener listener;
 
     public PageGoHomeEvent(IWebTarget target, RedirectHandler handler) {
         super(target);
         this.handler = handler;
         this.target = target;
         this.webView = (WebView) target;
+        this.listener = new HomePageRedirectListener(target, semaphore);
         this.setName(TAG);
     }
 
@@ -82,13 +50,7 @@ public class PageGoHomeEvent extends BaseEvent {
                             LogUtil.d(TAG, "do first go Home completed");
                         } else {
                             LogUtil.d(TAG, "already in home page ,end!");
-                            target.getMainHandler().postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    LogUtil.d(TAG, "semaphore release");
-                                    semaphore.release();
-                                }
-                            }, Constants.TIME_NOTIFY_PAGE_LOADED_DELAY);
+                            listener.onSuccess();
                         }
                     }
                 }).subscribeOn(AndroidSchedulers.mainThread()).subscribe();
@@ -106,7 +68,7 @@ public class PageGoHomeEvent extends BaseEvent {
     }
 
     public long getExecuteTimeOut() {
-        return GO_HOME_WAIT_TIME;
+        return getExtendsTime() + listener.getLoadPageRedirectTimeOut();
     }
 
 }
