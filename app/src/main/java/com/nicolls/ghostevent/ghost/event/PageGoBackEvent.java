@@ -4,6 +4,7 @@ import android.webkit.WebView;
 
 import com.nicolls.ghostevent.ghost.core.IWebTarget;
 import com.nicolls.ghostevent.ghost.core.RedirectHandler;
+import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.concurrent.Semaphore;
@@ -17,8 +18,7 @@ import io.reactivex.schedulers.Schedulers;
 
 public class PageGoBackEvent extends BaseEvent {
     private static final String TAG = "PageGoBackEvent";
-    private static final long WAIT_PAGE_LOADED_TIME = 3 * 1000; // 毫秒
-    private static final long GO_BACK_WAIT_TIME = 6 * 1000; // 毫秒
+    private static final long GO_BACK_WAIT_TIME = Constants.TIME_NOTIFY_PAGE_LOADED_DELAY * 2; // 毫秒
     private final RedirectHandler handler;
     private IWebTarget target;
     private final Semaphore semaphore = new Semaphore(0, true);
@@ -38,7 +38,7 @@ public class PageGoBackEvent extends BaseEvent {
                     LogUtil.d(TAG, "semaphore release");
                     semaphore.release();
                 }
-            }, WAIT_PAGE_LOADED_TIME);
+            }, Constants.TIME_NOTIFY_PAGE_LOADED_DELAY);
         }
 
         @Override
@@ -69,7 +69,7 @@ public class PageGoBackEvent extends BaseEvent {
                     }
                 }).subscribeOn(AndroidSchedulers.mainThread()).subscribe();
                 LogUtil.d(TAG, "go back run ,wait web load success!");
-                boolean ok = semaphore.tryAcquire(getExecuteTimeOut()+WAIT_PAGE_LOADED_TIME, TimeUnit.MILLISECONDS);
+                boolean ok = semaphore.tryAcquire(getExecuteTimeOut(), TimeUnit.MILLISECONDS);
                 if (!ok) {
                     handler.unRegisterRedirectListener(listener);
                     throw new RuntimeException("go back time out!");

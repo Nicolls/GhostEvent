@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.Completable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.schedulers.Schedulers;
 
@@ -19,18 +20,18 @@ import io.reactivex.schedulers.Schedulers;
  * <p>
  * </p>
  */
-public class ClickRedirectEvent extends ClickEvent {
-    private static final String TAG = "ClickRedirectEvent";
-    private static final long REDIRECT_WAIT_TIME = 6 * 1000; // 毫秒
+public class RedirectClickEvent extends ClickEvent {
+    private static final String TAG = "RedirectClickEvent";
     private static final long WAIT_PAGE_LOADED_TIME = 2 * 1000; // 毫秒
+    private static final long REDIRECT_WAIT_TIME = WAIT_PAGE_LOADED_TIME + 1 * 1000; // 毫秒
     private final Semaphore semaphore = new Semaphore(0, true);
     private final RedirectHandler handler;
     private final ITarget target;
 
-    public ClickRedirectEvent(ITarget target, RedirectHandler handler, TouchPoint click) {
-        super(target, click);
-        this.target=target;
+    public RedirectClickEvent(ClickEvent clickEvent, RedirectHandler handler) {
+        super(clickEvent);
         this.handler = handler;
+        this.target = clickEvent.getTarget();
         this.setName(TAG);
     }
 
@@ -60,6 +61,7 @@ public class ClickRedirectEvent extends ClickEvent {
 
     @Override
     public Completable exe(final AtomicBoolean cancel) {
+        final Completable clickCompletable=super.exe(cancel);
         return Completable.fromAction(new Action() {
             @Override
             public void run() throws Exception {
@@ -68,15 +70,9 @@ public class ClickRedirectEvent extends ClickEvent {
                     return;
                 }
                 handler.registerRedirectListener(listener);
-                Completable.fromRunnable(new Runnable() {
-                    @Override
-                    public void run() {
-                        doEvent();
-                        LogUtil.d(TAG, "doEvent completed");
-                    }
-                }).subscribeOn(AndroidSchedulers.mainThread()).subscribe();
+                clickCompletable.subscribe();
                 LogUtil.d(TAG, "click run ,wait web load success!");
-                boolean ok = semaphore.tryAcquire(getExecuteTimeOut()+REDIRECT_WAIT_TIME+WAIT_PAGE_LOADED_TIME, TimeUnit.MILLISECONDS);
+                boolean ok = semaphore.tryAcquire(getExecuteTimeOut(), TimeUnit.MILLISECONDS);
                 if (!ok) {
                     handler.unRegisterRedirectListener(listener);
                     throw new RuntimeException("redirect time out!");

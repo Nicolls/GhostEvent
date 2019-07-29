@@ -6,6 +6,8 @@ import android.view.animation.DecelerateInterpolator;
 import android.webkit.WebView;
 
 import com.nicolls.ghostevent.ghost.core.IWebTarget;
+import com.nicolls.ghostevent.ghost.event.model.Line;
+import com.nicolls.ghostevent.ghost.event.provider.EventParamsProvider;
 import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
@@ -21,49 +23,57 @@ public class ScrollVerticalEvent extends BaseEvent {
     private static final String TAG = "ScrollVerticalEvent";
     private static final long DEFAULT_ANIM_DURATION = 1000; // 毫秒
     private IWebTarget target;
-    private int from;
-    private int to;
-    private int distance;
-    private boolean isScrollByDistance = false;
+    private EventParamsProvider<Line> provider;
     private long animDuration = DEFAULT_ANIM_DURATION;
 
-    public ScrollVerticalEvent(IWebTarget target, int from, int to) {
+    public ScrollVerticalEvent(ScrollVerticalEvent event) {
+        super(event.target);
+        this.target = event.target;
+        this.provider = event.provider;
+        this.setName(TAG);
+    }
+
+    public ScrollVerticalEvent(IWebTarget target, final int from, final int to) {
         super(target);
         this.target = target;
-        this.from = from;
-        this.to = to;
+        this.provider = new EventParamsProvider<Line>() {
+            @Override
+            public Line getParams() {
+                return new Line(from, to);
+            }
+
+            @Override
+            public String getName() {
+                return TAG;
+            }
+        };
         this.setName(TAG);
-        isScrollByDistance = false;
-        init();
+    }
+    public ScrollVerticalEvent(IWebTarget target, EventParamsProvider<Line> provider) {
+        super(target);
+        this.target = target;
+        this.provider = provider;
+        this.setName(TAG);
     }
 
     public ScrollVerticalEvent(IWebTarget target, int distance) {
         super(target);
         this.target = target;
-        this.distance = distance;
-        this.setName(TAG);
-        isScrollByDistance = true;
-        init();
-    }
+        this.provider = new EventParamsProvider<Line>() {
+            @Override
+            public Line getParams() {
+                final WebView webView = (WebView) target;
+                int from = webView.getScrollY();
+                int to = from + distance;
+                return new Line(from, to);
+            }
 
-    private void init() {
-        final WebView webView = (WebView) target;
-        if (isScrollByDistance) {
-            // 如果不是绝对坐标，则在触发时再取值
-            return;
-        }
-        int distance = Math.abs(to - from);
-        int displayHeight = GhostUtils.displayHeight;
-        if (distance >= displayHeight) {
-            animDuration = (distance / displayHeight) * DEFAULT_ANIM_DURATION;
-        } else if (distance > displayHeight / 2) {
-            animDuration = DEFAULT_ANIM_DURATION;
-        } else {
-            animDuration = DEFAULT_ANIM_DURATION / 2;
-        }
-        if (animDuration < DEFAULT_ANIM_DURATION / 4) {
-            animDuration = DEFAULT_ANIM_DURATION / 4;
-        }
+            @Override
+            public String getName() {
+                return TAG;
+            }
+        };
+        this.setName(TAG);
     }
 
     @Override
@@ -71,16 +81,30 @@ public class ScrollVerticalEvent extends BaseEvent {
         return Completable.fromAction(new Action() {
             @Override
             public void run() throws Exception {
-                final WebView webView = (WebView) target;
-                if (isScrollByDistance) {
-                    from = webView.getScrollY();
-                    to = from + distance;
+                Line line = provider.getParams();
+                if (line == null) {
+                    LogUtil.w(TAG, "line is null!");
+                    return;
                 }
+                int distance = Math.abs(line.to - line.from);
+                int displayHeight = GhostUtils.displayHeight;
+                if (distance >= displayHeight) {
+                    animDuration = (distance / displayHeight) * DEFAULT_ANIM_DURATION;
+                } else if (distance > displayHeight / 2) {
+                    animDuration = DEFAULT_ANIM_DURATION;
+                } else {
+                    animDuration = DEFAULT_ANIM_DURATION / 2;
+                }
+                if (animDuration < DEFAULT_ANIM_DURATION / 4) {
+                    animDuration = DEFAULT_ANIM_DURATION / 4;
+                }
+
+                final WebView webView = (WebView) target;
                 LogUtil.d(TAG, "scroll vertical event start anim duration:" + animDuration);
-                LogUtil.d(TAG, "anim from:" + from + " to:" + to);
+                LogUtil.d(TAG, "anim from:" + line.from + " to:" + line.to);
                 final Semaphore semaphore = new Semaphore(0, true);
 
-                final ObjectAnimator animator = ObjectAnimator.ofInt(webView, "scrollY", from, to);
+                final ObjectAnimator animator = ObjectAnimator.ofInt(webView, "scrollY", line.from, line.to);
                 animator.setDuration(animDuration);
                 animator.setInterpolator(new DecelerateInterpolator());
                 animator.addListener(new Animator.AnimatorListener() {
@@ -132,9 +156,8 @@ public class ScrollVerticalEvent extends BaseEvent {
     public String toString() {
         return "ScrollVerticalEvent{" +
                 "target=" + target +
-                ", from=" + from +
-                ", to=" + to +
-                ", distance=" + distance +
+                ", line=" + (provider.getParams() == null ? "null" : provider.getParams().toString()) +
+                ", animDuration=" + animDuration +
                 '}';
     }
 }

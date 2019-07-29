@@ -38,7 +38,7 @@ var findItemLocation = function() {
             var clientHeight = (document.documentElement.clientHeight || document.body.clientHeight)*window.devicePixelRatio;
             var node='{"position":'+i+',"childIndex":'+j+',"left":'+left+',"top":'+top+',"right":'+right+',"bottom":'+bottom+',"clientWidth":'+clientWidth+',"clientHeight":'+clientHeight+',"className":"'+className+'","title":"'+title+'"}';
             window.advertParser.onFoundItem(node);
-            window.advertParser.onFoundItemHtml(content.outerHTML);
+            /*window.advertParser.onFoundItemHtml(content.outerHTML);*/
         }
     }
     window.advertParser.onParseSuccess();

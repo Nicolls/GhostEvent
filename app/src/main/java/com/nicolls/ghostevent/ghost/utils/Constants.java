@@ -11,6 +11,12 @@ public class Constants {
     public static final String LOCAL_URL = "file:////android_asset/advert.html";
 
     /**
+     * event
+     */
+    public static final long TIME_NOTIFY_PAGE_LOADED_DELAY = 2 * 1000; // 毫秒
+    public static final long TIME_LOAD_JS_INIT = 1 * 1000; // 毫秒
+
+    /**
      * parse
      */
     // html

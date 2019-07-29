@@ -35,6 +35,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="onReload"
+            android:visibility="gone"
             android:layout_marginLeft="15dp"
             android:layout_marginTop="50dp"
             android:text="重载" />
@@ -42,6 +43,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="onParse"
+            android:visibility="gone"
             android:layout_marginLeft="15dp"
             android:layout_marginTop="15dp"
             android:text="解析" />
@@ -52,6 +54,7 @@
             android:onClick="onPlayParse"
             android:layout_marginLeft="15dp"
             android:layout_marginTop="15dp"
+            android:visibility="gone"
             android:text="播放解析" />
 
         <Button
@@ -60,6 +63,7 @@
             android:onClick="onRecord"
             android:layout_marginLeft="15dp"
             android:layout_marginTop="40dp"
+            android:visibility="gone"
             android:text="录制" />
 
         <Button
@@ -67,6 +71,7 @@
             android:layout_height="wrap_content"
             android:onClick="onPlay"
             android:layout_margin="15dp"
+            android:visibility="gone"
             android:text="播放" />
 
         <Button

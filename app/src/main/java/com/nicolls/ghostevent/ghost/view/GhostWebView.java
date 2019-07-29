@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.View;
 
 import com.nicolls.ghostevent.ghost.core.EventBuilder;
 import com.nicolls.ghostevent.ghost.core.EventExecutor;
@@ -50,7 +51,6 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
     private EventExecutor eventExecutor = new EventExecutor();
     private final RedirectHandler redirectHandler = new RedirectHandler();
     private final EventBuilder eventBuilder = new EventBuilder(getContext(), redirectHandler, executeCallBack);
-    private final List<BaseEvent> ghostEventList = new ArrayList<>();
     private boolean isRecord = false;
     private GhostWebViewTriggerEvent ghostWebViewTriggerEvent;
 
@@ -85,8 +85,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
     public void start(String url) {
         LogUtil.d(TAG, "start");
         isRecord = false;
-        eventExecutor.execute(eventBuilder.getLoadPageEvent(this, url));
-//        random();
+        eventExecutor.execute(eventBuilder.buildAutoEvent(this, url,10,true));
     }
 
     /**

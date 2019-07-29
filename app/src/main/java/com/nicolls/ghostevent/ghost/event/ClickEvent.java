@@ -1,11 +1,11 @@
 package com.nicolls.ghostevent.ghost.event;
 
-import android.graphics.PointF;
 import android.os.SystemClock;
 import android.view.MotionEvent;
 
 import com.nicolls.ghostevent.ghost.core.ITarget;
-import com.nicolls.ghostevent.ghost.utils.GhostUtils;
+import com.nicolls.ghostevent.ghost.event.model.TouchPoint;
+import com.nicolls.ghostevent.ghost.event.provider.EventParamsProvider;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -25,27 +25,38 @@ public class ClickEvent extends BaseEvent {
     // 毫秒
     public static final int CLICK_INTERVAL_TIME = 100;
     private static final int CLICK_EXECUTE_TIMEOUT = CLICK_INTERVAL_TIME * 2;
-    private TouchPoint touchPoint;
     private ITarget target;
+    private EventParamsProvider<TouchPoint> provider;
 
-    public ClickEvent(ITarget target) {
-        super(target);
-        this.target = target;
+    public ClickEvent(ClickEvent clickEvent) {
+        super(clickEvent.target);
+        this.target = clickEvent.target;
+        this.provider = clickEvent.provider;
         this.setName(TAG);
     }
 
     public ClickEvent(ITarget target, TouchPoint touchPoint) {
         super(target);
         this.target = target;
-        if (touchPoint == null) {
-            touchPoint = new TouchPoint(new PointF(0, 0), CLICK_INTERVAL_TIME);
-        }
-        this.touchPoint = touchPoint;
+        this.provider = new EventParamsProvider<TouchPoint>() {
+            @Override
+            public TouchPoint getParams() {
+                return touchPoint;
+            }
+
+            @Override
+            public String getName() {
+                return "ClickEventParamsProvider";
+            }
+        };
         this.setName(TAG);
     }
 
-    protected void setTouchPoint(TouchPoint touchPoint) {
-        this.touchPoint = touchPoint;
+    public ClickEvent(ITarget target, EventParamsProvider<TouchPoint> provider) {
+        super(target);
+        this.target = target;
+        this.provider = provider;
+        this.setName(TAG);
     }
 
     @Override
@@ -63,6 +74,11 @@ public class ClickEvent extends BaseEvent {
     }
 
     protected void doEvent() {
+        TouchPoint touchPoint = provider.getParams();
+        if (touchPoint == null) {
+            LogUtil.w(TAG, "touchPoint null!");
+            return;
+        }
         // down
         final long downTime = SystemClock.uptimeMillis();
         MotionEvent downEvent = mockMotionEvent(downTime, downTime, MotionEvent.ACTION_DOWN, touchPoint.point.x, touchPoint.point.y);
@@ -79,51 +95,20 @@ public class ClickEvent extends BaseEvent {
         target.doEvent(upEvent);
     }
 
-    public static class Builder {
-        private ClickEvent clickEvent;
+    public long getExecuteTimeOut() {
+        return CLICK_EXECUTE_TIMEOUT;
+    }
 
-        public Builder(ITarget target) {
-            clickEvent = new ClickEvent(target, new TouchPoint(new PointF(0, 0), CLICK_INTERVAL_TIME));
-        }
-
-        public static ClickEvent copy(ClickEvent clickEvent) {
-            ClickEvent copyEvent = new ClickEvent(clickEvent.target, clickEvent.touchPoint);
-            return copyEvent;
-        }
-
-        public Builder setLocation(float x, float y) {
-            clickEvent.touchPoint.point.x = x;
-            clickEvent.touchPoint.point.y = x;
-            return this;
-        }
-
-        public Builder setLocationWithRatio(float xRatio, float yRatio) {
-            xRatio = xRatio < 0 ? 0 : xRatio;
-            xRatio = xRatio > 1 ? 1 : xRatio;
-
-            yRatio = yRatio < 0 ? 0 : yRatio;
-            yRatio = yRatio > 1 ? 1 : yRatio;
-
-            clickEvent.touchPoint = new TouchPoint(new PointF(GhostUtils.displayWidth * xRatio,
-                    GhostUtils.displayHeight * yRatio), CLICK_INTERVAL_TIME);
-            return this;
-        }
-
-        public ClickEvent create() {
-            return clickEvent;
-        }
+    ITarget getTarget() {
+        return target;
     }
 
     @Override
     public String toString() {
         return "ClickEvent{" +
-                "touchPoint=" + touchPoint.toString() +
+                "touchPoint=" + (provider.getParams() == null ? "null" : provider.getParams().toString()) +
                 ", name='" + getName() + '\'' +
                 '}';
-    }
-
-    public long getExecuteTimeOut() {
-        return CLICK_EXECUTE_TIMEOUT;
     }
 
 }

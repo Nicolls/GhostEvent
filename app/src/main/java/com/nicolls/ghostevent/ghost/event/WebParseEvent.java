@@ -15,14 +15,15 @@ import io.reactivex.schedulers.Schedulers;
 
 public class WebParseEvent extends BaseEvent {
     private static final String TAG = "WebParseEvent";
-    private static final long PARSE_WAIT_TIME = 6*1000; // 毫秒
+    private static final long PARSE_WAIT_TIME = 4 * 1000; // 毫秒
     private final Semaphore semaphore = new Semaphore(0, true);
     private IWebTarget target;
     private IWebParser webParser;
-    public WebParseEvent(IWebTarget target,IWebParser webParser) {
+
+    public WebParseEvent(IWebTarget target, IWebParser webParser) {
         super(target);
         this.target = target;
-        this.webParser=webParser;
+        this.webParser = webParser;
         this.setName(TAG);
     }
 
@@ -39,12 +40,12 @@ public class WebParseEvent extends BaseEvent {
                 Completable.fromRunnable(new Runnable() {
                     @Override
                     public void run() {
-                        webParser.parse(target,semaphore);
+                        webParser.parse(target, semaphore);
                         LogUtil.d(TAG, "do parse");
                     }
                 }).subscribeOn(AndroidSchedulers.mainThread()).subscribe();
                 LogUtil.d(TAG, "exe parse subscribe ");
-                boolean ok = semaphore.tryAcquire(PARSE_WAIT_TIME, TimeUnit.MILLISECONDS);
+                boolean ok = semaphore.tryAcquire(getExecuteTimeOut(), TimeUnit.MILLISECONDS);
                 if (!ok) {
                     LogUtil.w(TAG, "parse page time out!");
                 } else {

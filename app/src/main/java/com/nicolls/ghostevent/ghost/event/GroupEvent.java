@@ -2,7 +2,7 @@ package com.nicolls.ghostevent.ghost.event;
 
 import com.nicolls.ghostevent.ghost.core.EventExecutor;
 import com.nicolls.ghostevent.ghost.core.ITarget;
-import com.nicolls.ghostevent.ghost.utils.Constants;
+import com.nicolls.ghostevent.ghost.event.provider.EventParamsProvider;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.ArrayList;
@@ -27,6 +27,7 @@ public class GroupEvent extends BaseEvent {
     private long timeOut = DEFAULT_EVENT_EXECUTE_TIMEOUT;
     private ITarget target;
     private EventExecutor.ExecuteCallBack executeCallBack;
+    private EventParamsProvider<List<BaseEvent>> provider;
 
     public GroupEvent(ITarget target, EventExecutor.ExecuteCallBack executeCallBack) {
         this(target, executeCallBack, new BaseEvent[]{});
@@ -44,6 +45,12 @@ public class GroupEvent extends BaseEvent {
                 timeOut += EVENT_EXECUTE_TIME_OUT_EXTEND;
             }
         }
+    }
+
+    public GroupEvent(ITarget target, EventExecutor.ExecuteCallBack executeCallBack,
+                      EventParamsProvider<List<BaseEvent>> provider) {
+        this(target, executeCallBack, new BaseEvent[]{});
+        this.provider = provider;
     }
 
     public void addEvent(BaseEvent event) {
@@ -72,6 +79,13 @@ public class GroupEvent extends BaseEvent {
                     LogUtil.d(TAG, "cancel!");
                     return;
                 }
+                if (provider != null) {
+                    if (childList == null) {
+                        childList = new ArrayList<>();
+                    }
+                    childList.clear();
+                    childList.addAll(provider.getParams());
+                }
                 for (final BaseEvent event : childList) {
                     LogUtil.d(TAG, "start child event:" + event.getName());
                     if (cancel.get()) {
@@ -79,8 +93,8 @@ public class GroupEvent extends BaseEvent {
                         break;
                     }
                     LogUtil.d(TAG, "execute child event");
-                    boolean isOk=onChildStart(event);
-                    if(!isOk){
+                    boolean isOk = onChildStart(event);
+                    if (!isOk) {
                         break;
                     }
                     event.exe(cancel).observeOn(Schedulers.io()).subscribe(new CompletableObserver() {
@@ -129,18 +143,18 @@ public class GroupEvent extends BaseEvent {
         return timeOut;
     }
 
-    public boolean onChildStart(BaseEvent event){
-        LogUtil.d(TAG,"onChildStart");
+    public boolean onChildStart(BaseEvent event) {
+        LogUtil.d(TAG, "onChildStart");
         return true;
     }
 
-    public void onChildCompleted(BaseEvent event){
-        LogUtil.d(TAG,"onChildCompleted");
+    public void onChildCompleted(BaseEvent event) {
+        LogUtil.d(TAG, "onChildCompleted");
 
     }
 
-    public void onChildFail(BaseEvent event){
-        LogUtil.d(TAG,"onChildFail");
+    public void onChildFail(BaseEvent event) {
+        LogUtil.d(TAG, "onChildFail");
 
     }
 

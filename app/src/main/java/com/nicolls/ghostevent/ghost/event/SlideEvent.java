@@ -5,6 +5,7 @@ import android.os.SystemClock;
 import android.view.MotionEvent;
 
 import com.nicolls.ghostevent.ghost.core.ITarget;
+import com.nicolls.ghostevent.ghost.event.model.TouchPoint;
 import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 

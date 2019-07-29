@@ -1,6 +1,8 @@
-package com.nicolls.ghostevent.ghost.event;
+package com.nicolls.ghostevent.ghost.event.model;
 
 import android.graphics.PointF;
+
+import com.nicolls.ghostevent.ghost.event.ClickEvent;
 
 public class TouchPoint {
     /**
