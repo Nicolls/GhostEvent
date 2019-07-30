@@ -23,7 +23,7 @@ public class GroupEvent extends BaseEvent {
     // 使用这个延长来确保，执行child event时的超时判断一定大于，child event本身的超时判断
     private final Semaphore semaphore = new Semaphore(0, true);
     private List<BaseEvent> childList = new ArrayList<>();
-    private long timeOut = Constants.DEFAULT_EVENT_EXECUTE_TIMEOUT;
+    private long timeOut = 0;
     private EventExecutor.ExecuteCallBack executeCallBack;
 
     public GroupEvent(ITarget target, EventExecutor.ExecuteCallBack executeCallBack) {
@@ -112,7 +112,7 @@ public class GroupEvent extends BaseEvent {
                         }
                     });
                     long timeOut = event.getExecuteTimeOut();
-                    LogUtil.d(TAG, "next child try acquire wait timeOut:" + timeOut);
+                    LogUtil.d(TAG, "next child try acquire wait current child. timeOut:" + timeOut);
                     boolean ok = semaphore.tryAcquire(timeOut, TimeUnit.MILLISECONDS);
                     if (!ok) {
                         LogUtil.d(TAG, "child acquired time out!");

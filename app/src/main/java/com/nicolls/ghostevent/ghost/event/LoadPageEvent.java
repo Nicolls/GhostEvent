@@ -55,8 +55,9 @@ public class LoadPageEvent extends BaseEvent {
                 boolean ok = semaphore.tryAcquire(getExecuteTimeOut(), TimeUnit.MILLISECONDS);
                 if (!ok) {
                     handler.unRegisterRedirectListener(listener);
-                    // loadpage 事件如果都没有成功，则需要停止所有的
-                    cancel.set(true);
+                    // 加载页面没有成功，则需要停止页面加载
+                    LogUtil.w(TAG, "load page time out,stop loading");
+                    webView.stopLoading();
                     throw new RuntimeException("load page time out!");
                 } else {
                     LogUtil.d(TAG, "web load page completed");

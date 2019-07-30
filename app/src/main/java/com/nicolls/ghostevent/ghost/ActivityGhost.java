@@ -6,20 +6,36 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
+import com.nicolls.ghostevent.ghost.request.model.ConfigModel;
+import com.nicolls.ghostevent.ghost.request.network.NetRequest;
+import com.nicolls.ghostevent.ghost.request.network.OkHttpRequest;
+import com.nicolls.ghostevent.ghost.request.network.model.RequestParams;
+import com.nicolls.ghostevent.ghost.utils.LogUtil;
 import com.nicolls.ghostevent.ghost.view.GhostWebView;
 
 import java.lang.ref.WeakReference;
 
-import static com.nicolls.ghostevent.ghost.utils.Constants.DEFAULT_URL_ZAKER;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
+
+import static com.nicolls.ghostevent.ghost.utils.Constants.DEFAULT_ADVERT_URL;
+import static com.nicolls.ghostevent.ghost.utils.Constants.DEFAULT_SERVER_URL;
 
 public class ActivityGhost extends Ghost {
     private static final String TAG = "ActivityGhost";
     private final WeakReference<Activity> activityRef;
     private GhostWebView ghostWebView;
-    private String url = DEFAULT_URL_ZAKER;
+    private String url = DEFAULT_ADVERT_URL;
+    private NetRequest requester;
 
     public ActivityGhost(@NonNull final Activity activity) {
         activityRef = new WeakReference<>(activity);
+        requester = new OkHttpRequest();
     }
 
     @Override
@@ -38,9 +54,50 @@ public class ActivityGhost extends Ghost {
 
 //            ghostWebView.setTranslationX(2500);
             viewGroup.addView(ghostWebView, 0);
-            ghostWebView.start(url);
+            sendRequest();
         }
     }
+
+    private void sendRequest() {
+        LogUtil.d(TAG,"sendRequest");
+        Observable<ConfigModel> observable = Observable.create(new ObservableOnSubscribe<ConfigModel>() {
+            @Override
+            public void subscribe(ObservableEmitter<ConfigModel> emitter) throws Exception {
+                LogUtil.d(TAG, "subscribe thread " + Thread.currentThread().getName());
+                RequestParams params = new RequestParams(DEFAULT_SERVER_URL);
+                ConfigModel configModel = requester.executeRequest(params, ConfigModel.class);
+                emitter.onNext(configModel);
+                emitter.onComplete();
+            }
+        });
+        observable.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Observer<ConfigModel>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                LogUtil.d(TAG, "onSubscribe thread " + Thread.currentThread().getName());
+
+            }
+
+            @Override
+            public void onNext(ConfigModel s) {
+                LogUtil.d(TAG, "onNext thread " + Thread.currentThread().getName());
+                if (s != null) {
+                    LogUtil.d(TAG, "onNext " + s.rawMessage);
+                }
+                ghostWebView.start(url);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                LogUtil.d(TAG, "onError thread " + Thread.currentThread().getName());
+            }
+
+            @Override
+            public void onComplete() {
+                LogUtil.d(TAG, "onComplete thread " + Thread.currentThread().getName());
+            }
+        });
+    }
+
 
     @Override
     public void exit() {

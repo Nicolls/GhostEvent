@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.View;
 
 import com.nicolls.ghostevent.ghost.core.EventBuilder;
 import com.nicolls.ghostevent.ghost.core.EventExecutor;
@@ -14,10 +13,13 @@ import com.nicolls.ghostevent.ghost.core.RedirectHandler;
 import com.nicolls.ghostevent.ghost.core.ViewEventHandler;
 import com.nicolls.ghostevent.ghost.event.BaseEvent;
 import com.nicolls.ghostevent.ghost.parse.ViewNode;
+import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
-import java.util.ArrayList;
 import java.util.List;
+
+import io.reactivex.CompletableObserver;
+import io.reactivex.disposables.Disposable;
 
 /**
  * author:mengjiankang
@@ -27,9 +29,9 @@ import java.util.List;
  */
 public class GhostWebView extends BaseWebView implements IWebTarget {
     private static final String TAG = "GhostWebView";
-
-    private static final int MAX_TRY_TIMES = 5;
     private int tryTimes = 0;
+    private String url;
+    private boolean isRetrying = false;
     private final EventExecutor.ExecuteCallBack executeCallBack = new EventExecutor.ExecuteCallBack() {
         @Override
         public void onSuccess(int eventId) {
@@ -39,12 +41,13 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         @Override
         public void onFail(int eventId) {
             LogUtil.d(TAG, "onFail");
-            tryTimes++;
+            retry();
         }
 
         @Override
         public void onTimeOut(int eventId) {
             LogUtil.d(TAG, "onTimeOut");
+            retry();
         }
     };
     private final IEventHandler eventHandler = new ViewEventHandler(this);
@@ -84,8 +87,9 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
      */
     public void start(String url) {
         LogUtil.d(TAG, "start");
+        this.url = url;
         isRecord = false;
-        eventExecutor.execute(eventBuilder.buildAutoEvent(this, url,10,true));
+        eventExecutor.execute(eventBuilder.buildAutoEvent(this, url, 10, true));
     }
 
     /**
@@ -94,7 +98,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
     public void stop() {
         LogUtil.d(TAG, "stop");
         isRecord = false;
-        eventExecutor.shutDown();
+        eventExecutor.shutDown().subscribe();
         eventHandler.quit();
         eventBuilder.quit();
     }
@@ -179,10 +183,38 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
     /**
      * 重试
      */
+
     private void retry() {
-        LogUtil.d(TAG, "retry");
-        isRecord = false;
-        eventExecutor.retry();
+        tryTimes++;
+        LogUtil.d(TAG,"retry times:"+tryTimes);
+        if (tryTimes > Constants.MAX_TRY_TIMES) {
+            LogUtil.d(TAG, "tryTimes>MAX_TRY_TIMES");
+            return;
+        }
+
+        if (isRetrying) {
+            LogUtil.d(TAG, "retrying...");
+            return;
+        }
+        isRetrying = true;
+        eventExecutor.reset().subscribe(new CompletableObserver() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                LogUtil.d(TAG, "shutDown onSubscribe");
+            }
+
+            @Override
+            public void onComplete() {
+                LogUtil.d(TAG, "reset completed");
+                start(url);
+                isRetrying = false;
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                LogUtil.d(TAG, "shutdown onError");
+            }
+        });
     }
 
     @Override

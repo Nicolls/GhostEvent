@@ -48,6 +48,7 @@ public class WebParseEvent extends BaseEvent {
                 boolean ok = semaphore.tryAcquire(getExecuteTimeOut(), TimeUnit.MILLISECONDS);
                 if (!ok) {
                     LogUtil.w(TAG, "parse page time out!");
+                    throw new RuntimeException("parse page time out!");
                 } else {
                     LogUtil.d(TAG, "parse page completed");
                 }

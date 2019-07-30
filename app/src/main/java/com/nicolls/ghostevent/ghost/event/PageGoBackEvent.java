@@ -39,10 +39,10 @@ public class PageGoBackEvent extends BaseEvent {
             @Override
             public void run() throws Exception {
                 handler.registerRedirectListener(listener);
+                final WebView webView = (WebView) target;
                 Completable.fromRunnable(new Runnable() {
                     @Override
                     public void run() {
-                        WebView webView = (WebView) target;
                         webView.goBack();
                         LogUtil.d(TAG, "doGoBack completed");
                     }
@@ -51,6 +51,9 @@ public class PageGoBackEvent extends BaseEvent {
                 boolean ok = semaphore.tryAcquire(getExecuteTimeOut(), TimeUnit.MILLISECONDS);
                 if (!ok) {
                     handler.unRegisterRedirectListener(listener);
+                    // 加载页面没有成功，则需要停止页面加载
+                    LogUtil.w(TAG, "go back time out,stop loading");
+                    webView.stopLoading();
                     throw new RuntimeException("go back time out!");
                 } else {
                     LogUtil.d(TAG, "web go back completed");

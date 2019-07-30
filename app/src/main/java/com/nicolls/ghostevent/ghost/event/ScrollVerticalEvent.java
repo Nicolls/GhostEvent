@@ -24,7 +24,8 @@ public class ScrollVerticalEvent extends BaseEvent {
     private IWebTarget target;
     private EventParamsProvider<Line> provider;
     private static final long DEFAULT_ANIM_DURATION = 1000;
-    private static final long MAX_ANIM_DURATION = 6 * 1000;
+    private static final long ANIM_END_DELAY = 500;
+    private static final long MAX_ANIM_DURATION = 6 * 1000 + ANIM_END_DELAY;
     private long animDuration = DEFAULT_ANIM_DURATION;
 
     public ScrollVerticalEvent(ScrollVerticalEvent event) {
@@ -123,18 +124,28 @@ public class ScrollVerticalEvent extends BaseEvent {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         LogUtil.d(TAG, "onAnimationEnd scrollY:" + webView.getScrollY());
-                        semaphore.release();
+                        delayRelease();
                     }
 
                     @Override
                     public void onAnimationCancel(Animator animation) {
                         LogUtil.d(TAG, "onAnimationCancel scrollY:" + webView.getScrollY());
-                        semaphore.release();
+                        delayRelease();
                     }
 
                     @Override
                     public void onAnimationRepeat(Animator animation) {
 
+                    }
+
+                    private void delayRelease() {
+                        target.getEventHandler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                LogUtil.d(TAG, "release semaphore");
+                                semaphore.release();
+                            }
+                        }, ANIM_END_DELAY);
                     }
                 });
                 target.getMainHandler().post(new Runnable() {
@@ -147,6 +158,7 @@ public class ScrollVerticalEvent extends BaseEvent {
                 animator.removeAllListeners();
                 if (!ok) {
                     LogUtil.d(TAG, "scroll vertical event time out");
+                    throw new RuntimeException("vertical scroll time out!");
                 } else {
                     LogUtil.d(TAG, "scroll vertical event completed scrollY:" + webView.getScrollY());
                 }

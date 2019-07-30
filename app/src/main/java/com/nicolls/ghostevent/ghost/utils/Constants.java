@@ -6,21 +6,30 @@ public class Constants {
      * test
      */
     // url
-    public static final String DEFAULT_URL = "http://jandan.net/";
-    public static final String DEFAULT_URL_ZAKER = "https://cpu.baidu.com/1001/be900f73?scid=33854";
-    public static final String LOCAL_URL = "file:////android_asset/advert.html";
+    public static final String DEFAULT_SERVER_URL = "http://www.myzaker.com/";
+    public static final String DEFAULT_UPLOAD_EVENT_URL = "http://www.myzaker.com/";
+    public static final String DEFAULT_ADVERT_URL = "https://cpu.baidu.com/1001/be900f73?scid=33854";
 
+    /**
+     * 重试的最大次数
+     *
+     */
+    public static final int MAX_TRY_TIMES = 3;
     /**
      * event
      */
-    // 默认的超时时长 毫秒
-    public static final long DEFAULT_EVENT_EXECUTE_TIMEOUT = 10 * 1000;
     // 加这个延长用于确保，当前的event一定比子延长大
     public static final long DEFAULT_EVENT_EXECUTE_TIMEOUT_EXTEND = 100; // 毫秒
-
-    public static final long TIME_DEFAULT_JS_PARSED_DELAY = 4 * 1000;
-    public static final long TIME_NOTIFY_PAGE_LOADED_DELAY = 5 * 1000; // 毫秒
-    public static final long TIME_DEFAULT_LOAD_JS_INIT = 5 * 1000; // 毫秒
+    // 取消退出这个事件的等待时长，大于最大的那个timeout事件
+    public static final long TIME_DEFAULT_CANCEL_WAIT_TIME = 70 * 1000; // 毫秒
+    // 加载网页的等待时长
+    public static final long TIME_DEFAULT_LOAD_PAGE_WAIT_TIME = 50 * 1000; // 毫秒
+    // 加载网页触发了success后，延迟时长再通知加载完成
+    public static final long TIME_NOTIFY_PAGE_LOADED_DELAY = 3 * 1000; // 毫秒
+    // 加载js等待的时长
+    public static final long TIME_DEFAULT_LOAD_JS_INIT = 1 * 1000; // 毫秒
+    // 执行加载js代码后，延迟的时长再通知加载js完成
+    public static final long TIME_DEFAULT_JS_PARSED_DELAY = 1 * 1000;
 
 
 //    public static final int CLICK_INTERVAL_TIME = 100;

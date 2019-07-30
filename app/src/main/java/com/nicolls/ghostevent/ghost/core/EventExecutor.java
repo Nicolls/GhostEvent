@@ -3,6 +3,7 @@ package com.nicolls.ghostevent.ghost.core;
 
 import com.nicolls.ghostevent.ghost.event.BaseEvent;
 import com.nicolls.ghostevent.ghost.event.CancelEvent;
+import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import io.reactivex.Completable;
 import io.reactivex.CompletableObserver;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -22,8 +24,11 @@ public class EventExecutor {
     private Thread executeThread;
     private volatile AtomicBoolean cancelAtom = new AtomicBoolean(false);
     private Disposable lastDisposable;
-    // 信号量，事件需要按顺序一个接一个的执行
+    // 事件信号量，事件需要按顺序一个接一个的执行
     private final Semaphore semaphore = new Semaphore(0, true);
+
+    // reset信号量，task运行完成后，才算reset完成
+    private Semaphore resetSemaphore = new Semaphore(0, true);
 
     public interface ExecuteCallBack {
         void onSuccess(int eventId);
@@ -40,6 +45,12 @@ public class EventExecutor {
     }
 
     private void init() {
+        LogUtil.d(TAG, "init EventExecutor");
+        try {
+            eventBlockingQueue.clear();
+        } catch (Exception e) {
+            LogUtil.e(TAG, "clear eventBlockingQueue error ", e);
+        }
         this.executeThread = new Thread(executeEventTask);
         this.executeThread.start();
     }
@@ -56,12 +67,13 @@ public class EventExecutor {
 
     public synchronized void execute(BaseEvent event) {
         if (cancelAtom.get()) {
-            LogUtil.d(TAG, "execute cancel,have been shutdown!");
+            LogUtil.d(TAG, "put event to queue cancel,executor have been shutdown!");
             return;
         }
-        LogUtil.d(TAG, "execute event: " + event.getName());
+        LogUtil.d(TAG, "enqueue event  " + event.getName());
         try {
             eventBlockingQueue.put(event);
+            LogUtil.d(TAG, "enqueue done");
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -85,13 +97,17 @@ public class EventExecutor {
                     if (!ok) {
                         LogUtil.d(TAG, "event " + event.getName() + " time out !");
                         executeCallBack.onTimeOut(event.getId());
-                    }else {
+                    } else {
                         LogUtil.d(TAG, "semaphore acquired");
                     }
                 }
                 LogUtil.d(TAG, "executeEventTask over");
             } catch (InterruptedException e) {
                 e.printStackTrace();
+            }
+            if (resetSemaphore != null) {
+                LogUtil.d(TAG, "release resetSemaphore");
+                resetSemaphore.release();
             }
         }
     };
@@ -138,22 +154,46 @@ public class EventExecutor {
         });
     }
 
-    public void shutDown() {
+    public Completable shutDown() {
         LogUtil.d(TAG, "shutDown");
-        cancelAtom.set(true);
-        try {
-            eventBlockingQueue.put(CancelEvent.instance);
-        } catch (InterruptedException e) {
-            LogUtil.e(TAG, "invoke shutdown exe cancel event error ", e);
-            e.printStackTrace();
-        }
+        return Completable.fromRunnable(new Runnable() {
+            @Override
+            public void run() {
+                LogUtil.d(TAG, "do shutDown set cancelAtom true and put CancelEvent");
+                if (!cancelAtom.get()) {
+                    LogUtil.d(TAG, "start shutDown");
+                    cancelAtom.set(true);
+                    try {
+                        boolean ok = eventBlockingQueue.offer(CancelEvent.instance, CancelEvent.instance.getExecuteTimeOut(), TimeUnit.MILLISECONDS);
+                        LogUtil.d(TAG, "offer cancel event ok:" + ok);
+                    } catch (InterruptedException e) {
+                        LogUtil.e(TAG, "invoke shutdown exe cancel event error ", e);
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).subscribeOn(Schedulers.io());
     }
 
-    public void retry() {
-        shutDown();
-        cancelAtom.set(false);
-        executeThread = null;
-        init();
+    public Completable reset() {
+        return Completable.fromRunnable(new Runnable() {
+            @Override
+            public void run() {
+                resetSemaphore = new Semaphore(0, true);
+                shutDown().subscribe();
+                try {
+                    LogUtil.d(TAG, "reset tryAcquire resetSemaphore");
+                    resetSemaphore.tryAcquire(CancelEvent.instance.getExecuteTimeOut() + Constants.DEFAULT_EVENT_EXECUTE_TIMEOUT_EXTEND, TimeUnit.MILLISECONDS);
+                    LogUtil.d(TAG, "resetSemaphore Acquired, reset completed");
+                    eventBlockingQueue.clear();
+                    cancelAtom.set(false);
+                    init();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }).subscribeOn(Schedulers.io());
     }
 
 }

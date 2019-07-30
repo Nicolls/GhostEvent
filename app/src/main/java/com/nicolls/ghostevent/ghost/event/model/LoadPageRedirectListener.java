@@ -52,7 +52,8 @@ public class LoadPageRedirectListener implements RedirectHandler.RedirectListene
     }
 
     public long getLoadPageRedirectTimeOut() {
-        return Constants.TIME_NOTIFY_PAGE_LOADED_DELAY * maxReceiveSuccessTimes;
+        return Constants.TIME_NOTIFY_PAGE_LOADED_DELAY * maxReceiveSuccessTimes
+                + Constants.TIME_DEFAULT_LOAD_PAGE_WAIT_TIME;
     }
 
     @Override

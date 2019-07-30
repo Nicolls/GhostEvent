@@ -86,17 +86,18 @@ public class EventBuilder {
 
         list.add(scrollVerticalUpEvent);
         list.add(scrollVerticalUpEvent);
-//        list.add(clickRedirect);
-//        list.add(backEvent);
-//        list.add(scrollVerticalUpEvent);
-//        list.add(scrollVerticalUpEvent);
-//        list.add(scrollVerticalDownEvent);
-//        if (haveAdvert && closeAdvertClickEvent != null) {
-//            list.add(closeAdvertClickEvent);
-//        }
-//        list.add(scrollVerticalUpEvent);
-//        list.add(backEvent);
-//        list.add(scrollVerticalUpEvent);
+        list.add(clickRedirect);
+        list.add(backEvent);
+        list.add(scrollVerticalUpEvent);
+        list.add(scrollVerticalUpEvent);
+        list.add(scrollVerticalDownEvent);
+        if (haveAdvert && closeAdvertClickEvent != null) {
+            LogUtil.d(TAG,"add closeAdvertClickEvent");
+            list.add(closeAdvertClickEvent);
+        }
+        list.add(scrollVerticalUpEvent);
+        list.add(backEvent);
+        list.add(scrollVerticalUpEvent);
 
 //        list.add(scrollVerticalUpEvent);
 //        list.add(scrollVerticalUpEvent);

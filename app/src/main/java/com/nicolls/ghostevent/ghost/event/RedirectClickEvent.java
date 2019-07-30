@@ -1,5 +1,7 @@
 package com.nicolls.ghostevent.ghost.event;
 
+import android.webkit.WebView;
+
 import com.nicolls.ghostevent.ghost.core.IWebTarget;
 import com.nicolls.ghostevent.ghost.core.RedirectHandler;
 import com.nicolls.ghostevent.ghost.event.model.LoadPageRedirectListener;
@@ -45,13 +47,16 @@ public class RedirectClickEvent extends ClickEvent {
                     LogUtil.d(TAG, "cancel!");
                     return;
                 }
+                final WebView webView= (WebView) target;
                 handler.registerRedirectListener(listener);
                 clickCompletable.subscribe();
                 LogUtil.d(TAG, "click run ,wait web load success!");
                 boolean ok = semaphore.tryAcquire(getExecuteTimeOut(), TimeUnit.MILLISECONDS);
                 if (!ok) {
                     handler.unRegisterRedirectListener(listener);
-                    throw new RuntimeException("redirect time out!");
+                    LogUtil.d(TAG,"redirect time out! but ignore this exception! go on");
+                    // 加载页面没有成功，则需要停止页面加载
+                    webView.stopLoading();
                 } else {
                     LogUtil.d(TAG, "web load completed");
                     handler.unRegisterRedirectListener(listener);
