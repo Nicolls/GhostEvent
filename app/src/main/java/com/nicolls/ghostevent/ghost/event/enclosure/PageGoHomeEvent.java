@@ -1,10 +1,11 @@
-package com.nicolls.ghostevent.ghost.event;
+package com.nicolls.ghostevent.ghost.event.enclosure;
 
 import android.webkit.WebView;
 
 import com.nicolls.ghostevent.ghost.core.ITarget;
 import com.nicolls.ghostevent.ghost.core.IWebTarget;
 import com.nicolls.ghostevent.ghost.core.RedirectHandler;
+import com.nicolls.ghostevent.ghost.event.BaseEvent;
 import com.nicolls.ghostevent.ghost.event.model.HomePageRedirectListener;
 import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
@@ -19,7 +20,7 @@ import io.reactivex.functions.Action;
 import io.reactivex.schedulers.Schedulers;
 
 public class PageGoHomeEvent extends BaseEvent {
-    private static final String TAG = "HomePageEvent";
+    private static final String TAG = "PageGoHomeEvent";
     private final RedirectHandler handler;
     private WebView webView;
     private ITarget target;
@@ -50,7 +51,7 @@ public class PageGoHomeEvent extends BaseEvent {
                             LogUtil.d(TAG, "do first go Home completed");
                         } else {
                             LogUtil.d(TAG, "already in home page ,end!");
-                            listener.onSuccess();
+                            semaphore.release();
                         }
                     }
                 }).subscribeOn(AndroidSchedulers.mainThread()).subscribe();

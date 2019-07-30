@@ -44,14 +44,26 @@ public class GroupEvent extends BaseEvent {
                 timeOut += event.getExecuteTimeOut();
             }
         }
+        initTimeOut();
     }
 
     public void addEvent(BaseEvent event) {
         childList.add(event);
+        initTimeOut();
     }
 
     public void addEvent(List<BaseEvent> events) {
         childList.addAll(events);
+        initTimeOut();
+    }
+
+    private void initTimeOut() {
+        timeOut = 0;
+        if (childList != null) {
+            for (BaseEvent event : childList) {
+                timeOut += event.getExecuteTimeOut();
+            }
+        }
     }
 
     public void removeEvent(BaseEvent event) {

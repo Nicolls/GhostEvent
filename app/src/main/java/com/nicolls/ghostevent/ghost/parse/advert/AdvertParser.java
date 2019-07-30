@@ -1,5 +1,7 @@
 package com.nicolls.ghostevent.ghost.parse.advert;
 
+import android.webkit.WebView;
+
 import com.nicolls.ghostevent.ghost.core.IWebTarget;
 import com.nicolls.ghostevent.ghost.parse.WebBaseParser;
 import com.nicolls.ghostevent.ghost.utils.Constants;
@@ -12,8 +14,12 @@ public class AdvertParser extends WebBaseParser {
 
     public void foundItem(IWebTarget target, Semaphore semaphore) {
         LogUtil.d(TAG, "execute foundItem ");
+        final WebView webView= (WebView) target;
+        LogUtil.d(TAG,"view width-height:"+webView.getWidth()+"-"+webView.getHeight());
+        String findItem=String.format(Constants.JS_FUNCTION_FIND_ITEM,webView.getWidth(),webView.getHeight());
+        LogUtil.d(TAG,"findItem "+findItem);
         target.executeJs(Constants.JS_FUNCTION_MESSAGE);
-        target.executeJs(Constants.JS_FUNCTION_FIND_ITEM);
+        target.executeJs(findItem);
         target.getEventHandler().postDelayed(new Runnable() {
             @Override
             public void run() {

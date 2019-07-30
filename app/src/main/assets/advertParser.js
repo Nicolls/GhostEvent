@@ -2,21 +2,29 @@ var currentPageHtml = function() {
     window.advertParser.onCurrentPageHtml(document.getElementsByTagName('html')[0].outerHTML);
 };
 
-var printMessage = function() {
-    window.advertParser.onMessage('test');
+var printMessage = function(msg) {
+    console.log(msg.toString());
+    window.advertParser.onMessage(msg);
 };
 
-var findItemText = function() {
-    var items=document.getElementsByClassName("n-item-ad");
-    for(var i=0;i<items.length;i++){
-        var item=items[i];
-        var content=item.getElementsByClassName("content");
-        window.advertParser.onFoundItemHtml(item.innerHTML);
+/*covert to 2 float*/
+var toDecimal = function (x) {
+    var f = parseFloat(x);
+    if (isNaN(f)) {
+        return;
     }
+    f = Math.round(x*100)/100;
+    return f;
 };
 
-var findItemLocation = function() {
+var findItemLocation = function(width,height) {
+    printMessage('viewport:'+width+'-'+height);
     window.advertParser.onParseStart();
+    var clientWidth = (document.documentElement.clientWidth || document.body.clientWidth);
+    var clientHeight = (document.documentElement.clientHeight || document.body.clientHeight);
+    printMessage('h5 body:'+width+'-'+height);
+    var devicePixelRatio=height/clientHeight;
+    printMessage('devicePixelRatio:'+devicePixelRatio+'-'+window.devicePixelRatio);
     var items=document.getElementsByClassName("n-item");
     if(items.length<=0){
         window.advertParser.onParseFail();
@@ -30,13 +38,11 @@ var findItemLocation = function() {
         var title=titleDiv[0].getElementsByTagName("span")[0].innerHTML;
         for (var j=0;j<contents.length;j++){
             var content=contents[j];
-            var left=content.getBoundingClientRect().left*window.devicePixelRatio;
-            var top=content.getBoundingClientRect().top*window.devicePixelRatio;
-            var right=content.getBoundingClientRect().right*window.devicePixelRatio;
-            var bottom=content.getBoundingClientRect().bottom*window.devicePixelRatio;
-            var clientWidth = (document.documentElement.clientWidth || document.body.clientWidth)*window.devicePixelRatio;
-            var clientHeight = (document.documentElement.clientHeight || document.body.clientHeight)*window.devicePixelRatio;
-            var node='{"position":'+i+',"childIndex":'+j+',"left":'+left+',"top":'+top+',"right":'+right+',"bottom":'+bottom+',"clientWidth":'+clientWidth+',"clientHeight":'+clientHeight+',"className":"'+className+'","title":"'+title+'"}';
+            var left=toDecimal(content.getBoundingClientRect().left*devicePixelRatio);
+            var top=toDecimal(content.getBoundingClientRect().top*devicePixelRatio);
+            var right=toDecimal(content.getBoundingClientRect().right*devicePixelRatio);
+            var bottom=toDecimal(content.getBoundingClientRect().bottom*devicePixelRatio);
+            var node='{"position":'+i+',"childIndex":'+j+',"left":'+left+',"top":'+top+',"right":'+right+',"bottom":'+bottom+',"clientWidth":'+toDecimal(clientWidth*devicePixelRatio)+',"clientHeight":'+toDecimal(clientHeight*devicePixelRatio)+',"className":"'+className+'","title":"'+title+'"}';
             window.advertParser.onFoundItem(node);
             /*window.advertParser.onFoundItemHtml(content.outerHTML);*/
         }

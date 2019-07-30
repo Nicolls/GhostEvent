@@ -35,7 +35,7 @@ public class SlideToAdvertEventProvider extends EventParamsProvider<Line> {
         final WebView webView = (WebView) target;
         ViewNode closeNode = null;
         for (ViewNode node : adNodes) {
-            if (node.centerY > 0) {
+            if (node.top > 0) {
                 closeNode = node;
                 break;
             }
@@ -46,25 +46,25 @@ public class SlideToAdvertEventProvider extends EventParamsProvider<Line> {
         if (closeNode != null) {
             LogUtil.d(TAG, "click advert " + closeNode.toString());
             final int webViewHeight = webView.getHeight();
+            final int centerHeight = webViewHeight / 2;
             final int scrollY = webView.getScrollY();
-            final int nodeY = (int) closeNode.centerY;
-            LogUtil.d(TAG, "webViewHeight:" + webViewHeight + " scrollY:" + scrollY + " nodeY:" + nodeY);
+            final int nodeTop = (int) closeNode.top;
+            LogUtil.d(TAG, "webViewHeight:" + webViewHeight + " scrollY:" + scrollY);
             int from = scrollY;
-            int to = 0;
-            if (nodeY > 0) {
-                if (nodeY > webViewHeight) {
-                    int more = nodeY - webViewHeight;
-                    to = scrollY + more;
-                } else if (nodeY < webViewHeight / 2) {
-                    to = scrollY - webViewHeight / 2;
-                } else {
-                    to = scrollY;
-                }
+            int to = scrollY;
+            if (nodeTop < 0) {
+                to += nodeTop;
+                to -= centerHeight;
+            } else if (nodeTop >= 0 && nodeTop <= centerHeight) {
+                to -= (centerHeight - nodeTop);
+            } else if (nodeTop > centerHeight && nodeTop <= webViewHeight) {
+                to += (nodeTop - centerHeight);
             } else {
-                to = scrollY - Math.abs(nodeY) - webViewHeight / 2;
+                to += nodeTop - webViewHeight;
             }
             return new Line(from, to);
         }
+        LogUtil.d(TAG,"not find close advert node!");
         return null;
     }
 

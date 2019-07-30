@@ -1,11 +1,11 @@
-package com.nicolls.ghostevent.ghost.event;
+package com.nicolls.ghostevent.ghost.event.enclosure;
 
 import android.webkit.WebView;
 
 import com.nicolls.ghostevent.ghost.core.IWebTarget;
 import com.nicolls.ghostevent.ghost.core.RedirectHandler;
+import com.nicolls.ghostevent.ghost.event.BaseEvent;
 import com.nicolls.ghostevent.ghost.event.model.LoadPageRedirectListener;
-import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.concurrent.Semaphore;
@@ -17,46 +17,51 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Action;
 import io.reactivex.schedulers.Schedulers;
 
-public class PageGoBackEvent extends BaseEvent {
-    private static final String TAG = "PageGoBackEvent";
-    private final RedirectHandler handler;
-    private IWebTarget target;
+public class LoadUrlEvent extends BaseEvent {
+    private static final String TAG = "LoadUrlEvent";
     private final Semaphore semaphore = new Semaphore(0, true);
-
+    private final RedirectHandler handler;
+    private final String url;
+    private final IWebTarget target;
     private final LoadPageRedirectListener listener;
 
-    public PageGoBackEvent(IWebTarget target, RedirectHandler handler) {
+    public LoadUrlEvent(IWebTarget target, RedirectHandler handler, String url) {
         super(target);
         this.handler = handler;
+        this.url = url;
         this.target = target;
         this.listener = new LoadPageRedirectListener(target, semaphore);
         this.setName(TAG);
     }
 
     @Override
-    public Completable exe(AtomicBoolean cancel) {
+    public Completable exe(final AtomicBoolean cancel) {
         return Completable.fromAction(new Action() {
             @Override
             public void run() throws Exception {
+                if (cancel.get()) {
+                    LogUtil.d(TAG, "cancel!");
+                    return;
+                }
                 handler.registerRedirectListener(listener);
                 final WebView webView = (WebView) target;
                 Completable.fromRunnable(new Runnable() {
                     @Override
                     public void run() {
-                        webView.goBack();
-                        LogUtil.d(TAG, "doGoBack completed");
+                        webView.loadUrl(url);
+                        LogUtil.d(TAG, "load url completed");
                     }
                 }).subscribeOn(AndroidSchedulers.mainThread()).subscribe();
-                LogUtil.d(TAG, "go back run ,wait web load success!");
+                LogUtil.d(TAG, "load url run ,wait web load success!");
                 boolean ok = semaphore.tryAcquire(getExecuteTimeOut(), TimeUnit.MILLISECONDS);
                 if (!ok) {
                     handler.unRegisterRedirectListener(listener);
                     // 加载页面没有成功，则需要停止页面加载
-                    LogUtil.w(TAG, "go back time out,stop loading");
+                    LogUtil.w(TAG, "load url time out,stop loading");
                     webView.stopLoading();
-                    throw new RuntimeException("go back time out!");
+                    throw new RuntimeException("load url time out!");
                 } else {
-                    LogUtil.d(TAG, "web go back completed");
+                    LogUtil.d(TAG, "web load url completed");
                     handler.unRegisterRedirectListener(listener);
                 }
             }
@@ -67,6 +72,4 @@ public class PageGoBackEvent extends BaseEvent {
     public long getExecuteTimeOut() {
         return getExtendsTime() + listener.getLoadPageRedirectTimeOut();
     }
-
-
 }

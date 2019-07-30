@@ -6,14 +6,16 @@ import android.view.MotionEvent;
 import com.nicolls.ghostevent.ghost.core.ITarget;
 import com.nicolls.ghostevent.ghost.event.model.TouchPoint;
 import com.nicolls.ghostevent.ghost.event.provider.EventParamsProvider;
-import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.Completable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Action;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * author:mengjiankang
@@ -24,7 +26,7 @@ import io.reactivex.functions.Action;
 public class ClickEvent extends BaseEvent {
     private static final String TAG = "ClickEvent";
     // 毫秒
-    public static final int CLICK_INTERVAL_TIME = 100;
+    public static final int CLICK_INTERVAL_TIME = 160;
     private ITarget target;
     private EventParamsProvider<TouchPoint> provider;
 
@@ -84,11 +86,13 @@ public class ClickEvent extends BaseEvent {
         MotionEvent downEvent = mockMotionEvent(downTime, downTime, MotionEvent.ACTION_DOWN, touchPoint.point.x, touchPoint.point.y);
         target.doEvent(downEvent);
         // interval
-        long clickSpentTime = touchPoint.spentTime;
-        if (clickSpentTime <= 0) {
-            clickSpentTime = CLICK_INTERVAL_TIME;
-        }
-        sleepTimes(clickSpentTime);
+        long clickSpentTime = CLICK_INTERVAL_TIME;
+        sleepTimes(clickSpentTime / 2);
+        // move
+        long moveTime = SystemClock.uptimeMillis();
+        MotionEvent moveEvent = mockMotionEvent(downTime, moveTime, MotionEvent.ACTION_MOVE, touchPoint.point.x, touchPoint.point.y);
+        target.doEvent(moveEvent);
+        sleepTimes(clickSpentTime / 2);
         // up
         long upTime = SystemClock.uptimeMillis();
         MotionEvent upEvent = mockMotionEvent(downTime, upTime, MotionEvent.ACTION_UP, touchPoint.point.x, touchPoint.point.y);

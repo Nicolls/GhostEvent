@@ -1,9 +1,10 @@
-package com.nicolls.ghostevent.ghost.event;
+package com.nicolls.ghostevent.ghost.event.enclosure;
 
 import android.annotation.SuppressLint;
 import android.webkit.WebView;
 
 import com.nicolls.ghostevent.ghost.core.IWebTarget;
+import com.nicolls.ghostevent.ghost.event.BaseEvent;
 import com.nicolls.ghostevent.ghost.parse.JsBaseInterface;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 

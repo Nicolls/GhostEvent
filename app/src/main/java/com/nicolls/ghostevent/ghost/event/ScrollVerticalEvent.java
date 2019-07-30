@@ -25,7 +25,7 @@ public class ScrollVerticalEvent extends BaseEvent {
     private EventParamsProvider<Line> provider;
     private static final long DEFAULT_ANIM_DURATION = 1000;
     private static final long ANIM_END_DELAY = 500;
-    private static final long MAX_ANIM_DURATION = 6 * 1000 + ANIM_END_DELAY;
+    private static final long MAX_ANIM_DURATION = 5 * 1000 + ANIM_END_DELAY;
     private long animDuration = DEFAULT_ANIM_DURATION;
 
     public ScrollVerticalEvent(ScrollVerticalEvent event) {

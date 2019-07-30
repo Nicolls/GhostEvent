@@ -28,7 +28,7 @@ public class AdvertClickEventParamsProvider extends EventParamsProvider<TouchPoi
         }
         LogUtil.d(TAG, "advert nodes size:" + adNodes.size());
         for (ViewNode node : adNodes) {
-            if (node.centerY > 0) {
+            if (node.top > 0) {
                 return TouchPoint.obtainClick(node.centerX, node.centerY);
             }
         }

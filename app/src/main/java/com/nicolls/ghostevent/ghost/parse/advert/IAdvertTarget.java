@@ -9,4 +9,6 @@ public interface IAdvertTarget extends IJsTarget {
     void onFoundItemHtml(String result);
 
     void onFoundAdvert(ViewNode result);
+
+    void onMessage(String message);
 }

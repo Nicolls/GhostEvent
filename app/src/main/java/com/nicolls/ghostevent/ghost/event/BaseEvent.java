@@ -51,7 +51,7 @@ public abstract class BaseEvent {
     }
 
     protected MotionEvent mockMotionEvent(long downTime, long eventTime, int action, float x, float y) {
-        return MotionEvent.obtain(downTime, eventTime, action, x, y, 0.7f, 0.8f, 0, 1.0f, 1.0f, 4, 0);
+        return MotionEvent.obtain(downTime, eventTime, action, x, y, 0.65f, 0.23f, 0, 1.0f, 1.0f, 4, 0);
     }
 
     /**

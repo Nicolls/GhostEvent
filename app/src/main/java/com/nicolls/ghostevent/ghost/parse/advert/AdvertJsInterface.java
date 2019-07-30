@@ -2,6 +2,7 @@ package com.nicolls.ghostevent.ghost.parse.advert;
 
 import android.content.Context;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebView;
 
 import com.alibaba.fastjson.JSON;
 import com.nicolls.ghostevent.ghost.parse.DomNode;
@@ -55,7 +56,7 @@ public class AdvertJsInterface extends JsBaseInterface {
 
     @JavascriptInterface
     public void onFoundItem(String item) {
-//        LogUtil.d(TAG, "onFoundItem " + item);
+        LogUtil.d(TAG, "onFoundItem " + item);
         try {
             DomNode domNode = JSON.parseObject(item, DomNode.class);
             ViewNode.Type type = ViewNode.Type.OTHER;
@@ -99,5 +100,6 @@ public class AdvertJsInterface extends JsBaseInterface {
     @JavascriptInterface
     public void onMessage(String message) {
         LogUtil.d(TAG, "onMessage:" + message);
+        target.onMessage(message);
     }
 }

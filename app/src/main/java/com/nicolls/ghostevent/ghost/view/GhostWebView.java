@@ -89,7 +89,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         LogUtil.d(TAG, "start");
         this.url = url;
         isRecord = false;
-        eventExecutor.execute(eventBuilder.buildAutoEvent(this, url, 10, true));
+        eventExecutor.execute(eventBuilder.buildAutoEvent(this, url, 30, true));
     }
 
     /**
@@ -160,8 +160,8 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
      */
     public void random() {
         LogUtil.d(TAG, "random");
-        List<BaseEvent> randomEvents = eventBuilder.getRandomEvents(this, 10, true);
-        eventExecutor.execute(randomEvents);
+//        List<BaseEvent> randomEvents = eventBuilder.getRandomEvents(this, 10, true);
+//        eventExecutor.execute(randomEvents);
     }
 
     /**

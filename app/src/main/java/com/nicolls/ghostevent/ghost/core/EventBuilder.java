@@ -2,19 +2,22 @@ package com.nicolls.ghostevent.ghost.core;
 
 import android.content.Context;
 
+import com.nicolls.ghostevent.ghost.event.BackPageEvent;
 import com.nicolls.ghostevent.ghost.event.BaseEvent;
+import com.nicolls.ghostevent.ghost.event.ClickCloseAdvertEvent;
 import com.nicolls.ghostevent.ghost.event.ClickWebEvent;
 import com.nicolls.ghostevent.ghost.event.GroupEvent;
-import com.nicolls.ghostevent.ghost.event.PageGoBackEvent;
+import com.nicolls.ghostevent.ghost.event.HomePageEvent;
+import com.nicolls.ghostevent.ghost.event.LoadPageEvent;
 import com.nicolls.ghostevent.ghost.event.RedirectClickEvent;
 import com.nicolls.ghostevent.ghost.event.ScrollVerticalEvent;
 import com.nicolls.ghostevent.ghost.event.SlideEvent;
 import com.nicolls.ghostevent.ghost.event.WebParseEvent;
 import com.nicolls.ghostevent.ghost.event.model.TouchPoint;
+import com.nicolls.ghostevent.ghost.event.provider.ClickCloseAdvertProvider;
 import com.nicolls.ghostevent.ghost.event.provider.GoBackEventProvider;
 import com.nicolls.ghostevent.ghost.event.provider.GoHomeEventProvider;
 import com.nicolls.ghostevent.ghost.event.provider.LoadPageEventProvider;
-import com.nicolls.ghostevent.ghost.event.provider.SlideToAdvertAndClickProvider;
 import com.nicolls.ghostevent.ghost.parse.IWebParser;
 import com.nicolls.ghostevent.ghost.parse.ViewNode;
 import com.nicolls.ghostevent.ghost.parse.advert.AdvertParser;
@@ -24,6 +27,7 @@ import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class EventBuilder {
     private static final String TAG = "EventBuilder";
@@ -41,17 +45,89 @@ public class EventBuilder {
 
     public List<BaseEvent> buildAutoEvent(IWebTarget target, String url, int size, boolean haveAdvert) {
         List<BaseEvent> list = new ArrayList<>();
-        BaseEvent loadPageEvent = getLoadPageEvent(target, url);
-        List<BaseEvent> randomEvents = getRandomEvents(target, size, haveAdvert);
+        int displayWidth = GhostUtils.displayWidth;
+        int displayHeight = GhostUtils.displayHeight;
+        TouchPoint clickCenter = TouchPoint.obtainClick(displayWidth / 4, displayHeight - displayHeight / 4);
+        BaseEvent clickRedirect = new RedirectClickEvent(new ClickWebEvent(target, clickCenter), redirectHandler);
+
+        BaseEvent loadPageEvent = new LoadPageEvent(target, executeCallBack, new LoadPageEventProvider(target, advertTarget, redirectHandler, url));
+        BaseEvent backPageEvent = new BackPageEvent(target, executeCallBack, new GoBackEventProvider(target, advertTarget, redirectHandler));
+        BaseEvent homePageEvent = new HomePageEvent(target, executeCallBack, new GoHomeEventProvider(target, advertTarget, redirectHandler));
+
+
+        ScrollVerticalEvent scrollVerticalUpEvent = new ScrollVerticalEvent(target, displayHeight / 3);
+        ScrollVerticalEvent scrollVerticalDownEvent = new ScrollVerticalEvent(target, displayHeight / -4);
+
+        BaseEvent slideUp = new SlideEvent(target, SlideEvent.Direction.UP);
+        BaseEvent slideDown = new SlideEvent(target, SlideEvent.Direction.DOWN);
+
+        BaseEvent closeAdvertClickEvent = new ClickCloseAdvertEvent(target, executeCallBack, new ClickCloseAdvertProvider(target, executeCallBack, redirectHandler, advertTarget));
+
         list.add(loadPageEvent);
-        list.addAll(randomEvents);
+
+        Random random = new Random();
+        for (int i = 0; i < size; i++) {
+            int eventIndex = random.nextInt(10);
+            LogUtil.d(TAG,"eventIndex :"+eventIndex);
+            switch (eventIndex) {
+                case 0:
+                case 1:
+                    list.add(slideUp);
+                    break;
+                case 2:
+                case 3:
+                    list.add(slideDown);
+                    break;
+                case 4:
+                    list.add(scrollVerticalUpEvent);
+                    break;
+                case 5:
+                    list.add(scrollVerticalDownEvent);
+                    break;
+                case 6:
+                    list.add(backPageEvent);
+                    break;
+                case 7:
+                    list.add(clickRedirect);
+                    break;
+                case 8:
+                    list.add(closeAdvertClickEvent);
+                    break;
+                case 9:
+                    list.add(homePageEvent);
+                    break;
+                case 10:
+                    list.add(homePageEvent);
+                    break;
+                default:
+                    list.add(slideUp);
+                    break;
+            }
+        }
+        LogUtil.d(TAG, "event size:" + list.size());
+//
+//        list.add(slideUp);
+//        list.add(slideUp);
+//        list.add(slideDown);
+//        list.add(scrollVerticalUpEvent);
+//        list.add(slideDown);
+//        list.add(scrollVerticalUpEvent);
+//        list.add(clickRedirect);
+//        list.add(backPageEvent);
+//        list.add(scrollVerticalUpEvent);
+//        list.add(scrollVerticalUpEvent);
+//        list.add(scrollVerticalDownEvent);
+//        if (haveAdvert && closeAdvertClickEvent != null) {
+//            LogUtil.d(TAG, "add closeAdvertClickEvent");
+//            list.add(closeAdvertClickEvent);
+//        }
+//        list.add(scrollVerticalUpEvent);
+//        list.add(backPageEvent);
+//        list.add(scrollVerticalUpEvent);
+
         return list;
     }
 
-    public GroupEvent getLoadPageEvent(IWebTarget target, String url) {
-        return new GroupEvent(target, executeCallBack,
-                new LoadPageEventProvider(target, advertTarget, redirectHandler, url).getParams());
-    }
 
     public GroupEvent getGoBackEvent(IWebTarget target) {
 
@@ -71,60 +147,7 @@ public class EventBuilder {
 
     public GroupEvent getCloseAdvertClickEvent(IWebTarget target) {
 
-        return new GroupEvent(target, executeCallBack, new SlideToAdvertAndClickProvider(target, redirectHandler).getParams());
-    }
-
-    public List<BaseEvent> getRandomEvents(IWebTarget target, int size, boolean haveAdvert) {
-        List<BaseEvent> list = new ArrayList<>();
-        int displayWidth = GhostUtils.displayWidth;
-        int displayHeight = GhostUtils.displayHeight;
-        TouchPoint clickCenter = TouchPoint.obtainClick(displayWidth / 4, displayHeight - displayHeight / 4);
-        ScrollVerticalEvent scrollVerticalUpEvent = new ScrollVerticalEvent(target, displayHeight / 3);
-        ScrollVerticalEvent scrollVerticalDownEvent = new ScrollVerticalEvent(target, displayHeight / -4);
-        BaseEvent slideUp=new SlideEvent(target, SlideEvent.Direction.UP);
-        BaseEvent slideDown=new SlideEvent(target, SlideEvent.Direction.DOWN);
-        BaseEvent clickRedirect = new RedirectClickEvent(new ClickWebEvent(target, clickCenter), redirectHandler);
-        BaseEvent backEvent = new PageGoBackEvent(target, redirectHandler);
-        BaseEvent closeAdvertClickEvent = getCloseAdvertClickEvent(target);
-
-        list.add(slideUp);
-//        list.add(slideUp);
-//        list.add(slideDown);
-//        list.add(scrollVerticalUpEvent);
-//        list.add(slideDown);
-//        list.add(scrollVerticalUpEvent);
-//        list.add(clickRedirect);
-//        list.add(backEvent);
-//        list.add(scrollVerticalUpEvent);
-//        list.add(scrollVerticalUpEvent);
-//        list.add(scrollVerticalDownEvent);
-//        if (haveAdvert && closeAdvertClickEvent != null) {
-//            LogUtil.d(TAG,"add closeAdvertClickEvent");
-//            list.add(closeAdvertClickEvent);
-//        }
-//        list.add(scrollVerticalUpEvent);
-//        list.add(backEvent);
-//        list.add(scrollVerticalUpEvent);
-
-//        list.add(scrollVerticalUpEvent);
-//        list.add(scrollVerticalUpEvent);
-//        list.add(scrollVerticalDownEvent);
-//        list.add(clickRedirect);
-//        list.add(backEvent);
-//        list.add(scrollVerticalUpEvent);
-//        list.add(scrollVerticalUpEvent);
-//        list.add(clickRedirect);
-//        list.add(scrollVerticalUpEvent);
-//        list.add(scrollVerticalDownEvent);
-//        list.add(backEvent);
-//        list.add(scrollVerticalUpEvent);
-//        if (haveAdvert && advertEvent != null) {
-//            list.add(advertEvent);
-//        }
-//        list.add(scrollVerticalUpEvent);
-//        list.add(backEvent);
-//        list.add(scrollVerticalUpEvent);
-        return list;
+        return new GroupEvent(target, executeCallBack, new ClickCloseAdvertProvider(target, executeCallBack, redirectHandler, advertTarget).getParams());
     }
 
     private final IAdvertTarget advertTarget = new IAdvertTarget() {
@@ -171,6 +194,11 @@ public class EventBuilder {
         public void onFoundAdvert(ViewNode result) {
 //            LogUtil.d(TAG, "onFoundAdvert " + result.toString());
             viewNodes.add(result);
+        }
+
+        @Override
+        public void onMessage(String message) {
+//            LogUtil.d(TAG, "onMessage " + message);
         }
     };
 

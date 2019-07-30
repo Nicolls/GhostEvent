@@ -11,12 +11,10 @@ import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.Completable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * author:mengjiankang
@@ -33,18 +31,24 @@ public class SlideEvent extends BaseEvent {
     /**
      * 每一个滑动事件触发的move所占用的时间
      */
-    public static final long DEFAULT_INTERVAL_SLIDE_MOVE_TIME_UNIT = 16;
+    public static final long DEFAULT_INTERVAL_SLIDE_MOVE_TIME_UNIT = 12;
 
-    public static final long WAIT_TIME_OUT_MOVE_UNIT = 10;
+    /**
+     * 默认滑动距离
+     */
+    private static final int DEFAULT_DISTANCE = 1000;
 
-    public static final long WAIT_TIME_OUT_SLIDE = 300;
-
+    /**
+     * 滑动完成后，Delay一些时长，再结束
+     */
+    private static final int DELAY_COMPLETED = 1000;
 
     private int from = 0;
     private int to = 0;
     private int x = 0;
     private List<TouchPoint> moves = new ArrayList<>();
     private ITarget target;
+    private long timeOut = 0;
 
     public enum Direction {
         UP, DOWN
@@ -55,19 +59,18 @@ public class SlideEvent extends BaseEvent {
         this.target = target;
         this.setName(TAG);
         LogUtil.i(TAG, "slide direct:" + direct);
-        int distance = GhostUtils.displayHeight / 3;
         int yStart = 0;
         int yEnd = 0;
         switch (direct) {
             case UP:
                 x = GhostUtils.displayWidth / 2;
                 yStart = GhostUtils.displayHeight - GhostUtils.displayHeight / 4;
-                yEnd = yStart - distance;
+                yEnd = yStart - DEFAULT_DISTANCE;
                 break;
             case DOWN:
                 x = GhostUtils.displayWidth / 3;
                 yStart = GhostUtils.displayHeight / 4;
-                yEnd = yStart + distance;
+                yEnd = yStart + DEFAULT_DISTANCE;
                 break;
 
         }
@@ -84,8 +87,10 @@ public class SlideEvent extends BaseEvent {
         float distanceUnit = verticalDistance / DEFAULT_SLIDE_MOVE_SIZE;
         for (int i = 0; i < DEFAULT_SLIDE_MOVE_SIZE; i++) {
             float moveY = from + distanceUnit * i * flag;
-            TouchPoint move = new TouchPoint(new PointF(x, moveY), DEFAULT_INTERVAL_SLIDE_MOVE_TIME_UNIT);
+            long spentTime = DEFAULT_INTERVAL_SLIDE_MOVE_TIME_UNIT + i;
+            TouchPoint move = new TouchPoint(new PointF(x, moveY), spentTime);
             moves.add(move);
+            timeOut += spentTime;
         }
         LogUtil.d(TAG, "calculate move size:" + moves.size());
     }
@@ -100,16 +105,18 @@ public class SlideEvent extends BaseEvent {
                     return;
                 }
                 doEvent(cancel);
+                sleepTimes(DELAY_COMPLETED);
             }
-        }).subscribeOn(AndroidSchedulers.mainThread());
+        }).subscribeOn(Schedulers.io());
     }
 
     @Override
     public long getExecuteTimeOut() {
-        return moves.size() * DEFAULT_INTERVAL_SLIDE_MOVE_TIME_UNIT + getExtendsTime();
+        return timeOut + DELAY_COMPLETED + getExtendsTime();
     }
 
     protected void doEvent(final AtomicBoolean cancel) {
+        LogUtil.d(TAG, "doEvent thread " + Thread.currentThread().getName());
         if (cancel.get()) {
             LogUtil.d(TAG, "event cancel");
             return;
@@ -118,7 +125,6 @@ public class SlideEvent extends BaseEvent {
         MotionEvent downEvent = mockMotionEvent(downTime, downTime, MotionEvent.ACTION_DOWN, x, from);
         LogUtil.d(TAG, "doEvent down:" + x + " -" + from);
         target.doEvent(downEvent);
-        final Semaphore semaphore = new Semaphore(0, true);
         for (final TouchPoint move : moves) {
             if (cancel.get()) {
                 LogUtil.d(TAG, "event cancel in move ,send up event and cancel!");
@@ -132,25 +138,7 @@ public class SlideEvent extends BaseEvent {
             MotionEvent moveEvent = mockMotionEvent(downTime, moveEventTime, MotionEvent.ACTION_MOVE, move.point.x, move.point.y);
             target.doEvent(moveEvent);
             LogUtil.d(TAG, "start post delay:" + move.spentTime);
-
-            target.getEventHandler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    LogUtil.d(TAG, "semaphore release ");
-                    semaphore.release();
-                }
-            }, move.spentTime);
-            LogUtil.d(TAG, "start acquire semaphore");
-            try {
-                boolean ok = semaphore.tryAcquire(move.spentTime + WAIT_TIME_OUT_MOVE_UNIT, TimeUnit.MILLISECONDS);
-                if (!ok) {
-                    LogUtil.d(TAG, "semaphore acquire time out");
-                } else {
-                    LogUtil.d(TAG, "semaphore acquired");
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            sleepTimes(move.spentTime);
         }
         long moveEventTime = SystemClock.uptimeMillis();
         MotionEvent moveEvent = mockMotionEvent(downTime, moveEventTime, MotionEvent.ACTION_MOVE, x, to);
