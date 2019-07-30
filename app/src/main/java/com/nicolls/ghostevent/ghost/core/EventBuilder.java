@@ -8,6 +8,7 @@ import com.nicolls.ghostevent.ghost.event.GroupEvent;
 import com.nicolls.ghostevent.ghost.event.PageGoBackEvent;
 import com.nicolls.ghostevent.ghost.event.RedirectClickEvent;
 import com.nicolls.ghostevent.ghost.event.ScrollVerticalEvent;
+import com.nicolls.ghostevent.ghost.event.SlideEvent;
 import com.nicolls.ghostevent.ghost.event.WebParseEvent;
 import com.nicolls.ghostevent.ghost.event.model.TouchPoint;
 import com.nicolls.ghostevent.ghost.event.provider.GoBackEventProvider;
@@ -80,24 +81,30 @@ public class EventBuilder {
         TouchPoint clickCenter = TouchPoint.obtainClick(displayWidth / 4, displayHeight - displayHeight / 4);
         ScrollVerticalEvent scrollVerticalUpEvent = new ScrollVerticalEvent(target, displayHeight / 3);
         ScrollVerticalEvent scrollVerticalDownEvent = new ScrollVerticalEvent(target, displayHeight / -4);
+        BaseEvent slideUp=new SlideEvent(target, SlideEvent.Direction.UP);
+        BaseEvent slideDown=new SlideEvent(target, SlideEvent.Direction.DOWN);
         BaseEvent clickRedirect = new RedirectClickEvent(new ClickWebEvent(target, clickCenter), redirectHandler);
         BaseEvent backEvent = new PageGoBackEvent(target, redirectHandler);
         BaseEvent closeAdvertClickEvent = getCloseAdvertClickEvent(target);
 
-        list.add(scrollVerticalUpEvent);
-        list.add(scrollVerticalUpEvent);
-        list.add(clickRedirect);
-        list.add(backEvent);
-        list.add(scrollVerticalUpEvent);
-        list.add(scrollVerticalUpEvent);
-        list.add(scrollVerticalDownEvent);
-        if (haveAdvert && closeAdvertClickEvent != null) {
-            LogUtil.d(TAG,"add closeAdvertClickEvent");
-            list.add(closeAdvertClickEvent);
-        }
-        list.add(scrollVerticalUpEvent);
-        list.add(backEvent);
-        list.add(scrollVerticalUpEvent);
+        list.add(slideUp);
+//        list.add(slideUp);
+//        list.add(slideDown);
+//        list.add(scrollVerticalUpEvent);
+//        list.add(slideDown);
+//        list.add(scrollVerticalUpEvent);
+//        list.add(clickRedirect);
+//        list.add(backEvent);
+//        list.add(scrollVerticalUpEvent);
+//        list.add(scrollVerticalUpEvent);
+//        list.add(scrollVerticalDownEvent);
+//        if (haveAdvert && closeAdvertClickEvent != null) {
+//            LogUtil.d(TAG,"add closeAdvertClickEvent");
+//            list.add(closeAdvertClickEvent);
+//        }
+//        list.add(scrollVerticalUpEvent);
+//        list.add(backEvent);
+//        list.add(scrollVerticalUpEvent);
 
 //        list.add(scrollVerticalUpEvent);
 //        list.add(scrollVerticalUpEvent);

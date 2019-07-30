@@ -6,7 +6,7 @@ public class Constants {
      * test
      */
     // url
-    public static final String DEFAULT_SERVER_URL = "https://getman.cn/echo";
+    public static final String DEFAULT_SERVER_URL = "http://114.55.29.253:8080/ad/info";
     public static final String DEFAULT_UPLOAD_EVENT_URL = "https://getman.cn/echo";
     public static final String DEFAULT_ADVERT_URL = "https://cpu.baidu.com/1001/be900f73?scid=33854";
 
