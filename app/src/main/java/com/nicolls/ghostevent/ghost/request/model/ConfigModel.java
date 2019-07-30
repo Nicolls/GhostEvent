@@ -6,9 +6,9 @@ import com.nicolls.ghostevent.ghost.request.network.model.BaseResponse;
 import java.io.Serializable;
 
 public class ConfigModel extends BaseResponse {
-    @JSONField
-    public String url;
-    @JSONField
-    public boolean enable;
+//    @JSONField
+//    public String url;
+//    @JSONField
+//    public boolean enable;
 
 }

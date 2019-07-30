@@ -1,5 +1,7 @@
 package com.nicolls.ghostevent.ghost.request.network.model;
 
+import com.alibaba.fastjson.annotation.JSONField;
+
 import java.io.Serializable;
 
 /**
@@ -9,5 +11,6 @@ import java.io.Serializable;
  * </p>
  */
 public class BaseResponse implements Serializable {
+    @JSONField(serialize = false)
     public String rawMessage;
 }

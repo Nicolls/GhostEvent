@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
+import com.nicolls.ghostevent.ghost.request.EventReporter;
 import com.nicolls.ghostevent.ghost.request.model.ConfigModel;
 import com.nicolls.ghostevent.ghost.request.network.NetRequest;
 import com.nicolls.ghostevent.ghost.request.network.OkHttpRequest;
@@ -59,18 +60,21 @@ public class ActivityGhost extends Ghost {
     }
 
     private void sendRequest() {
-        LogUtil.d(TAG,"sendRequest");
-        Observable<ConfigModel> observable = Observable.create(new ObservableOnSubscribe<ConfigModel>() {
+        LogUtil.d(TAG, "sendRequest");
+        Observable.create(new ObservableOnSubscribe<ConfigModel>() {
             @Override
             public void subscribe(ObservableEmitter<ConfigModel> emitter) throws Exception {
                 LogUtil.d(TAG, "subscribe thread " + Thread.currentThread().getName());
-                RequestParams params = new RequestParams(DEFAULT_SERVER_URL);
+                RequestParams params = new RequestParams.Builder().setUrl(DEFAULT_SERVER_URL)
+                        .setMethod(RequestParams.METHOD_POST)
+                        .addParams("url", DEFAULT_SERVER_URL)
+                        .addParams("enable", "true").create();
+
                 ConfigModel configModel = requester.executeRequest(params, ConfigModel.class);
                 emitter.onNext(configModel);
                 emitter.onComplete();
             }
-        });
-        observable.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Observer<ConfigModel>() {
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Observer<ConfigModel>() {
             @Override
             public void onSubscribe(Disposable d) {
                 LogUtil.d(TAG, "onSubscribe thread " + Thread.currentThread().getName());

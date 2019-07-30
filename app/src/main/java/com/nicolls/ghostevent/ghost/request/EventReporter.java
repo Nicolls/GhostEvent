@@ -8,15 +8,22 @@ import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import io.reactivex.Completable;
+import io.reactivex.CompletableObserver;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
-public class EventReport implements IEventReport {
-    private static final String TAG = "EventReport";
+public class EventReporter implements IEventReport {
+    private static final String TAG = "EventReporter";
     private final NetRequest request = new OkHttpRequest();
+    private static EventReporter instance = new EventReporter();
+
+    public static EventReporter getInstance() {
+        return instance;
+    }
 
     @Override
     public void uploadEvent(String name, String target, String params) {
-        Completable.fromRunnable(new Runnable() {
+        postRxJavaRequest("uploadEvent", new Runnable() {
             @Override
             public void run() {
                 RequestParams requestParams = new RequestParams.Builder()
@@ -27,6 +34,25 @@ public class EventReport implements IEventReport {
                 UploadEventResponse response = request.executeRequest(requestParams, UploadEventResponse.class);
                 LogUtil.d(TAG, "uploadEvent " + response);
             }
-        }).subscribeOn(Schedulers.io()).subscribe();
+        });
+    }
+
+    private void postRxJavaRequest(String tag, Runnable runnable) {
+        Completable.fromRunnable(runnable).subscribeOn(Schedulers.io()).subscribe(new CompletableObserver() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                LogUtil.d(TAG, "onSubscribe " + tag);
+            }
+
+            @Override
+            public void onComplete() {
+                LogUtil.d(TAG, "onComplete " + tag);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                LogUtil.e(TAG, "onError " + tag, e);
+            }
+        });
     }
 }
