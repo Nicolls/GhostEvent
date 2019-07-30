@@ -5,6 +5,9 @@ import com.nicolls.ghostevent.ghost.core.ITarget;
 import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,7 +40,6 @@ public class GroupEvent extends BaseEvent {
     public GroupEvent(ITarget target, EventExecutor.ExecuteCallBack executeCallBack, List<BaseEvent> list) {
         super(target);
         this.executeCallBack = executeCallBack;
-        this.setName(TAG);
         if (list != null) {
             for (BaseEvent event : list) {
                 childList.add(event);
@@ -104,6 +106,9 @@ public class GroupEvent extends BaseEvent {
                         public void onComplete() {
                             LogUtil.d(TAG, "child event completed " + event.getName() + ",release semaphore");
                             onChildCompleted(event);
+                            if (executeCallBack != null) {
+                                executeCallBack.onSuccess(event);
+                            }
                             semaphore.release();
                         }
 
@@ -117,7 +122,7 @@ public class GroupEvent extends BaseEvent {
                                 return;
                             }
                             if (executeCallBack != null) {
-                                executeCallBack.onFail(event.getId());
+                                executeCallBack.onFail(event);
                             }
                             LogUtil.d(TAG, "semaphore release");
                             semaphore.release();
@@ -128,7 +133,7 @@ public class GroupEvent extends BaseEvent {
                     boolean ok = semaphore.tryAcquire(timeOut, TimeUnit.MILLISECONDS);
                     if (!ok) {
                         LogUtil.d(TAG, "child acquired time out!");
-                        executeCallBack.onTimeOut(event.getId());
+                        executeCallBack.onTimeOut(event);
                     } else if (executeCallBack != null) {
                         LogUtil.d(TAG, "child acquired semaphore");
                     }
@@ -162,5 +167,22 @@ public class GroupEvent extends BaseEvent {
         return "GroupEvent{" +
                 "childList=" + Arrays.toString(childList.toArray()) +
                 '}';
+    }
+
+    @Override
+    public String getName() {
+        return TAG;
+    }
+
+    @Override
+    public String getDetail() {
+        JSONObject jsonObject=new JSONObject();
+        try {
+            jsonObject.put("group",true);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jsonObject.toString();
     }
 }

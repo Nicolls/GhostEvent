@@ -58,12 +58,13 @@ public class OkHttpRequest implements NetRequest {
         try {
             Response response = okHttpClient.newCall(getRequest(requestParams)).execute();
             String str = response.body().string();
+            LogUtil.d(TAG, "executeRequest completed "+str);
             T object = JSON.parseObject(str, cls);
             object.rawMessage = str;
             return object;
         } catch (IOException e) {
             e.printStackTrace();
-            LogUtil.e(TAG, "executeRequest error", e);
+            LogUtil.e(TAG, "executeRequest error" + (e == null ? "null" : e.getMessage()));
         }
         return null;
     }
@@ -81,8 +82,8 @@ public class OkHttpRequest implements NetRequest {
     }
 
     private Request getRequest(RequestParams requestParams) {
-        LogUtil.d(TAG, "请求：url:" + requestParams.getUrl());
-        LogUtil.d(TAG, "参数：params:" + requestParams.getParams().toString());
+        LogUtil.d(TAG, "request url:" + requestParams.getUrl());
+        LogUtil.d(TAG, "params:" + requestParams.getParams().toString());
         Request.Builder builder = new Request.Builder();
         // headers
         Map<String, String> headers = requestParams.getHeaders();

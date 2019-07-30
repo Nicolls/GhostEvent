@@ -8,6 +8,9 @@ import com.nicolls.ghostevent.ghost.event.model.LoadPageRedirectListener;
 import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -34,7 +37,6 @@ public class RedirectClickEvent extends ClickEvent {
         this.handler = handler;
         this.target = clickEvent.getWebTarget();
         this.listener = new LoadPageRedirectListener(target, semaphore);
-        this.setName(TAG);
     }
 
     @Override
@@ -67,6 +69,11 @@ public class RedirectClickEvent extends ClickEvent {
 
     public long getExecuteTimeOut() {
         return listener.getLoadPageRedirectTimeOut() + super.getExecuteTimeOut();
+    }
+
+    @Override
+    public String getName() {
+        return TAG;
     }
 
 }

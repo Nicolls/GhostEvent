@@ -7,4 +7,5 @@ import java.util.List;
 public interface IWebTarget extends ITarget {
     void executeJs(String js);
     List<ViewNode> getViewNodes();
+    ViewNode getArrowTopNode();
 }

@@ -4,7 +4,8 @@ import java.io.Serializable;
 
 public class ViewNode implements Serializable {
     public enum Type {
-        ADVERT("advert"), NEWS("news"), VIDEO("video"), OTHER("other");
+        ADVERT("advert"), NEWS("news"), VIDEO("video"),
+        ARROW_TOP("arrow_top"), OTHER("other");
         private String tag;
 
         private Type(String tag) {
@@ -13,7 +14,7 @@ public class ViewNode implements Serializable {
 
     }
 
-    public int position;
+    public int index;
     public int childIndex;
     public float left;
     public float top;
@@ -23,20 +24,16 @@ public class ViewNode implements Serializable {
     public Type type;
     public float centerX;
     public float centerY;
-    public float clientWidth;
-    public float clientHeight;
 
     public ViewNode(DomNode domNode, Type type) {
         this.type = type;
-        this.position = domNode.position;
+        this.index = domNode.index;
         this.childIndex = domNode.childIndex;
         this.left = domNode.left;
         this.top = domNode.top;
         this.right = domNode.right;
         this.bottom = domNode.bottom;
-        this.clientWidth=domNode.clientWidth;
-        this.clientHeight=domNode.clientHeight;
-        this.title=domNode.title;
+        this.title = domNode.title;
         this.centerX = this.left + (this.right - this.left) / 2;
         this.centerY = this.top + (this.bottom - this.top) / 2;
     }
@@ -44,7 +41,7 @@ public class ViewNode implements Serializable {
     @Override
     public String toString() {
         return "ViewNode{" +
-                "position=" + position +
+                "index=" + index +
                 ", childIndex=" + childIndex +
                 ", left=" + left +
                 ", top=" + top +
@@ -53,8 +50,6 @@ public class ViewNode implements Serializable {
                 ", type=" + type +
                 ", centerX=" + centerX +
                 ", centerY=" + centerY +
-                ", clientWidth=" + clientWidth +
-                ", clientHeight=" + clientHeight +
                 ", title=" + title +
                 '}';
     }

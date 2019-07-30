@@ -17,7 +17,6 @@ import io.reactivex.Completable;
  */
 public abstract class BaseEvent {
     private static final String TAG = "BaseEvent";
-    private String name;
     private ITarget target;
 
     public BaseEvent(ITarget target) {
@@ -30,13 +29,9 @@ public abstract class BaseEvent {
         return hashCode();
     }
 
-    public String getName() {
-        return name;
-    }
+    public abstract String getName();
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public abstract String getDetail();
 
     public boolean needRetry() {
         return false;

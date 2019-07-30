@@ -9,6 +9,9 @@ import com.nicolls.ghostevent.ghost.event.model.TouchPoint;
 import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -57,7 +60,6 @@ public class SlideEvent extends BaseEvent {
     public SlideEvent(ITarget target, final Direction direct) {
         super(target);
         this.target = target;
-        this.setName(TAG);
         LogUtil.i(TAG, "slide direct:" + direct);
         int yStart = 0;
         int yEnd = 0;
@@ -150,4 +152,22 @@ public class SlideEvent extends BaseEvent {
         target.doEvent(upEvent);
     }
 
+    @Override
+    public String getName() {
+        return TAG;
+    }
+
+    @Override
+    public String getDetail() {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("from", from);
+            jsonObject.put("to", to);
+            jsonObject.put("x", x);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        return jsonObject.toString();
+    }
 }

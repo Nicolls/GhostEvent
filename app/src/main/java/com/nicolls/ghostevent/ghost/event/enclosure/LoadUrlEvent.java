@@ -8,6 +8,9 @@ import com.nicolls.ghostevent.ghost.event.BaseEvent;
 import com.nicolls.ghostevent.ghost.event.model.LoadPageRedirectListener;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -31,7 +34,6 @@ public class LoadUrlEvent extends BaseEvent {
         this.url = url;
         this.target = target;
         this.listener = new LoadPageRedirectListener(target, semaphore);
-        this.setName(TAG);
     }
 
     @Override
@@ -71,5 +73,22 @@ public class LoadUrlEvent extends BaseEvent {
     @Override
     public long getExecuteTimeOut() {
         return getExtendsTime() + listener.getLoadPageRedirectTimeOut();
+    }
+
+    @Override
+    public String getName() {
+        return TAG;
+    }
+
+    @Override
+    public String getDetail() {
+        JSONObject jsonObject=new JSONObject();
+
+        try {
+            jsonObject.put("url",url);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jsonObject.toString();
     }
 }

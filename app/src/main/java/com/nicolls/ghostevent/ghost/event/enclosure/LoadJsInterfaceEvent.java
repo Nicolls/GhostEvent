@@ -8,6 +8,8 @@ import com.nicolls.ghostevent.ghost.event.BaseEvent;
 import com.nicolls.ghostevent.ghost.parse.JsBaseInterface;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -27,7 +29,6 @@ public class LoadJsInterfaceEvent extends BaseEvent {
         if (jsInterface != null) {
             jsInterfaces.add(jsInterface);
         }
-        this.setName(TAG);
     }
 
     public LoadJsInterfaceEvent(IWebTarget target, List<JsBaseInterface> jsInterfaces) {
@@ -35,7 +36,6 @@ public class LoadJsInterfaceEvent extends BaseEvent {
         this.target = target;
         this.jsInterfaces.clear();
         this.jsInterfaces.addAll(jsInterfaces);
-        this.setName(TAG);
     }
 
     @SuppressLint("JavascriptInterface")
@@ -65,5 +65,16 @@ public class LoadJsInterfaceEvent extends BaseEvent {
 
     public long getExecuteTimeOut() {
         return getExtendsTime();
+    }
+
+    @Override
+    public String getName() {
+        return TAG;
+    }
+
+    @Override
+    public String getDetail() {
+        JSONObject jsonObject=new JSONObject();
+        return jsonObject.toString();
     }
 }

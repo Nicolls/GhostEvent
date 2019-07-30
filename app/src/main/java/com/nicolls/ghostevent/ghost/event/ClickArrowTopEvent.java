@@ -2,16 +2,16 @@ package com.nicolls.ghostevent.ghost.event;
 
 import com.nicolls.ghostevent.ghost.core.EventExecutor;
 import com.nicolls.ghostevent.ghost.core.IWebTarget;
-import com.nicolls.ghostevent.ghost.event.provider.ClickCloseAdvertProvider;
+import com.nicolls.ghostevent.ghost.event.provider.ClickArrowToTopProvider;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class ClickCloseAdvertEvent extends GroupEvent {
-    private static final String TAG = "ClickCloseAdvertEvent";
+public class ClickArrowTopEvent extends GroupEvent {
+    private static final String TAG = "ClickArrowTopEvent";
 
-    public ClickCloseAdvertEvent(IWebTarget target, EventExecutor.ExecuteCallBack executeCallBack,
-                                 ClickCloseAdvertProvider provider) {
+    public ClickArrowTopEvent(IWebTarget target, EventExecutor.ExecuteCallBack executeCallBack,
+                              ClickArrowToTopProvider provider) {
         super(target, executeCallBack);
         addEvent(provider.getParams());
     }
@@ -23,9 +23,9 @@ public class ClickCloseAdvertEvent extends GroupEvent {
 
     @Override
     public String getDetail() {
-        JSONObject jsonObject=new JSONObject();
+        JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put("group",true);
+            jsonObject.put("group", true);
         } catch (JSONException e) {
             e.printStackTrace();
         }

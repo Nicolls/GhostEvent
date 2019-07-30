@@ -20,6 +20,14 @@ public class ConfigModel extends BaseResponse {
         public boolean enable;
         @JSONField
         public String url;
+
+        @Override
+        public String toString() {
+            return "Result{" +
+                    "enable=" + enable +
+                    ", url='" + url + '\'' +
+                    '}';
+        }
     }
 
     @Override
@@ -27,7 +35,7 @@ public class ConfigModel extends BaseResponse {
         return "ConfigModel{" +
                 "code='" + code + '\'' +
                 ", message='" + message + '\'' +
-                ", result=" + result +
+                ", result=" + (result==null?"null":result.toString()) +
                 '}';
     }
 }

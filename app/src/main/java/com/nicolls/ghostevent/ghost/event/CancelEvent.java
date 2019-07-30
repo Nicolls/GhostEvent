@@ -7,6 +7,8 @@ import com.nicolls.ghostevent.ghost.core.ITarget;
 import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
+import org.json.JSONObject;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.Completable;
@@ -33,7 +35,6 @@ public class CancelEvent extends BaseEvent {
 
     private CancelEvent(ITarget target) {
         super(target);
-        setName(TAG);
     }
 
     @Override
@@ -49,5 +50,16 @@ public class CancelEvent extends BaseEvent {
     @Override
     public long getExecuteTimeOut() {
         return Constants.TIME_DEFAULT_CANCEL_WAIT_TIME;
+    }
+
+    @Override
+    public String getName() {
+        return TAG;
+    }
+
+    @Override
+    public String getDetail() {
+        JSONObject jsonObject=new JSONObject();
+        return jsonObject.toString();
     }
 }

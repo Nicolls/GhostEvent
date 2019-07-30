@@ -31,11 +31,11 @@ public class EventExecutor {
     private Semaphore resetSemaphore = new Semaphore(0, true);
 
     public interface ExecuteCallBack {
-        void onSuccess(int eventId);
+        void onSuccess(BaseEvent event);
 
-        void onFail(int eventId);
+        void onFail(BaseEvent event);
 
-        void onTimeOut(int eventId);
+        void onTimeOut(BaseEvent event);
     }
 
     private ExecuteCallBack executeCallBack;
@@ -96,7 +96,7 @@ public class EventExecutor {
                     boolean ok = semaphore.tryAcquire(timeOut, TimeUnit.MILLISECONDS);
                     if (!ok) {
                         LogUtil.d(TAG, "event " + event.getName() + " time out !");
-                        executeCallBack.onTimeOut(event.getId());
+                        executeCallBack.onTimeOut(event);
                     } else {
                         LogUtil.d(TAG, "semaphore acquired");
                     }
@@ -130,7 +130,7 @@ public class EventExecutor {
                     return;
                 }
                 LogUtil.d(TAG, "execute event " + event.getName() + " completed");
-                executeCallBack.onSuccess(event.getId());
+                executeCallBack.onSuccess(event);
                 LogUtil.d(TAG, "semaphore release");
                 semaphore.release();
             }
@@ -147,7 +147,7 @@ public class EventExecutor {
                 if (lastDisposable != null) {
                     lastDisposable.dispose();
                 }
-                executeCallBack.onFail(event.getId());
+                executeCallBack.onFail(event);
                 LogUtil.d(TAG, "semaphore release");
                 semaphore.release();
             }

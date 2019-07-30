@@ -10,6 +10,8 @@ import com.nicolls.ghostevent.ghost.event.model.HomePageRedirectListener;
 import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
+import org.json.JSONObject;
+
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -34,7 +36,6 @@ public class PageGoHomeEvent extends BaseEvent {
         this.target = target;
         this.webView = (WebView) target;
         this.listener = new HomePageRedirectListener(target, semaphore);
-        this.setName(TAG);
     }
 
     @Override
@@ -75,4 +76,14 @@ public class PageGoHomeEvent extends BaseEvent {
         return getExtendsTime() + listener.getLoadPageRedirectTimeOut();
     }
 
+    @Override
+    public String getName() {
+        return TAG;
+    }
+
+    @Override
+    public String getDetail() {
+        JSONObject jsonObject=new JSONObject();
+        return jsonObject.toString();
+    }
 }

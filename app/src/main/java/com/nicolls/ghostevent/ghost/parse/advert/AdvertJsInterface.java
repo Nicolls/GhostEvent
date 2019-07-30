@@ -1,8 +1,8 @@
 package com.nicolls.ghostevent.ghost.parse.advert;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.webkit.JavascriptInterface;
-import android.webkit.WebView;
 
 import com.alibaba.fastjson.JSON;
 import com.nicolls.ghostevent.ghost.parse.DomNode;
@@ -68,9 +68,10 @@ public class AdvertJsInterface extends JsBaseInterface {
                 type = ViewNode.Type.VIDEO;
             }
             ViewNode viewNode = new ViewNode(domNode, type);
-            LogUtil.d(TAG,"onFoundItem :"+viewNode.toString());
+            LogUtil.d(TAG, "onFoundItem :" + viewNode.toString());
             target.onFoundItem(viewNode);
         } catch (Exception e) {
+            e.printStackTrace();
             LogUtil.e(TAG, "onFoundItem json parse error " + e);
             target.onJsCallBackHandleError();
         }
@@ -84,22 +85,36 @@ public class AdvertJsInterface extends JsBaseInterface {
     }
 
     @JavascriptInterface
-    public void onFoundAdvert(String item) {
-        LogUtil.d(TAG, "onFoundAdvert " + item);
+    public void onMessage(String message) {
+        LogUtil.d(TAG, "onMessage:" + message);
+        target.onMessage(message);
+    }
+
+    @JavascriptInterface
+    public void onFoundIdItem(String item) {
+        LogUtil.d(TAG, "onFoundIdItem:" + item);
+
+    }
+
+    @JavascriptInterface
+    public void onFoundClassItem(String item) {
+        LogUtil.d(TAG, "onFoundClassItem:" + item);
         try {
             DomNode domNode = JSON.parseObject(item, DomNode.class);
-            ViewNode viewNode = new ViewNode(domNode, ViewNode.Type.ADVERT);
-//            LogUtil.d(TAG,"onFoundAdvert viewNode:"+viewNode.toString());
-            target.onFoundAdvert(viewNode);
+            if (TextUtils.equals(Constants.DIV_CLASSNAME_ARROW_TOP, domNode.className)) {
+                ViewNode viewNode = new ViewNode(domNode, ViewNode.Type.ARROW_TOP);
+                target.onFoundClassItem(viewNode);
+            }
         } catch (Exception e) {
+            e.printStackTrace();
             LogUtil.e(TAG, "onFoundItem json parse error " + e);
             target.onJsCallBackHandleError();
         }
     }
 
     @JavascriptInterface
-    public void onMessage(String message) {
-        LogUtil.d(TAG, "onMessage:" + message);
-        target.onMessage(message);
+    public void onPrintContext(String context) {
+        LogUtil.d(TAG, "onPrintContext:" + context);
+        target.onPrintContext(context);
     }
 }

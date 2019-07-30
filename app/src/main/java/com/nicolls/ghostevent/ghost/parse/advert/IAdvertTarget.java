@@ -8,7 +8,11 @@ public interface IAdvertTarget extends IJsTarget {
 
     void onFoundItemHtml(String result);
 
-    void onFoundAdvert(ViewNode result);
-
     void onMessage(String message);
+
+    void onPrintContext(String context);
+
+    void onFoundIdItem(ViewNode result);
+
+    void onFoundClassItem(ViewNode result);
 }

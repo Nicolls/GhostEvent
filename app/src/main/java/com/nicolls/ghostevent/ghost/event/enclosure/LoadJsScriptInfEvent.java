@@ -8,6 +8,8 @@ import com.nicolls.ghostevent.ghost.parse.JsBaseInterface;
 import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
+import org.json.JSONObject;
+
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -27,7 +29,6 @@ public class LoadJsScriptInfEvent extends BaseEvent {
         super(target);
         this.target = target;
         this.jsInterface = jsInterface;
-        this.setName(TAG);
     }
 
     @Override
@@ -74,5 +75,16 @@ public class LoadJsScriptInfEvent extends BaseEvent {
     @Override
     public long getExecuteTimeOut() {
         return getExtendsTime() + Constants.TIME_DEFAULT_LOAD_JS_INIT;
+    }
+
+    @Override
+    public String getName() {
+        return TAG;
+    }
+
+    @Override
+    public String getDetail() {
+        JSONObject jsonObject=new JSONObject();
+        return jsonObject.toString();
     }
 }

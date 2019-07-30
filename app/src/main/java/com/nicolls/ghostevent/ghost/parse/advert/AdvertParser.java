@@ -18,8 +18,10 @@ public class AdvertParser extends WebBaseParser {
         LogUtil.d(TAG,"view width-height:"+webView.getWidth()+"-"+webView.getHeight());
         String findItem=String.format(Constants.JS_FUNCTION_FIND_ITEM,webView.getWidth(),webView.getHeight());
         LogUtil.d(TAG,"findItem "+findItem);
-        target.executeJs(Constants.JS_FUNCTION_MESSAGE);
+        String printContext=String.format(Constants.JS_FUNCTION_PRINT_CONTEXT,webView.getWidth(),webView.getHeight());
+        target.executeJs(printContext);
         target.executeJs(findItem);
+
         target.getEventHandler().postDelayed(new Runnable() {
             @Override
             public void run() {

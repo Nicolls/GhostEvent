@@ -5,10 +5,10 @@ import android.webkit.WebView;
 import com.nicolls.ghostevent.ghost.core.IWebTarget;
 import com.nicolls.ghostevent.ghost.core.RedirectHandler;
 import com.nicolls.ghostevent.ghost.event.BaseEvent;
+import com.nicolls.ghostevent.ghost.event.WebParseEvent;
 import com.nicolls.ghostevent.ghost.event.enclosure.LoadJsInterfaceEvent;
 import com.nicolls.ghostevent.ghost.event.enclosure.LoadJsScriptInfEvent;
 import com.nicolls.ghostevent.ghost.event.enclosure.LoadUrlEvent;
-import com.nicolls.ghostevent.ghost.event.WebParseEvent;
 import com.nicolls.ghostevent.ghost.parse.IWebParser;
 import com.nicolls.ghostevent.ghost.parse.advert.AdvertJsInterface;
 import com.nicolls.ghostevent.ghost.parse.advert.AdvertParser;
@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LoadPageEventProvider extends EventParamsProvider<List<BaseEvent>> {
-    private static final String TAG="LoadPageEventProvider";
+    private static final String TAG = "LoadPageEventProvider";
     private final IWebTarget target;
     private final IAdvertTarget advertTarget;
     private final RedirectHandler redirectHandler;
@@ -53,5 +53,9 @@ public class LoadPageEventProvider extends EventParamsProvider<List<BaseEvent>> 
     @Override
     public String getName() {
         return TAG;
+    }
+
+    public String getUrl() {
+        return url;
     }
 }

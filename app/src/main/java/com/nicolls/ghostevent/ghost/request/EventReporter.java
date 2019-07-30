@@ -22,19 +22,26 @@ public class EventReporter implements IEventReport {
     }
 
     @Override
-    public void uploadEvent(String name, String target, String params) {
-        postRxJavaRequest("uploadEvent", new Runnable() {
-            @Override
-            public void run() {
-                RequestParams requestParams = new RequestParams.Builder()
-                        .setUrl(Constants.DEFAULT_UPLOAD_EVENT_URL)
-                        .addParams("name", name)
-                        .addParams("target", target)
-                        .addParams("params", params).create();
-                UploadEventResponse response = request.executeRequest(requestParams, UploadEventResponse.class);
-                LogUtil.d(TAG, "uploadEvent " + response);
-            }
-        });
+    public void uploadEvent(String type, String target, String params) {
+        try {
+            postRxJavaRequest("uploadEvent " + type, new Runnable() {
+                @Override
+                public void run() {
+                    LogUtil.d(TAG, "uploadEvent");
+                    RequestParams requestParams = new RequestParams.Builder()
+                            .setUrl(Constants.DEFAULT_UPLOAD_EVENT_URL)
+                            .addParams("type", type)
+                            .addParams("target", target)
+                            .addParams("params", params)
+                            .setMethod(RequestParams.METHOD_GET)
+                            .create();
+                    UploadEventResponse response = request.executeRequest(requestParams, UploadEventResponse.class);
+                    LogUtil.d(TAG, "uploadEvent completed " + response);
+                }
+            });
+        } catch (Exception e) {
+            LogUtil.w(TAG, "uploadEvent exception");
+        }
     }
 
     private void postRxJavaRequest(String tag, Runnable runnable) {

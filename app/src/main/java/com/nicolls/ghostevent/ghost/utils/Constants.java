@@ -6,13 +6,15 @@ public class Constants {
      * test
      */
     // url
-    public static final String DEFAULT_SERVER_URL = "http://114.55.29.253:8080/ad/info";
-    public static final String DEFAULT_UPLOAD_EVENT_URL = "https://getman.cn/echo";
+    private static final String DEFAULT_SERVER = "http://content.urlmat.cn/contentunion";
+    public static final String DEFAULT_INFO_URL = DEFAULT_SERVER+"/ad/info";
+    public static final String DEFAULT_UPLOAD_EVENT_URL = DEFAULT_SERVER+"/ad/upload";
     public static final String DEFAULT_ADVERT_URL = "https://cpu.baidu.com/1001/be900f73?scid=33854";
+    public static final String TEST_SERVER = "https://getman.cn/echo";
+
 
     /**
      * 重试的最大次数
-     *
      */
     public static final int MAX_TRY_TIMES = 3;
     /**
@@ -53,14 +55,24 @@ public class Constants {
      */
     // html
     public static final String JS_CURRENT_PAGE_HTML = "javascript:window.currentPageHtml()";
-    // find item
+    // find nodes
     public static final String JS_FUNCTION_FIND_ITEM = "javascript:window.findItemLocation(%s,%s)";
-    // message
-    public static final String JS_FUNCTION_MESSAGE = "javascript:window.printMessage('hello')";
+    // context
+    public static final String JS_FUNCTION_PRINT_CONTEXT = "javascript:window.printContext(%s,%s)";
+    // find id node
+    public static final String JS_FUNCTION_FIND_ITEM_BY_ID = "javascript:window.findItemById(%s,%s,%s)";
+
+    // find class name node
+    public static final String JS_FUNCTION_FIND_ITEM_BY_CLASS_NAME = "javascript:window.findItemByClassName(%s,%s)";
 
     // div class name
     public static final String DIV_CLASSNAME_ADVERT = "ad-item";
     public static final String DIV_CLASSNAME_NEWS = "news-item";
     public static final String DIV_CLASSNAME_VIDEO = "video-item";
+    public static final String DIV_CLASSNAME_ARROW_TOP = "icon-up";
+
+
+    // div id name
+
 
 }

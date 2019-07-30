@@ -4,6 +4,9 @@ import com.nicolls.ghostevent.ghost.core.IWebTarget;
 import com.nicolls.ghostevent.ghost.parse.IWebParser;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,7 +27,6 @@ public class WebParseEvent extends BaseEvent {
         super(target);
         this.target = target;
         this.webParser = webParser;
-        this.setName(TAG);
     }
 
     @Override
@@ -59,5 +61,16 @@ public class WebParseEvent extends BaseEvent {
     @Override
     public long getExecuteTimeOut() {
         return webParser.getParsedDelay() + getExtendsTime();
+    }
+
+    @Override
+    public String getName() {
+        return TAG;
+    }
+
+    @Override
+    public String getDetail() {
+        JSONObject jsonObject = new JSONObject();
+        return jsonObject.toString();
     }
 }

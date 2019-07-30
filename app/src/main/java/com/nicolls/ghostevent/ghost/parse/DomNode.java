@@ -5,18 +5,9 @@ import com.alibaba.fastjson.annotation.JSONField;
 import java.io.Serializable;
 
 public class DomNode implements Serializable {
-    public enum Type {
-        AD("ad"), NEWS("news"), VIDEO("video");
-        private String tag;
-
-        private Type(String tag) {
-            this.tag = tag;
-        }
-
-    }
 
     @JSONField
-    public int position;
+    public int index;
     @JSONField
     public int childIndex;
     @JSONField
@@ -28,26 +19,23 @@ public class DomNode implements Serializable {
     @JSONField
     public float bottom;
     @JSONField
-    public float clientWidth;
-    @JSONField
-    public float clientHeight;
-    @JSONField
     public String className;
+    @JSONField
+    public String idName;
     @JSONField
     public String title;
 
     @Override
     public String toString() {
         return "DomNode{" +
-                "position=" + position +
+                "index=" + index +
                 ", childIndex=" + childIndex +
                 ", left=" + left +
                 ", top=" + top +
                 ", right=" + right +
                 ", bottom=" + bottom +
-                ", clientWidth=" + clientWidth +
-                ", clientHeight=" + clientHeight +
                 ", className='" + className + '\'' +
+                ", idName='" + idName + '\'' +
                 ", title='" + title + '\'' +
                 '}';
     }

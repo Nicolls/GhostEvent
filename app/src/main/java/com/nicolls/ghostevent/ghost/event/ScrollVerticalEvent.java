@@ -11,6 +11,9 @@ import com.nicolls.ghostevent.ghost.event.provider.EventParamsProvider;
 import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -32,7 +35,6 @@ public class ScrollVerticalEvent extends BaseEvent {
         super(event.target);
         this.target = event.target;
         this.provider = event.provider;
-        this.setName(TAG);
     }
 
     public ScrollVerticalEvent(IWebTarget target, final int from, final int to) {
@@ -50,14 +52,12 @@ public class ScrollVerticalEvent extends BaseEvent {
             }
 
         };
-        this.setName(TAG);
     }
 
     public ScrollVerticalEvent(IWebTarget target, EventParamsProvider<Line> provider) {
         super(target);
         this.target = target;
         this.provider = provider;
-        this.setName(TAG);
     }
 
     public ScrollVerticalEvent(IWebTarget target, int distance) {
@@ -78,7 +78,6 @@ public class ScrollVerticalEvent extends BaseEvent {
             }
 
         };
-        this.setName(TAG);
     }
 
     @Override
@@ -178,5 +177,21 @@ public class ScrollVerticalEvent extends BaseEvent {
                 ", line=" + (provider.getParams() == null ? "null" : provider.getParams().toString()) +
                 ", animDuration=" + animDuration +
                 '}';
+    }
+
+    @Override
+    public String getName() {
+        return TAG;
+    }
+
+    @Override
+    public String getDetail() {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("scroll", (provider.getParams() == null ? "null" : provider.getParams().toString()));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jsonObject.toString();
     }
 }

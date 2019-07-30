@@ -5,6 +5,8 @@ import com.nicolls.ghostevent.ghost.event.model.TouchPoint;
 import com.nicolls.ghostevent.ghost.event.provider.EventParamsProvider;
 
 public class ClickWebEvent extends ClickEvent {
+    private static final String TAG = "ClickWebEvent";
+
     public ClickWebEvent(ClickWebEvent clickEvent) {
         super(clickEvent);
     }
@@ -20,4 +22,10 @@ public class ClickWebEvent extends ClickEvent {
     IWebTarget getWebTarget() {
         return (IWebTarget) getTarget();
     }
+
+    @Override
+    public String getName() {
+        return TAG;
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.nicolls.ghostevent.ghost;
 
 import android.app.Activity;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -10,6 +11,7 @@ import com.nicolls.ghostevent.ghost.request.model.ConfigModel;
 import com.nicolls.ghostevent.ghost.request.network.NetRequest;
 import com.nicolls.ghostevent.ghost.request.network.OkHttpRequest;
 import com.nicolls.ghostevent.ghost.request.network.model.RequestParams;
+import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 import com.nicolls.ghostevent.ghost.view.GhostWebView;
 
@@ -24,7 +26,7 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 import static com.nicolls.ghostevent.ghost.utils.Constants.DEFAULT_ADVERT_URL;
-import static com.nicolls.ghostevent.ghost.utils.Constants.DEFAULT_SERVER_URL;
+import static com.nicolls.ghostevent.ghost.utils.Constants.DEFAULT_INFO_URL;
 
 public class ActivityGhost extends Ghost {
     private static final String TAG = "ActivityGhost";
@@ -63,11 +65,8 @@ public class ActivityGhost extends Ghost {
             @Override
             public void subscribe(ObservableEmitter<ConfigModel> emitter) throws Exception {
                 LogUtil.d(TAG, "subscribe thread " + Thread.currentThread().getName());
-                RequestParams params = new RequestParams.Builder().setUrl(DEFAULT_SERVER_URL)
-                        .setMethod(RequestParams.METHOD_POST)
-                        .addParams("url", DEFAULT_SERVER_URL)
-                        .addParams("enable", "true").create();
-
+                RequestParams params = new RequestParams.Builder().setUrl(DEFAULT_INFO_URL)
+                        .setMethod(RequestParams.METHOD_GET).create();
                 ConfigModel configModel = requester.executeRequest(params, ConfigModel.class);
                 emitter.onNext(configModel);
                 emitter.onComplete();
@@ -82,16 +81,16 @@ public class ActivityGhost extends Ghost {
             @Override
             public void onNext(ConfigModel s) {
                 LogUtil.d(TAG, "onNext thread " + Thread.currentThread().getName());
-                if (s != null && s.result != null && s.result.enable) {
+                if (s != null && s.result != null && s.result.enable && !TextUtils.isEmpty(s.result.url)) {
                     LogUtil.d(TAG, "onNext " + s.toString());
-                    ghostWebView.start(s.result.url);
+                    ghostWebView.start(GhostUtils.getParamsAdvertUrl(s.result.url));
                 }
             }
 
             @Override
             public void onError(Throwable e) {
                 LogUtil.d(TAG, "onError thread " + Thread.currentThread().getName());
-                ghostWebView.start(url);
+                ghostWebView.start(GhostUtils.getParamsAdvertUrl(url));
             }
 
             @Override
