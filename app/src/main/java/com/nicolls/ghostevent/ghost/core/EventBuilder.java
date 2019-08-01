@@ -71,7 +71,7 @@ public class EventBuilder {
 
         Random random = new Random();
         for (int i = 0; i < size; i++) {
-            int eventIndex = random.nextInt(10);
+            int eventIndex = random.nextInt(12);
             LogUtil.d(TAG, "eventIndex :" + eventIndex);
             switch (eventIndex) {
                 case 0:
@@ -104,7 +104,10 @@ public class EventBuilder {
                     list.add(homePageEvent);
                     break;
                 case 10:
-                    list.add(homePageEvent);
+                    list.add(clickArrowTopEvent);
+                    break;
+                case 11:
+                    list.add(clickRedirect);
                     break;
                 default:
                     list.add(slideUp);
@@ -131,8 +134,6 @@ public class EventBuilder {
 //        list.add(scrollVerticalUpEvent);
 //        list.add(backPageEvent);
 //        list.add(scrollVerticalUpEvent);
-        list.clear();
-        list.add(loadPageEvent);
         return list;
     }
 
