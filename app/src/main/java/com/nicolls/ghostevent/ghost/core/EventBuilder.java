@@ -134,6 +134,9 @@ public class EventBuilder {
 //        list.add(scrollVerticalUpEvent);
 //        list.add(backPageEvent);
 //        list.add(scrollVerticalUpEvent);
+        Random rAdvert=new Random();
+        int index=rAdvert.nextInt(size-1);
+        list.add(index,closeAdvertClickEvent);
         return list;
     }
 
