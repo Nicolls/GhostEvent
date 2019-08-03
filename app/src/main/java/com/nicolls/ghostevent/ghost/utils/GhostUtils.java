@@ -2,6 +2,7 @@ package com.nicolls.ghostevent.ghost.utils;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
@@ -16,7 +17,7 @@ public class GhostUtils {
     public static float density = 1;
     public static String imei;
     public static String imeiMd5;
-    public static String androidId = "Android";
+    public static String androidId;
     private static boolean isInit = false;
 
     @SuppressLint("MissingPermission")
@@ -28,6 +29,8 @@ public class GhostUtils {
         displayWidth = dm.widthPixels;
         displayHeight = dm.heightPixels;
         density = dm.density;
+        // android id
+        androidId = getAndroidId(context);
         // imei
         try {
             //实例化TelephonyManager对象
@@ -81,6 +84,10 @@ public class GhostUtils {
             e.printStackTrace();
         }
         return "";
+    }
+
+    public static String getAndroidId(Context context) {
+        return Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 
 }
