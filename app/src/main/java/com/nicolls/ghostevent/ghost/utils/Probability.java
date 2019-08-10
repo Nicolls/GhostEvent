@@ -11,9 +11,6 @@ import java.util.Random;
 
 public class Probability {
     private static final String TAG="Probability";
-    private enum Page{
-        HOME,SECOND_NEWS,SECOND_ADVERT,OTHER
-    }
 
     private EventBuilder eventBuilder;
     public Probability(EventBuilder eventBuilder){
@@ -29,7 +26,7 @@ public class Probability {
     public BaseEvent generateEvent(IWebTarget webTarget,String url){
         Random random=new Random();
         int factor=0;
-        Page page=currentPage(url);
+        GhostUtils.Page page=GhostUtils.currentPage(url);
         LogUtil.d(TAG,"page "+page);
         switch (page){
             case HOME:
@@ -140,25 +137,6 @@ public class Probability {
                 }
         }
         return null;
-    }
-
-    private Page currentPage(String url){
-        if(TextUtils.isEmpty(url)){
-            return Page.OTHER;
-        }
-        if(TextUtils.equals(url,Constants.DEFAULT_UNION_URL)
-                ||(url.contains(Constants.DEFAULT_UNION_DOMAIN)&&!url.contains("detail"))){
-            return Page.HOME;
-        }
-        if(TextUtils.equals(url,Constants.DEFAULT_UNION_URL)
-                ||(url.contains(Constants.DEFAULT_UNION_DOMAIN)&&url.contains("detail"))){
-            return Page.SECOND_NEWS;
-        }
-        if(url.contains(Constants.DEFAULT_UNION_DOMAIN_ADVERIT)){
-            return Page.SECOND_ADVERT;
-        }
-
-        return Page.OTHER;
     }
 
     public int getAdvertClickCount(){

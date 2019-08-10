@@ -8,9 +8,9 @@ public class RedirectHandler {
     private final List<RedirectListener> redirectListeners=new CopyOnWriteArrayList<>();
 
     public interface RedirectListener {
-        void onStart();
+        void onStart(String url);
 
-        void onSuccess();
+        void onSuccess(String url);
 
         void onFail();
     }
@@ -25,15 +25,15 @@ public class RedirectHandler {
         redirectListeners.remove(listener);
     }
 
-    public void notifyStart(){
+    public void notifyStart(String url){
         for (RedirectListener listener:redirectListeners){
-            listener.onStart();
+            listener.onStart(url);
         }
     }
 
-    public void notifySuccess(){
+    public void notifySuccess(String url){
         for (RedirectListener listener:redirectListeners){
-            listener.onSuccess();
+            listener.onSuccess(url);
         }
     }
 

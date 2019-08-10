@@ -59,7 +59,7 @@ public class GhostWebViewClient extends WebViewClient {
         LogUtil.d(TAG, "onPageStarted " + url);
         this.url=url;
         isError = false;
-        redirectHandler.notifyStart();
+        redirectHandler.notifyStart(url);
     }
 
     @Override
@@ -68,7 +68,7 @@ public class GhostWebViewClient extends WebViewClient {
         LogUtil.d(TAG, "onPageFinished " + url);
         this.url=url;
         if (!isError) {
-            onSuccess();
+            onSuccess(url);
         }
     }
 
@@ -108,9 +108,9 @@ public class GhostWebViewClient extends WebViewClient {
     /**
      * 加载成功
      */
-    private void onSuccess() {
+    private void onSuccess(String url) {
         LogUtil.d(TAG, "load onSuccess");
-        redirectHandler.notifySuccess();
+        redirectHandler.notifySuccess(url);
     }
 
 }

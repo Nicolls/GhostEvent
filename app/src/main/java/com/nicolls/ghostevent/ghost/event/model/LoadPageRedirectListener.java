@@ -34,13 +34,13 @@ public class LoadPageRedirectListener implements RedirectHandler.RedirectListene
     };
 
     @Override
-    public void onStart() {
+    public void onStart(String url) {
         receiveSuccessTimes = 0;
         LogUtil.d(TAG, "redirect load onStart");
     }
 
     @Override
-    public void onSuccess() {
+    public void onSuccess(String url) {
         LogUtil.d(TAG, "redirect load onSuccess");
         receiveSuccessTimes++;
         if (receiveSuccessTimes > maxReceiveSuccessTimes) {

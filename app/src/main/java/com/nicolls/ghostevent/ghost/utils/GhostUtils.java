@@ -90,4 +90,27 @@ public class GhostUtils {
         return Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ANDROID_ID);
     }
 
+    public enum Page{
+        HOME,SECOND_NEWS,SECOND_ADVERT,OTHER
+    }
+
+    public static Page currentPage(String url){
+        if(TextUtils.isEmpty(url)){
+            return Page.OTHER;
+        }
+        if(TextUtils.equals(url,Constants.DEFAULT_UNION_URL)
+                ||(url.contains(Constants.DEFAULT_UNION_DOMAIN)&&!url.contains("detail"))){
+            return Page.HOME;
+        }
+        if(TextUtils.equals(url,Constants.DEFAULT_UNION_URL)
+                ||(url.contains(Constants.DEFAULT_UNION_DOMAIN)&&url.contains("detail"))){
+            return Page.SECOND_NEWS;
+        }
+        if(url.contains(Constants.DEFAULT_UNION_DOMAIN_ADVERIT)){
+            return Page.SECOND_ADVERT;
+        }
+
+        return Page.OTHER;
+    }
+
 }

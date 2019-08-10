@@ -21,29 +21,29 @@ public class HomePageRedirectListener extends LoadPageRedirectListener {
     }
 
     @Override
-    public void onStart() {
+    public void onStart(String url) {
         LogUtil.d(TAG, "redirect load onStart");
     }
 
     @Override
-    public void onSuccess() {
+    public void onSuccess(String url) {
         LogUtil.d(TAG, "redirect load onSuccess");
-        check();
+        check(url);
     }
 
     @Override
     public void onFail() {
         LogUtil.d(TAG, "redirect load onFail");
-        check();
+        check(null);
     }
 
-    private void check() {
+    private void check(String url) {
         if (webView.canGoBack()) {
             LogUtil.d(TAG, "go back continue ");
             webView.goBack();
         } else {
             LogUtil.d(TAG, "can not go back ,to Home");
-            super.onSuccess();
+            super.onSuccess(url);
         }
     }
 }
