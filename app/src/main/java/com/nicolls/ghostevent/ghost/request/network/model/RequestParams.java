@@ -1,5 +1,7 @@
 package com.nicolls.ghostevent.ghost.request.network.model;
 
+import org.json.JSONObject;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,6 +16,7 @@ public class RequestParams {
 
     public static final String METHOD_POST = "POST";
     public static final String METHOD_GET = "GET";
+    public static final String METHOD_JSON = "JSON";
     public static final int READ_BUFFER_SIZE = 1024; // Bytes 字节
     public static final int WRITE_BUFFER_SIZE = 1024; // Bytes 字节
 
@@ -24,6 +27,8 @@ public class RequestParams {
     private Map<String, String> headers;
 
     private Map<String, String> params;
+
+    private JSONObject jsonParams;
 
     private boolean isSynchronized = false;
 
@@ -80,6 +85,10 @@ public class RequestParams {
         return new HashMap<>(params);
     }
 
+    public JSONObject getJsonParams(){
+        return jsonParams;
+    }
+
     public static class Builder {
         private RequestParams urlParams;
 
@@ -120,6 +129,11 @@ public class RequestParams {
 
         public Builder addParams(String key, String value) {
             urlParams.params.put(key, value);
+            return this;
+        }
+
+        public Builder setJsonParams(JSONObject jsonParams) {
+            urlParams.jsonParams = jsonParams;
             return this;
         }
 

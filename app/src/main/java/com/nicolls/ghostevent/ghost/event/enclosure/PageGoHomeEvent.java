@@ -62,7 +62,7 @@ public class PageGoHomeEvent extends BaseEvent {
                     handler.unRegisterRedirectListener(listener);
                     // 加载页面没有成功，则需要停止页面加载
                     LogUtil.w(TAG, "go home time out,stop loading!");
-                    webView.stopLoading();
+//                    webView.stopLoading();
                     throw new RuntimeException("go home time out!");
                 } else {
                     handler.unRegisterRedirectListener(listener);

@@ -7,6 +7,9 @@ import com.nicolls.ghostevent.ghost.request.network.model.RequestParams;
 import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import io.reactivex.Completable;
 import io.reactivex.CompletableObserver;
 import io.reactivex.disposables.Disposable;
@@ -28,12 +31,19 @@ public class EventReporter implements IEventReport {
                 @Override
                 public void run() {
                     LogUtil.d(TAG, "uploadEvent");
+
+                    JSONObject object=new JSONObject();
+                    try {
+                        object.put("type", type);
+                        object.put("target", target);
+                        object.put("params", params);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                     RequestParams requestParams = new RequestParams.Builder()
-                            .setUrl(Constants.DEFAULT_UPLOAD_EVENT_URL)
-                            .addParams("type", type)
-                            .addParams("target", target)
-                            .addParams("params", params)
-                            .setMethod(RequestParams.METHOD_GET)
+                            .setUrl(Constants.UPLOAD_EVENT_URL)
+                            .setJsonParams(object)
+                            .setMethod(RequestParams.METHOD_JSON)
                             .create();
                     UploadEventResponse response = request.executeRequest(requestParams, UploadEventResponse.class);
                     LogUtil.d(TAG, "uploadEvent completed " + response);

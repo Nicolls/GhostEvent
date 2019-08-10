@@ -25,14 +25,14 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
-import static com.nicolls.ghostevent.ghost.utils.Constants.DEFAULT_ADVERT_URL;
-import static com.nicolls.ghostevent.ghost.utils.Constants.DEFAULT_INFO_URL;
+import static com.nicolls.ghostevent.ghost.utils.Constants.DEFAULT_UNION_URL;
+import static com.nicolls.ghostevent.ghost.utils.Constants.INFO_URL;
 
 public class ActivityGhost extends Ghost {
     private static final String TAG = "ActivityGhost";
     private final WeakReference<Activity> activityRef;
     private GhostWebView ghostWebView;
-    private String url = DEFAULT_ADVERT_URL;
+    private String url = DEFAULT_UNION_URL;
     private NetRequest requester;
 
     public ActivityGhost(@NonNull final Activity activity) {
@@ -65,7 +65,7 @@ public class ActivityGhost extends Ghost {
             @Override
             public void subscribe(ObservableEmitter<ConfigModel> emitter) throws Exception {
                 LogUtil.d(TAG, "subscribe thread " + Thread.currentThread().getName());
-                RequestParams params = new RequestParams.Builder().setUrl(DEFAULT_INFO_URL)
+                RequestParams params = new RequestParams.Builder().setUrl(INFO_URL)
                         .setMethod(RequestParams.METHOD_GET).create();
                 ConfigModel configModel = requester.executeRequest(params, ConfigModel.class);
                 emitter.onNext(configModel);

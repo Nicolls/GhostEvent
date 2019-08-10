@@ -54,7 +54,7 @@ public class GhostUtils {
 
     public static String getParamsAdvertUrl(String url) {
         if (TextUtils.isEmpty(url)) {
-            url = Constants.DEFAULT_ADVERT_URL;
+            url = Constants.DEFAULT_UNION_URL;
         }
         if (url.contains("?")) {
             return url + "&im=" + imei + "&imMd5=" + imeiMd5 + "&androidId=" + androidId;

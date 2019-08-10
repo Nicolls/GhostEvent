@@ -6,6 +6,9 @@ import com.nicolls.ghostevent.ghost.request.network.model.HttpParams;
 import com.nicolls.ghostevent.ghost.request.network.model.RequestParams;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -14,9 +17,13 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
 import okhttp3.HttpUrl;
+import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
+import okhttp3.RequestBody;
 import okhttp3.Response;
+import okio.BufferedSink;
+import okio.ByteString;
 
 /**
  * Created by nicolls on 18/11/16.
@@ -58,7 +65,7 @@ public class OkHttpRequest implements NetRequest {
         try {
             Response response = okHttpClient.newCall(getRequest(requestParams)).execute();
             String str = response.body().string();
-            LogUtil.d(TAG, "executeRequest completed "+str);
+            LogUtil.d(TAG, "executeRequest completed " + str);
             T object = JSON.parseObject(str, cls);
             object.rawMessage = str;
             return object;
@@ -101,7 +108,7 @@ public class OkHttpRequest implements NetRequest {
                 urlBuilder.addQueryParameter(key, params.get(key));
             }
             builder.url(urlBuilder.build());
-        } else {
+        } else if (RequestParams.METHOD_POST.equals(requestParams.getMethod())) {
             // 发送post请求
             builder.url(requestParams.getUrl());
             FormBody.Builder formBuild = new FormBody.Builder();
@@ -109,6 +116,22 @@ public class OkHttpRequest implements NetRequest {
                 formBuild.add(key, params.get(key));
             }
             builder.post(formBuild.build());
+        } else {
+            builder.url(requestParams.getUrl());
+            builder.post(new RequestBody() {
+                @Nullable
+                @Override
+                public MediaType contentType() {
+                    return MediaType.parse("application/json");
+                }
+
+                @Override
+                public void writeTo(@NotNull BufferedSink bufferedSink) throws IOException {
+                    if (requestParams.getJsonParams() != null) {
+                        bufferedSink.write(new ByteString(requestParams.getJsonParams().toString().getBytes()));
+                    }
+                }
+            });
         }
 
         return builder.build();

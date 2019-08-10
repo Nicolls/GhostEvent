@@ -18,6 +18,7 @@ import io.reactivex.Completable;
 public abstract class BaseEvent {
     private static final String TAG = "BaseEvent";
     private ITarget target;
+    private GroupEvent parent;
 
     public BaseEvent(ITarget target) {
         this.target = target;
@@ -32,6 +33,14 @@ public abstract class BaseEvent {
     public abstract String getName();
 
     public abstract String getDetail();
+
+    public GroupEvent getParent(){
+        return parent;
+    }
+
+    public void setParent(GroupEvent parent){
+        this.parent=parent;
+    }
 
     public boolean needRetry() {
         return false;

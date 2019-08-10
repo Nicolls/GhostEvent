@@ -58,7 +58,7 @@ public class RedirectClickEvent extends ClickEvent {
                     handler.unRegisterRedirectListener(listener);
                     LogUtil.d(TAG,"redirect time out! but ignore this exception! go on");
                     // 加载页面没有成功，则需要停止页面加载
-                    webView.stopLoading();
+//                    webView.stopLoading();
                 } else {
                     LogUtil.d(TAG, "web load completed");
                     handler.unRegisterRedirectListener(listener);

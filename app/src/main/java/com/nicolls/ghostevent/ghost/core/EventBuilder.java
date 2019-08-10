@@ -39,11 +39,50 @@ public class EventBuilder {
     private final List<ViewNode> viewNodes = new ArrayList<>();
     private ViewNode arrowTopNode;
 
-    public EventBuilder(Context context, RedirectHandler redirectHandler,
+    public EventBuilder(Context context,  RedirectHandler redirectHandler,
                         EventExecutor.ExecuteCallBack executeCallBack) {
         this.context = context.getApplicationContext();
         this.redirectHandler = redirectHandler;
         this.executeCallBack = executeCallBack;
+    }
+
+    public BaseEvent getSlideDown(IWebTarget webTarget){
+        BaseEvent slideDown = new SlideEvent(webTarget, SlideEvent.Direction.DOWN);
+        return slideDown;
+    }
+
+    public BaseEvent getSlideUp(IWebTarget webTarget){
+        BaseEvent slideDown = new SlideEvent(webTarget, SlideEvent.Direction.UP);
+        return slideDown;
+    }
+
+    public BaseEvent getClickEvent(IWebTarget webTarget){
+        Random random=new Random();
+        int displayWidth = GhostUtils.displayWidth;
+        int borderWidth=displayWidth/4;
+        int displayHeight = GhostUtils.displayHeight;
+        int borderHeight=displayHeight/8;
+
+        int x=borderWidth+random.nextInt(displayWidth/2);
+        int y=borderHeight+random.nextInt(displayHeight/2);
+        LogUtil.d(TAG,"getClickEvent x:"+x+" y:"+y);
+        TouchPoint clickRandom = TouchPoint.obtainClick(x, y);
+        BaseEvent clickRedirect = new RedirectClickEvent(new ClickWebEvent(webTarget, clickRandom), redirectHandler);
+        return clickRedirect;
+    }
+
+    public BaseEvent getSecondAdvertHeadClickEvent(IWebTarget webTarget){
+        Random random=new Random();
+        int displayWidth = GhostUtils.displayWidth;
+        int borderWidth=displayWidth/4;
+        int displayHeight = GhostUtils.displayHeight;
+
+        int x=borderWidth+random.nextInt(displayWidth/2);
+        int y=10+random.nextInt(displayHeight/8);
+        LogUtil.d(TAG,"getClickEvent x:"+x+" y:"+y);
+        TouchPoint clickRandom = TouchPoint.obtainClick(x, y);
+        BaseEvent clickRedirect = new RedirectClickEvent(new ClickWebEvent(webTarget, clickRandom), redirectHandler);
+        return clickRedirect;
     }
 
     public List<BaseEvent> buildAutoEvent(IWebTarget target, String url, int size, boolean haveAdvert) {
@@ -140,6 +179,10 @@ public class EventBuilder {
         return list;
     }
 
+    public BaseEvent getLoadPageEvent(IWebTarget target,String url) {
+        BaseEvent loadPageEvent = new LoadPageEvent(target, executeCallBack, new LoadPageEventProvider(target, advertTarget, redirectHandler, url));
+        return loadPageEvent;
+    }
 
     public GroupEvent getGoBackEvent(IWebTarget target) {
 

@@ -12,11 +12,15 @@ import com.nicolls.ghostevent.ghost.core.IWebTarget;
 import com.nicolls.ghostevent.ghost.core.RedirectHandler;
 import com.nicolls.ghostevent.ghost.core.ViewEventHandler;
 import com.nicolls.ghostevent.ghost.event.BaseEvent;
+import com.nicolls.ghostevent.ghost.event.GroupEvent;
+import com.nicolls.ghostevent.ghost.event.LoadPageEvent;
+import com.nicolls.ghostevent.ghost.event.provider.LoadPageEventProvider;
 import com.nicolls.ghostevent.ghost.parse.ViewNode;
 import com.nicolls.ghostevent.ghost.request.EventReporter;
 import com.nicolls.ghostevent.ghost.request.IEventReport;
 import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
+import com.nicolls.ghostevent.ghost.utils.Probability;
 
 import java.util.List;
 
@@ -34,25 +38,35 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
     private int tryTimes = 0;
     private String url;
     private boolean isRetrying = false;
-    private final IEventReport eventReport= EventReporter.getInstance();
+    private final IEventReport eventReport = EventReporter.getInstance();
     private final EventExecutor.ExecuteCallBack executeCallBack = new EventExecutor.ExecuteCallBack() {
         @Override
         public void onSuccess(BaseEvent event) {
-            LogUtil.d(TAG, "onSuccess");
-            eventReport.uploadEvent(event.getName(),"success",event.getDetail());
+            LogUtil.d(TAG, "onSuccess " + event.getName());
+            eventReport.uploadEvent(event.getName(), "success", event.getDetail());
+            if (event.getParent() == null) {
+                LogUtil.d(TAG,"an instance event ");
+                BaseEvent generateEvent = probability.generateEvent(GhostWebView.this, webViewClient.getCurrentUrl());
+                if(generateEvent==null){
+                    LogUtil.d(TAG,"advert click count enough:"+probability.getAdvertClickCount());
+                    stop();
+                    return;
+                }
+                eventExecutor.execute(generateEvent);
+            }
         }
 
         @Override
         public void onFail(BaseEvent event) {
             LogUtil.d(TAG, "onFail");
-            eventReport.uploadEvent(event.getName(),"fail",event.getDetail());
+            eventReport.uploadEvent(event.getName(), "fail", event.getDetail());
             retry();
         }
 
         @Override
         public void onTimeOut(BaseEvent event) {
             LogUtil.d(TAG, "onTimeOut");
-            eventReport.uploadEvent(event.getName(),"timeout",event.getDetail());
+            eventReport.uploadEvent(event.getName(), "timeout", event.getDetail());
             retry();
         }
     };
@@ -61,7 +75,9 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
     private final RedirectHandler redirectHandler = new RedirectHandler();
     private final EventBuilder eventBuilder = new EventBuilder(getContext(), redirectHandler, executeCallBack);
     private boolean isRecord = false;
+    private Probability probability;
     private GhostWebViewTriggerEvent ghostWebViewTriggerEvent;
+    private GhostWebViewClient webViewClient;
 
     public GhostWebView(Context context) {
         super(context);
@@ -81,9 +97,11 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
     private void init() {
         eventExecutor.setExecuteCallBack(executeCallBack);
         setWebChromeClient(new GhostWebChromeClient());
-        setWebViewClient(new GhostWebViewClient(redirectHandler));
+        webViewClient = new GhostWebViewClient(redirectHandler);
+        setWebViewClient(webViewClient);
         ghostWebViewTriggerEvent = new GhostWebViewTriggerEvent(this, redirectHandler, executeCallBack);
         setOnTouchListener(ghostWebViewTriggerEvent);
+        probability = new Probability(eventBuilder);
     }
 
     /**
@@ -95,7 +113,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         LogUtil.d(TAG, "start " + url);
         this.url = url;
         isRecord = false;
-        eventExecutor.execute(eventBuilder.buildAutoEvent(this, url, 30, true));
+        eventExecutor.execute(eventBuilder.getLoadPageEvent(this, url));
     }
 
     /**
@@ -204,7 +222,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
             return;
         }
         isRetrying = true;
-        eventReport.uploadEvent("RetryEvent","retry","");
+        eventReport.uploadEvent("RetryEvent", "retry", "");
         eventExecutor.reset().subscribe(new CompletableObserver() {
             @Override
             public void onSubscribe(Disposable d) {

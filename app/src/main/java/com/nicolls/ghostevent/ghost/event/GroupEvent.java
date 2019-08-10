@@ -42,6 +42,7 @@ public class GroupEvent extends BaseEvent {
         this.executeCallBack = executeCallBack;
         if (list != null) {
             for (BaseEvent event : list) {
+                event.setParent(this);
                 childList.add(event);
                 timeOut += event.getExecuteTimeOut();
             }
@@ -50,11 +51,15 @@ public class GroupEvent extends BaseEvent {
     }
 
     public void addEvent(BaseEvent event) {
+        event.setParent(this);
         childList.add(event);
         initTimeOut();
     }
 
     public void addEvent(List<BaseEvent> events) {
+        for (BaseEvent event : events) {
+            event.setParent(this);
+        }
         childList.addAll(events);
         initTimeOut();
     }
@@ -69,10 +74,14 @@ public class GroupEvent extends BaseEvent {
     }
 
     public void removeEvent(BaseEvent event) {
+        event.setParent(null);
         childList.remove(event);
     }
 
     public void removeAllEvents() {
+        for (BaseEvent event : childList) {
+            event.setParent(null);
+        }
         childList.clear();
     }
 

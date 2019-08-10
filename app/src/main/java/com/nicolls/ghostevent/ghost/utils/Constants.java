@@ -6,15 +6,20 @@ public class Constants {
      * test
      */
     // url
-    private static final String DEFAULT_SERVER = "http://content.urlmat.cn/contentunion";
-    public static final String DEFAULT_INFO_URL = DEFAULT_SERVER+"/ad/info";
-    public static final String DEFAULT_UPLOAD_EVENT_URL = DEFAULT_SERVER+"/ad/upload";
-    public static final String DEFAULT_ADVERT_URL = "https://cpu.baidu.com/1001/be900f73?scid=33854";
+    private static final String SERVER_ADDRESS = "http://content.urlmat.cn/contentunion";
+    public static final String INFO_URL = SERVER_ADDRESS +"/ad/info";
+    public static final String UPLOAD_EVENT_URL = SERVER_ADDRESS +"/ad/upload";
+
+    public static final String DEFAULT_UNION_URL = "https://cpu.baidu.com/1001/be900f73?scid=33854";
+    public static final String DEFAULT_UNION_DOMAIN = "cpu.baidu.com";
+    public static final String DEFAULT_UNION_DOMAIN_ADVERIT = "aden.baidu.com";
+
     public static final String TEST_SERVER = "https://getman.cn/echo";
 
 
     /**
      * 重试的最大次数
+     *
      */
     public static final int MAX_TRY_TIMES = 3;
     /**

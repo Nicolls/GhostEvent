@@ -13,19 +13,22 @@ import com.nicolls.ghostevent.ghost.core.RedirectHandler;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 public class GhostWebViewClient extends WebViewClient {
-    private static final String TAG="GhostWebViewClient";
+    private static final String TAG = "GhostWebViewClient";
     private boolean isError = false;
 
     private final RedirectHandler redirectHandler;
-    public GhostWebViewClient(RedirectHandler redirectHandler){
-        this.redirectHandler=redirectHandler;
+
+    private String url;
+
+    public GhostWebViewClient(RedirectHandler redirectHandler) {
+        this.redirectHandler = redirectHandler;
     }
 
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
         String scheme = request.getUrl().getScheme();
         // 拦截非http / https类型请求
-        if (!isHttpUrl(scheme)){
+        if (!isHttpUrl(scheme)) {
             return true;
         }
         return super.shouldOverrideUrlLoading(view, request);
@@ -36,7 +39,7 @@ public class GhostWebViewClient extends WebViewClient {
         Uri uri = Uri.parse(url);
         String scheme = uri.getScheme();
         // 拦截非http / https类型请求
-        if (!isHttpUrl(scheme)){
+        if (!isHttpUrl(scheme)) {
             return true;
         }
         return super.shouldOverrideUrlLoading(view, url);
@@ -46,10 +49,15 @@ public class GhostWebViewClient extends WebViewClient {
         return scheme.equalsIgnoreCase("http") || scheme.equalsIgnoreCase("https");
     }
 
+    public String getCurrentUrl(){
+        return url;
+    }
+
     @Override
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
         super.onPageStarted(view, url, favicon);
-        LogUtil.d(TAG,"onPageStarted");
+        LogUtil.d(TAG, "onPageStarted " + url);
+        this.url=url;
         isError = false;
         redirectHandler.notifyStart();
     }
@@ -57,7 +65,8 @@ public class GhostWebViewClient extends WebViewClient {
     @Override
     public void onPageFinished(WebView view, String url) {
         super.onPageFinished(view, url);
-        LogUtil.d(TAG, "onPageFinished");
+        LogUtil.d(TAG, "onPageFinished " + url);
+        this.url=url;
         if (!isError) {
             onSuccess();
         }
