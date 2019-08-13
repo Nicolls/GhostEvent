@@ -1,4 +1,4 @@
-package com.nicolls.ghostevent.ghost.parse.home;
+package com.nicolls.ghostevent.ghost.parse.secondnews;
 
 import android.webkit.WebView;
 
@@ -9,14 +9,14 @@ import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.concurrent.Semaphore;
 
-public class HomeArrowTopParser extends WebBaseParser {
-    private static final String TAG = "SecondNewsArrowTopParser";
+public class SecondNewsReadMoreParser extends WebBaseParser {
+    private static final String TAG = "SecondNewsMainIconParser";
 
     public void foundItemByClass(IWebTarget target, final Semaphore semaphore) {
         LogUtil.d(TAG, "execute foundItemByClass ");
         final WebView webView = (WebView) target;
         LogUtil.d(TAG, "view width-height:" + webView.getWidth() + "-" + webView.getHeight());
-        String findItemByClassName = String.format(Constants.JS_FUNCTION_FIND_ARROW_TOP_BY_CLASS_NAME,
+        String findItemByClassName = String.format(Constants.JS_FUNCTION_FIND_READ_MORE_CLASS_NAME,
                 webView.getWidth(), webView.getHeight());
         LogUtil.d(TAG, "findItemByClassName " + findItemByClassName);
         target.executeJs(findItemByClassName);

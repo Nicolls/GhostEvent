@@ -44,6 +44,10 @@ public class Probability {
                     return eventBuilder.getClickEvent(webTarget);
                 } else {
                     homeSlideCount++;
+                    if(homeSlideCount>4&&factor==8){
+                        LogUtil.d(TAG,"HOME hit arrow top icon");
+                        return eventBuilder.getHomeClickArrowTopNodeEvent(webTarget);
+                    }
                     LogUtil.d(TAG,"HOME hit slide up");
                     return eventBuilder.getSlideUp(webTarget);
                 }
@@ -62,7 +66,7 @@ public class Probability {
                     LogUtil.d(TAG,"next factor:"+factor);
                     if(factor>=0&&factor<5&&secondNewsSlideCount==0){
                         LogUtil.d(TAG,"SECOND_NEWS hit head advert");
-                        return eventBuilder.getSecondAdvertHeadClickEvent(webTarget);
+                        return eventBuilder.getSecondNewsAdvertHeadClickEvent(webTarget);
                     } else {
                         if(secondNewsSlideCount==0){
                             secondNewsSlideCount++;
@@ -73,12 +77,25 @@ public class Probability {
                                 secondNewsSlideCount++;
                                 LogUtil.d(TAG,"SECOND_NEWS ,hit go back");
                                 return eventBuilder.getGoBackEvent(webTarget);
-                            } else if(factor>25&&factor<50){
+                            } else if(factor>25&&factor<40){
+                                LogUtil.d(TAG,"SECOND_NEWS ,hit scroll to read more and click");
+                                return eventBuilder.getSecondNewsScrollAndClickReadMoreNodeEvent(webTarget);
+                            }else if(factor>=40&&factor<50){
                                 LogUtil.d(TAG,"SECOND_NEWS ,hit click");
                                 return eventBuilder.getClickEvent(webTarget);
                             }else {
-                                LogUtil.d(TAG,"SECOND_NEWS ,hit slide up");
                                 secondNewsSlideCount++;
+                                if(secondNewsSlideCount>4&&(factor>=60&&factor<(60+secondNewsSlideCount))){
+                                    LogUtil.d(TAG,"SECOND_NEWS hit arrow top icon");
+                                    return eventBuilder.getSecondNewsClickArrowTopNodeEvent(webTarget);
+                                }
+
+                                if(secondNewsSlideCount>4&&(factor>=70&&factor<(70+secondNewsSlideCount))){
+                                    LogUtil.d(TAG,"SECOND_NEWS hit home icon");
+                                    return eventBuilder.getSecondNewsClickMainIconNodeEvent(webTarget);
+                                }
+
+                                LogUtil.d(TAG,"SECOND_NEWS ,hit slide up");
                                 return eventBuilder.getSlideUp(webTarget);
                             }
                         }

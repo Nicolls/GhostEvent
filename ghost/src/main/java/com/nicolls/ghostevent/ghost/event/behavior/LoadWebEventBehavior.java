@@ -27,7 +27,7 @@ public class LoadWebEventBehavior implements IEventBehavior<Boolean> {
     }
 
     @Override
-    public Boolean onEnd() {
+    public void onEnd() {
         LogUtil.d(TAG,"event end start listen page");
 
         try {
@@ -37,7 +37,6 @@ public class LoadWebEventBehavior implements IEventBehavior<Boolean> {
             e.printStackTrace();
         }
         redirectHandler.unRegisterRedirectListener(listener);
-        return true;
     }
 
     private final Runnable checkLoadPage=new Runnable() {

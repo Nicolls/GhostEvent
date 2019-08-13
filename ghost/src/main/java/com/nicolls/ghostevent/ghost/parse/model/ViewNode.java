@@ -7,7 +7,8 @@ import java.io.Serializable;
 public class ViewNode implements Serializable {
     public enum Type {
         ADVERT("advert"), NEWS("news"), VIDEO("video"),
-        ARROW_TOP("arrow_top"), OTHER("other");
+        ARROW_TOP("arrow_top"),MAIN_ICON("main_icon"),
+        READ_MORE("read_more"),ADVERT_TOP("advert_top"), OTHER("other");
         private String tag;
 
         private Type(String tag) {

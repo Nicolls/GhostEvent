@@ -68,13 +68,22 @@ public class Constants {
     public static final String JS_FUNCTION_FIND_ITEM_BY_ID = "javascript:window.findItemById(%s,%s,%s)";
 
     // find class name node
-    public static final String JS_FUNCTION_FIND_ITEM_BY_CLASS_NAME = "javascript:window.findItemByClassName(%s,%s)";
+    public static final String JS_FUNCTION_FIND_ARROW_TOP_BY_CLASS_NAME = "javascript:window.findArrowTopItem(%s,%s)";
+
+    public static final String JS_FUNCTION_FIND_MAIN_ICON_CLASS_NAME = "javascript:window.findMainIconItem(%s,%s)";
+
+    public static final String JS_FUNCTION_FIND_READ_MORE_CLASS_NAME = "javascript:window.findReadMoreItem(%s,%s)";
+
+    public static final String JS_FUNCTION_FIND_ADVERT_TOP_BY_CLASS_NAME = "javascript:window.findAdvertTopItem(%s,%s)";
 
     // div class name
     public static final String DIV_CLASSNAME_ADVERT = "ad-item";
     public static final String DIV_CLASSNAME_NEWS = "news-item";
     public static final String DIV_CLASSNAME_VIDEO = "video-item";
     public static final String DIV_CLASSNAME_ARROW_TOP = "icon-up";
+    public static final String DIV_CLASSNAME_MAIN_ICON = "icon-home";
+    public static final String DIV_CLASSNAME_READ_MORE = "_1Dz8F";
+    public static final String DIV_CLASSNAME_ADVERT_TOP = "a-item-inner";
 
 
     // div id name

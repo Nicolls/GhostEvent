@@ -10,7 +10,7 @@ import com.nicolls.ghostevent.ghost.utils.LogUtil;
 import java.util.concurrent.Semaphore;
 
 public class HomeParser extends WebBaseParser {
-    private static final String TAG = "HomeParser";
+    private static final String TAG = "SecondNewsParser";
 
     public void foundItem(IWebTarget target, final Semaphore semaphore) {
         LogUtil.d(TAG, "execute foundItem ");

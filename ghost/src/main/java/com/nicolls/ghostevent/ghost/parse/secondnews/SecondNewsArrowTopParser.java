@@ -1,4 +1,4 @@
-package com.nicolls.ghostevent.ghost.parse.home;
+package com.nicolls.ghostevent.ghost.parse.secondnews;
 
 import android.webkit.WebView;
 
@@ -9,7 +9,7 @@ import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.concurrent.Semaphore;
 
-public class HomeArrowTopParser extends WebBaseParser {
+public class SecondNewsArrowTopParser extends WebBaseParser {
     private static final String TAG = "SecondNewsArrowTopParser";
 
     public void foundItemByClass(IWebTarget target, final Semaphore semaphore) {
