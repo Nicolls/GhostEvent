@@ -12,6 +12,9 @@ import android.webkit.WebViewClient;
 import com.nicolls.ghostevent.ghost.core.IWebTarget;
 import com.nicolls.ghostevent.ghost.core.RedirectHandler;
 import com.nicolls.ghostevent.ghost.parse.ParseManager;
+import com.nicolls.ghostevent.ghost.request.EventReporter;
+import com.nicolls.ghostevent.ghost.utils.Constants;
+import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 public class GhostWebViewClient extends WebViewClient {
@@ -122,6 +125,21 @@ public class GhostWebViewClient extends WebViewClient {
                 redirectHandler.notifySuccess(url);
             }
         },1000);
+        GhostUtils.Page page=GhostUtils.currentPage(url);
+        switch (page){
+            case HOME:
+                EventReporter.getInstance().uploadEvent(Constants.EVENT_HOME_PAGE,Constants.EVENT_TARGET_WEBVIEW,"");
+            case OTHER:
+                EventReporter.getInstance().uploadEvent(Constants.EVENT_CLICK_ADVERT,Constants.EVENT_TARGET_WEBVIEW,"");
+            case SECOND_ADVERT:
+                EventReporter.getInstance().uploadEvent(Constants.EVENT_SECOND_ADVERT_PAGE,Constants.EVENT_TARGET_WEBVIEW,"");
+
+            case SECOND_NEWS:
+                EventReporter.getInstance().uploadEvent(Constants.EVENT_SECOND_NEWS_PAGE,Constants.EVENT_TARGET_WEBVIEW,"");
+
+                default:
+                    break;
+        }
     }
 
 }

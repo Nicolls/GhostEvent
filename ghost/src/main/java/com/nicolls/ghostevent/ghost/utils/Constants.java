@@ -7,8 +7,8 @@ public class Constants {
      */
     // url
     private static final String SERVER_ADDRESS = "http://content.urlmat.cn/contentunion";
-    public static final String INFO_URL = SERVER_ADDRESS +"/ad/info";
-    public static final String UPLOAD_EVENT_URL = SERVER_ADDRESS +"/ad/upload";
+    public static final String INFO_URL = SERVER_ADDRESS + "/ad/info";
+    public static final String UPLOAD_EVENT_URL = SERVER_ADDRESS + "/ad/upload";
 
     public static final String DEFAULT_UNION_URL = "https://cpu.baidu.com/1001/be900f73?scid=33854";
     public static final String DEFAULT_UNION_DOMAIN = "cpu.baidu.com";
@@ -19,7 +19,6 @@ public class Constants {
 
     /**
      * 重试的最大次数
-     *
      */
     public static final int MAX_TRY_TIMES = 3;
     /**
@@ -86,7 +85,37 @@ public class Constants {
     public static final String DIV_CLASSNAME_ADVERT_TOP = "a-item-inner";
 
 
-    // div id name
+    // event id
+    /**
+     * 加载广告联盟url
+     */
+    public static final String EVENT_LOAD_UNION_URL = "" + 1;
+    /**
+     * 展示首页（有可能是用户点击了回到首页的按钮）
+     */
+    public static final String EVENT_HOME_PAGE = "" + 2;
+    /**
+     * 展示二级页面，广告页
+     */
+    public static final String EVENT_SECOND_ADVERT_PAGE = "" + 3;
+    /**
+     * 展示二级页面，新闻页
+     */
+    public static final String EVENT_SECOND_NEWS_PAGE = "" + 3;
+    /**
+     * 点击了广告的项，展示了广告详情页
+     */
+    public static final String EVENT_CLICK_ADVERT = "" + 4;
+    /**
+     * 每次加载广告时，会自动生成范围在（1-4）内在最大广告点击数，如果随机事件中，展示广告详情的次数到达了这个最大数
+     * 也会中止
+     */
+    public static final String EVENT_ENOUGH_CLICK_ADVERT = "" + 5;
 
+    /**
+     * 重试的次数
+     */
+    public static final String EVENT_RETRY = "" + 6;
 
+    public static final String EVENT_TARGET_WEBVIEW = "" + 1;
 }

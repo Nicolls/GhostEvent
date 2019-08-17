@@ -38,7 +38,6 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         @Override
         public void onSuccess(BaseEvent event) {
             LogUtil.d(TAG, "onSuccess " + event.getName());
-            eventReport.uploadEvent(event.getName(), "success", event.getDescribe());
             if (event.getParent() == null) {
                 LogUtil.d(TAG, "an instance event ");
                 BaseEvent generateEvent = probability.generateEvent(GhostWebView.this, webViewClient.getCurrentUrl());
@@ -54,14 +53,12 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         @Override
         public void onFail(BaseEvent event) {
             LogUtil.d(TAG, "onFail");
-            eventReport.uploadEvent(event.getName(), "fail", event.getDescribe());
             retry();
         }
 
         @Override
         public void onTimeOut(BaseEvent event) {
             LogUtil.d(TAG, "onTimeOut");
-            eventReport.uploadEvent(event.getName(), "timeout", event.getDescribe());
             retry();
         }
     };
@@ -109,6 +106,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         LogUtil.d(TAG, "start " + url);
         this.url = url;
         isRecord = false;
+        EventReporter.getInstance().uploadEvent(Constants.EVENT_LOAD_UNION_URL,Constants.EVENT_TARGET_WEBVIEW,"");
         eventExecutor.execute(eventBuilder.getLoadPageEvent(this, url));
     }
 
@@ -214,7 +212,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
             return;
         }
         isRetrying = true;
-        eventReport.uploadEvent("RetryEvent", "retry", "");
+        eventReport.uploadEvent(Constants.EVENT_RETRY, Constants.EVENT_TARGET_WEBVIEW, "");
         eventExecutor.reset().subscribe(new CompletableObserver() {
             @Override
             public void onSubscribe(Disposable d) {
@@ -266,4 +264,6 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
     public void onScrollStateChanged(ScrollState state) {
         LogUtil.d(TAG, "onScrollStateChanged " + state);
     }
+
+
 }

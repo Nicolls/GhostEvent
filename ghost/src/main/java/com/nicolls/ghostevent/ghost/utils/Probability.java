@@ -3,17 +3,19 @@ package com.nicolls.ghostevent.ghost.utils;
 import com.nicolls.ghostevent.ghost.core.EventBuilder;
 import com.nicolls.ghostevent.ghost.core.IWebTarget;
 import com.nicolls.ghostevent.ghost.event.BaseEvent;
+import com.nicolls.ghostevent.ghost.request.EventReporter;
 
 import java.util.Random;
 
 public class Probability {
     private static final String TAG="Probability";
-
+    private int maxClick=0;
     private EventBuilder eventBuilder;
     public Probability(EventBuilder eventBuilder){
         this.eventBuilder=eventBuilder;
+        Random random=new Random();
+        maxClick = random.nextInt(4)+1;
     }
-
     private int homeSlideCount=0;
     private int secondNewsSlideCount=0;
     private int secondAdvertSlideCount=0;
@@ -133,8 +135,9 @@ public class Probability {
                 if(otherSlideCount==0){
                     LogUtil.d(TAG,"other page advertClickCount:"+advertClickCount);
                     advertClickCount++;
-                    if(advertClickCount>=3){
+                    if(advertClickCount>=maxClick){
                         LogUtil.d(TAG,"advertClickCount enough exist");
+                        EventReporter.getInstance().uploadEvent(Constants.EVENT_ENOUGH_CLICK_ADVERT,Constants.EVENT_TARGET_WEBVIEW,""+maxClick);
                         return null;
                     }
                 }
