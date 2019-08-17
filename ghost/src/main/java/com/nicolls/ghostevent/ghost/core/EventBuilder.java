@@ -23,6 +23,8 @@ import com.nicolls.ghostevent.ghost.parse.secondnews.SecondNewsTopAdvertParser;
 import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 public class EventBuilder {
@@ -128,14 +130,22 @@ public class EventBuilder {
 
     public BaseEvent getSecondNewsScrollAndClickReadMoreNodeEvent(IWebTarget target) {
 
+        List<BaseEvent> childEvents = new ArrayList<>();
         // scroll
         BaseEvent scrollEvent = getScrollToReadMoreNodeEvent(target);
+        childEvents.add(scrollEvent);
         // click
         SecondNewsReadMoreParser topParser = new SecondNewsReadMoreParser();
         ClickIconEventBehavior behavior = new ClickIconEventBehavior(target, redirectHandler, topParser);
         ClickIconEvent clickIconEvent = new ClickIconEvent(target, behavior);
-        BaseEvent slideEvent = getSlideUp(target);
-        GroupEvent groupEvent = new GroupEvent(target, executeCallBack, scrollEvent, clickIconEvent, slideEvent);
+        childEvents.add(clickIconEvent);
+        Random random = new Random();
+        int slideSize = random.nextInt(3) + 1;
+        for (int i = 0; i < slideSize; i++) {
+            BaseEvent slideEvent = getSlideUp(target);
+            childEvents.add(slideEvent);
+        }
+        GroupEvent groupEvent = new GroupEvent(target, executeCallBack, childEvents);
 
         return groupEvent;
     }
