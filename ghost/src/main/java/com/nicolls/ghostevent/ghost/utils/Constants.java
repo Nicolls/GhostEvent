@@ -8,7 +8,9 @@ public class Constants {
     // url
     private static final String SERVER_ADDRESS = "http://content.urlmat.cn/contentunion";
     public static final String INFO_URL = SERVER_ADDRESS + "/ad/info";
-    public static final String UPLOAD_EVENT_URL = SERVER_ADDRESS + "/ad/upload";
+//    public static final String UPLOAD_EVENT_URL = SERVER_ADDRESS + "/ad/upload";
+    public static final String UPLOAD_EVENT_URL = SERVER_ADDRESS + "/ad/log";
+
 
     public static final String DEFAULT_UNION_URL = "https://cpu.baidu.com/1001/be900f73?scid=33854";
     public static final String DEFAULT_UNION_DOMAIN = "cpu.baidu.com";

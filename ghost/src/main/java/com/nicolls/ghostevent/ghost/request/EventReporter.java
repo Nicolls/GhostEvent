@@ -1,10 +1,13 @@
 package com.nicolls.ghostevent.ghost.request;
 
+import android.os.Build;
+
 import com.nicolls.ghostevent.ghost.request.model.UploadEventResponse;
 import com.nicolls.ghostevent.ghost.request.network.NetRequest;
 import com.nicolls.ghostevent.ghost.request.network.OkHttpRequest;
 import com.nicolls.ghostevent.ghost.request.network.model.RequestParams;
 import com.nicolls.ghostevent.ghost.utils.Constants;
+import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import org.json.JSONException;
@@ -36,8 +39,15 @@ public class EventReporter implements IEventReport {
                     JSONObject object = new JSONObject();
                     try {
                         object.put("type", type);
-                        object.put("target", target);
-                        object.put("params", params);
+                        object.put("androidId", GhostUtils.androidId);
+                        object.put("imei", GhostUtils.imei);
+                        object.put("packageName", GhostUtils.packageName);
+                        object.put("model", Build.MODEL);
+                        object.put("brand", Build.BRAND);
+                        object.put("mac", GhostUtils.mac);
+                        object.put("imsi", GhostUtils.imsi);
+                        object.put("screenSize", GhostUtils.displayWidth
+                                + "*" + GhostUtils.displayHeight);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }

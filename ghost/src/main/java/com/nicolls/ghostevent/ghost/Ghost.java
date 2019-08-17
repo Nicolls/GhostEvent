@@ -7,11 +7,7 @@ import com.nicolls.ghostevent.ghost.request.network.NetRequest;
 import com.nicolls.ghostevent.ghost.request.network.OkHttpRequest;
 import com.nicolls.ghostevent.ghost.request.network.model.RequestParams;
 import com.nicolls.ghostevent.ghost.utils.Constants;
-import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
@@ -43,18 +39,9 @@ public abstract class Ghost {
             public void subscribe(ObservableEmitter<ConfigModel> emitter) throws Exception {
                 LogUtil.d(TAG, "subscribe thread " + Thread.currentThread().getName());
 
-                JSONObject object = new JSONObject();
-                try {
-                    object.put("androidid", GhostUtils.androidId);
-                    object.put("imei", GhostUtils.imei);
-                    object.put("packageName", context.getPackageName());
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
                 RequestParams params = new RequestParams.Builder()
                         .setUrl(Constants.INFO_URL)
-                        .setJsonParams(object)
-                        .setMethod(RequestParams.METHOD_JSON)
+                        .setMethod(RequestParams.METHOD_GET)
                         .create();
 
                 try {
