@@ -149,7 +149,7 @@ public class Probability {
                     LogUtil.d(TAG, "other page advertClickCount:" + advertClickCount);
                     advertClickCount++;
                     if (advertClickCount >= maxClick) {
-                        LogUtil.d(TAG, "advertClickCount enough exist");
+                        LogUtil.d(TAG, "advertClickCount enough exist " + maxClick);
                         ToastUtil.toast(webTarget.getContext(), "advertClickCount enough");
                         EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_ENOUGH_CLICK_ADVERT,
                                 Constants.EVENT_TARGET_WEBVIEW, "" + maxClick);
@@ -160,11 +160,11 @@ public class Probability {
                 factor = random.nextInt(10);
                 LogUtil.d(TAG, "factor:" + factor);
                 if (factor >= 0 && factor < 7) {
-                    LogUtil.d(TAG, "OTHER ,hit exit");
+                    LogUtil.d(TAG, "OTHER ,hit go back");
                     return eventBuilder.getGoBackEvent(webTarget);
                 } else {
-                    LogUtil.d(TAG, "OTHER ,hit go back");
                     otherSlideCount++;
+                    LogUtil.d(TAG, "OTHER ,hit slide up");
                     return eventBuilder.getSlideUp(webTarget);
                 }
         }

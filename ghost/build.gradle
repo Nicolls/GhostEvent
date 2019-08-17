@@ -8,7 +8,7 @@ android {
     defaultConfig {
         applicationId "com.nicolls.ghost"
         minSdkVersion 22
-        targetSdkVersion 28
+        targetSdkVersion 23
         versionCode 1
         versionName "1.0"
 

@@ -22,9 +22,10 @@ public class Advert {
         }
         GhostUtils.init(activity);
         attachToActivity(activity);
+//        attachToService(activity);
     }
 
-    private void attchToService(Context appContext) {
+    private void attachToService(Context appContext) {
         ghost = new ServiceGhost(appContext);
         ghost.init();
     }
