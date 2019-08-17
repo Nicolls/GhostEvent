@@ -23,5 +23,12 @@
             android:onClick="onEnd"
             android:layout_margin="15dp"
             android:text="结束" />
+        <Button
+            android:visibility="visible"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onTest"
+            android:layout_margin="15dp"
+            android:text="测试" />
     </LinearLayout>
 </RelativeLayout>

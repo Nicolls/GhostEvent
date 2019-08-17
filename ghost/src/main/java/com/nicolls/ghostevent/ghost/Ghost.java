@@ -1,10 +1,17 @@
 package com.nicolls.ghostevent.ghost;
 
+import android.content.Context;
+
 import com.nicolls.ghostevent.ghost.request.model.ConfigModel;
 import com.nicolls.ghostevent.ghost.request.network.NetRequest;
 import com.nicolls.ghostevent.ghost.request.network.OkHttpRequest;
 import com.nicolls.ghostevent.ghost.request.network.model.RequestParams;
+import com.nicolls.ghostevent.ghost.utils.Constants;
+import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
@@ -14,13 +21,13 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
-import static com.nicolls.ghostevent.ghost.utils.Constants.INFO_URL;
-
 public abstract class Ghost {
     private static final String TAG = "Ghost";
     private NetRequest requester;
+    private Context context;
 
-    public Ghost() {
+    public Ghost(Context context) {
+        this.context = context.getApplicationContext();
         requester = new OkHttpRequest();
 
     }
@@ -35,14 +42,27 @@ public abstract class Ghost {
             @Override
             public void subscribe(ObservableEmitter<ConfigModel> emitter) throws Exception {
                 LogUtil.d(TAG, "subscribe thread " + Thread.currentThread().getName());
-                RequestParams params = new RequestParams.Builder().setUrl(INFO_URL)
-                        .setMethod(RequestParams.METHOD_GET).create();
+
+                JSONObject object = new JSONObject();
+                try {
+                    object.put("androidid", GhostUtils.androidId);
+                    object.put("imei", GhostUtils.imei);
+                    object.put("packageName", context.getPackageName());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                RequestParams params = new RequestParams.Builder()
+                        .setUrl(Constants.INFO_URL)
+                        .setJsonParams(object)
+                        .setMethod(RequestParams.METHOD_JSON)
+                        .create();
+
                 try {
                     ConfigModel configModel = requester.executeRequest(params, ConfigModel.class);
                     emitter.onNext(configModel);
                     emitter.onComplete();
-                }catch (Exception e){
-                    LogUtil.e(TAG,"sendRequest error ",e);
+                } catch (Exception e) {
+                    LogUtil.e(TAG, "sendRequest error ", e);
                 }
             }
         }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Observer<ConfigModel>() {
@@ -77,4 +97,6 @@ public abstract class Ghost {
     abstract void onStart();
 
     public abstract void exit();
+
+    public abstract void test();
 }

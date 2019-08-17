@@ -34,4 +34,8 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         Advert.instance.detach();
     }
+
+    public void onTest(View view) {
+        Advert.instance.test();
+    }
 }

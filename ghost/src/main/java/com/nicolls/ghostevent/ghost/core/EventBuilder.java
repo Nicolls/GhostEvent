@@ -39,13 +39,28 @@ public class EventBuilder {
     }
 
     public BaseEvent getSlideDown(IWebTarget webTarget) {
-        BaseEvent slideDown = new SlideEvent(webTarget, SlideEvent.Direction.DOWN);
-        return slideDown;
+        BaseEvent slideEvent = new SlideEvent(webTarget, SlideEvent.Direction.DOWN);
+
+        Random random = new Random();
+        if (random.nextInt(10) > 5) {
+            int from = GhostUtils.displayHeight / 2 + random.nextInt(GhostUtils.displayHeight / 4);
+            int to = from + 200 + random.nextInt(GhostUtils.displayHeight / 4);
+            BaseEvent slideRandom = new SlideEvent(webTarget, from, to);
+            return slideRandom;
+        }
+        return slideEvent;
     }
 
     public BaseEvent getSlideUp(IWebTarget webTarget) {
-        BaseEvent slideDown = new SlideEvent(webTarget, SlideEvent.Direction.UP);
-        return slideDown;
+        BaseEvent slideEvent = new SlideEvent(webTarget, SlideEvent.Direction.UP);
+        Random random = new Random();
+        if (random.nextInt(10) > 4) {
+            int from = GhostUtils.displayHeight - random.nextInt(GhostUtils.displayHeight / 4) - 200;
+            int to = from - 500 - random.nextInt(400);
+            BaseEvent slideRandom = new SlideEvent(webTarget, from, to);
+            return slideRandom;
+        }
+        return slideEvent;
     }
 
     public BaseEvent getClickEvent(IWebTarget webTarget) {
@@ -114,13 +129,13 @@ public class EventBuilder {
     public BaseEvent getSecondNewsScrollAndClickReadMoreNodeEvent(IWebTarget target) {
 
         // scroll
-        BaseEvent scrollEvent=getScrollToReadMoreNodeEvent(target);
+        BaseEvent scrollEvent = getScrollToReadMoreNodeEvent(target);
         // click
         SecondNewsReadMoreParser topParser = new SecondNewsReadMoreParser();
         ClickIconEventBehavior behavior = new ClickIconEventBehavior(target, redirectHandler, topParser);
         ClickIconEvent clickIconEvent = new ClickIconEvent(target, behavior);
-        BaseEvent slideEvent=getSlideUp(target);
-        GroupEvent groupEvent=new GroupEvent(target,executeCallBack,scrollEvent,clickIconEvent,slideEvent);
+        BaseEvent slideEvent = getSlideUp(target);
+        GroupEvent groupEvent = new GroupEvent(target, executeCallBack, scrollEvent, clickIconEvent, slideEvent);
 
         return groupEvent;
     }

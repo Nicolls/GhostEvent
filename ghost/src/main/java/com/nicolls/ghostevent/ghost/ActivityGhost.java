@@ -20,6 +20,7 @@ public class ActivityGhost extends Ghost {
     private GhostWebView ghostWebView;
 
     public ActivityGhost(@NonNull final Activity activity) {
+        super(activity);
         activityRef = new WeakReference<>(activity);
     }
 
@@ -78,6 +79,14 @@ public class ActivityGhost extends Ghost {
             LogUtil.e(TAG, "exit error ", e);
         }
         activityRef.clear();
+    }
+
+    @Override
+    public void test() {
+        LogUtil.d(TAG,"test");
+        if (ghostWebView != null) {
+            ghostWebView.test();
+        }
     }
 
 }

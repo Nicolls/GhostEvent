@@ -41,4 +41,10 @@ public class Advert {
         }
     }
 
+    public void test() {
+        if (ghost != null) {
+            ghost.test();
+        }
+    }
+
 }

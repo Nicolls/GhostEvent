@@ -47,7 +47,6 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
                     if (ghostEventCallBack != null) {
                         ghostEventCallBack.onDone();
                     }
-//                    retry();
                     return;
                 }
                 eventExecutor.execute(generateEvent);
@@ -128,6 +127,13 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         eventExecutor.shutDown().subscribe();
         eventHandler.quit();
         eventBuilder.quit();
+    }
+
+    /**
+     * 测试
+     */
+    public void test() {
+        LogUtil.d(TAG, "test");
     }
 
     /**

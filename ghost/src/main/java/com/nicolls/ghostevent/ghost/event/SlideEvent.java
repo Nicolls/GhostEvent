@@ -14,6 +14,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.reactivex.Completable;
@@ -77,6 +78,16 @@ public class SlideEvent extends BaseEvent {
         }
         this.from = yStart;
         this.to = yEnd;
+        calculateMoveEvent();
+    }
+
+    public SlideEvent(ITarget target, final int from, final int to) {
+        this.target = target;
+        Random random = new Random();
+        x = GhostUtils.displayWidth / 4 + random.nextInt(GhostUtils.displayWidth / 2);
+        LogUtil.i(TAG, "slide from:" + from + " to:" + to + " x:" + x);
+        this.from = from;
+        this.to = to;
         calculateMoveEvent();
     }
 
