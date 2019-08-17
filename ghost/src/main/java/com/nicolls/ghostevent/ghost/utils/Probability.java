@@ -72,7 +72,7 @@ public class Probability {
                     Random nextRandom = new Random();
                     factor = nextRandom.nextInt(100);
                     LogUtil.d(TAG, "next factor:" + factor);
-                    if (factor >= 0 && factor < 5 && secondNewsSlideCount == 0) {
+                    if (factor >= 0 && factor < 10 && secondNewsSlideCount == 0) {
                         LogUtil.d(TAG, "SECOND_NEWS hit head advert");
                         return eventBuilder.getSecondNewsAdvertHeadClickEvent(webTarget);
                     } else {
@@ -82,13 +82,12 @@ public class Probability {
                             return eventBuilder.getSlideUp(webTarget);
                         } else {
                             if (factor >= 0 && factor <= 25) {
-                                secondNewsSlideCount++;
                                 LogUtil.d(TAG, "SECOND_NEWS ,hit go back");
                                 return eventBuilder.getGoBackEvent(webTarget);
-                            } else if (factor > 25 && factor < 40) {
+                            } else if (secondNewsSlideCount <= 3 && factor > 25 && factor < 50) {
                                 LogUtil.d(TAG, "SECOND_NEWS ,hit scroll to read more and click");
                                 return eventBuilder.getSecondNewsScrollAndClickReadMoreNodeEvent(webTarget);
-                            } else if (factor >= 40 && factor < 50) {
+                            } else if (factor >= 50 && factor < 60) {
                                 LogUtil.d(TAG, "SECOND_NEWS ,hit click");
                                 return eventBuilder.getClickEvent(webTarget);
                             } else {
