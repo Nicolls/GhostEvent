@@ -1,8 +1,8 @@
 package com.nicolls.ghostevent.ghost.core;
 
 
-import com.nicolls.ghostevent.ghost.event.CancelEvent;
 import com.nicolls.ghostevent.ghost.event.BaseEvent;
+import com.nicolls.ghostevent.ghost.event.CancelEvent;
 import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
@@ -101,6 +101,7 @@ public class EventExecutor {
                         LogUtil.d(TAG, "semaphore acquired");
                     }
                 }
+                eventBlockingQueue.clear();
                 LogUtil.d(TAG, "executeEventTask over");
             } catch (InterruptedException e) {
                 e.printStackTrace();

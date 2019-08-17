@@ -3,27 +3,33 @@ package com.nicolls.ghostevent;
 import android.app.Activity;
 import android.content.Context;
 
-import com.nicolls.ghostevent.ghost.Ghost;
 import com.nicolls.ghostevent.ghost.ActivityGhost;
-import com.nicolls.ghostevent.ghost.BackgroundGhost;
+import com.nicolls.ghostevent.ghost.Ghost;
+import com.nicolls.ghostevent.ghost.ServiceGhost;
 import com.nicolls.ghostevent.ghost.utils.GhostUtils;
+import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 public class Advert {
-
+    private static final String TAG = "Advert";
     public static Advert instance = new Advert();
 
     private Ghost ghost;
 
-    public void attchToAppContext(Context appContext) {
-        GhostUtils.init(appContext);
-        detach();
-        ghost = new BackgroundGhost(appContext);
+    public void attach(Activity activity) {
+        if (activity == null || activity.isFinishing()) {
+            LogUtil.w(TAG, "attach activity null or finished");
+            return;
+        }
+        GhostUtils.init(activity);
+        attachToActivity(activity);
+    }
+
+    private void attchToService(Context appContext) {
+        ghost = new ServiceGhost(appContext);
         ghost.init();
     }
 
-    public void attachToActivity(Activity activity) {
-        GhostUtils.init(activity);
-        detach();
+    private void attachToActivity(Activity activity) {
         ghost = new ActivityGhost(activity);
         ghost.init();
     }
@@ -32,54 +38,6 @@ public class Advert {
         if (ghost != null) {
             ghost.exit();
             ghost = null;
-        }
-    }
-
-    public void reload(){
-        if (ghost != null) {
-            ghost.reload();
-        }
-    }
-
-    public void record(){
-        if (ghost != null) {
-            ghost.record();
-        }
-    }
-
-    public void play() {
-        if (ghost != null) {
-            ghost.play();
-        }
-    }
-
-    public void goHome() {
-        if (ghost != null) {
-            ghost.goHome();
-        }
-    }
-
-    public void onParse() {
-        if (ghost != null) {
-            ghost.parse();
-        }
-    }
-
-    public void onPlayParse() {
-        if (ghost != null) {
-            ghost.playParse();
-        }
-    }
-
-    public void goBack() {
-        if (ghost != null) {
-            ghost.goBack();
-        }
-    }
-
-    public void random() {
-        if (ghost != null) {
-            ghost.random();
         }
     }
 

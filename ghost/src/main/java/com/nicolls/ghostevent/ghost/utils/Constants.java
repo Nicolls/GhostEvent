@@ -89,33 +89,39 @@ public class Constants {
     /**
      * 加载广告联盟url
      */
-    public static final String EVENT_LOAD_UNION_URL = "" + 1;
+    public static final int EVENT_TYPE_LOAD_UNION_URL = 1;
     /**
      * 展示首页（有可能是用户点击了回到首页的按钮）
      */
-    public static final String EVENT_HOME_PAGE = "" + 2;
-    /**
-     * 展示二级页面，广告页
-     */
-    public static final String EVENT_SECOND_ADVERT_PAGE = "" + 3;
+    public static final int EVENT_TYPE_SHOW_HOME_PAGE = 2;
     /**
      * 展示二级页面，新闻页
      */
-    public static final String EVENT_SECOND_NEWS_PAGE = "" + 3;
+    public static final int EVENT_TYPE_SHOW_SECOND_NEWS_PAGE = 3;
+    /**
+     * 展示二级页面，广告页
+     */
+    public static final int EVENT_TYPE_SHOW_SECOND_ADVERT_PAGE = 4;
     /**
      * 点击了广告的项，展示了广告详情页
      */
-    public static final String EVENT_CLICK_ADVERT = "" + 4;
+    public static final int EVENT_TYPE_CLICK_ADVERT = 5;
     /**
-     * 每次加载广告时，会自动生成范围在（1-4）内在最大广告点击数，如果随机事件中，展示广告详情的次数到达了这个最大数
-     * 也会中止
+     * 每次加载广告时，会自动生成范围在（1-4）内在最大广告点击数，
+     * 如果随机事件中，展示广告详情的次数到达了这个最大数时业务就会中止
      */
-    public static final String EVENT_ENOUGH_CLICK_ADVERT = "" + 5;
+    public static final int EVENT_TYPE_ENOUGH_CLICK_ADVERT = 6;
 
     /**
-     * 重试的次数
+     * 随机事件中，在首页命中了退出事件，业务中止
      */
-    public static final String EVENT_RETRY = "" + 6;
+    public static final int EVENT_TYPE_HOME_EXIT = 7;
 
-    public static final String EVENT_TARGET_WEBVIEW = "" + 1;
+    /**
+     * 发生了重试的事件
+     */
+    public static final int EVENT_TYPE_RETRY = 8;
+
+    // target
+    public static final int EVENT_TARGET_WEBVIEW = 1;
 }

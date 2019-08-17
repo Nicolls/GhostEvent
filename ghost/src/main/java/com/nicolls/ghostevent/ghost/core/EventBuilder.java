@@ -69,21 +69,6 @@ public class EventBuilder {
         ClickIconEventBehavior behavior = new ClickIconEventBehavior(webTarget, redirectHandler, topParser);
         ClickNodeEvent clickIconEvent = new ClickNodeEvent(webTarget, behavior);
         return clickIconEvent;
-
-//
-//
-//        Random random = new Random();
-//        int displayWidth = GhostUtils.displayWidth;
-//        int borderWidth = displayWidth / 4;
-//        int displayHeight = GhostUtils.displayHeight;
-//
-//        int x = borderWidth + random.nextInt(displayWidth / 2);
-//        int y = 10 + random.nextInt(displayHeight / 8);
-//        LogUtil.d(TAG, "getClickEvent x:" + x + " y:" + y);
-//        TouchPoint clickRandom = TouchPoint.obtainClick(x, y);
-//        LoadWebEventBehavior behavior = new LoadWebEventBehavior(webTarget, redirectHandler);
-//        BaseEvent clickRedirect = new ClickEvent(webTarget, clickRandom, behavior);
-//        return clickRedirect;
     }
 
     public BaseEvent getLoadPageEvent(IWebTarget target, String url) {

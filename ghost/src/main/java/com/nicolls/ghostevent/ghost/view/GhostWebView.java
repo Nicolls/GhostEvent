@@ -16,8 +16,10 @@ import com.nicolls.ghostevent.ghost.parse.ParseManager;
 import com.nicolls.ghostevent.ghost.request.EventReporter;
 import com.nicolls.ghostevent.ghost.request.IEventReport;
 import com.nicolls.ghostevent.ghost.utils.Constants;
+import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 import com.nicolls.ghostevent.ghost.utils.Probability;
+import com.nicolls.ghostevent.ghost.utils.ToastUtil;
 
 import io.reactivex.CompletableObserver;
 import io.reactivex.disposables.Disposable;
@@ -31,7 +33,6 @@ import io.reactivex.disposables.Disposable;
 public class GhostWebView extends BaseWebView implements IWebTarget {
     private static final String TAG = "GhostWebView";
     private int tryTimes = 0;
-    private String url;
     private boolean isRetrying = false;
     private final IEventReport eventReport = EventReporter.getInstance();
     private final EventExecutor.ExecuteCallBack executeCallBack = new EventExecutor.ExecuteCallBack() {
@@ -39,11 +40,14 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         public void onSuccess(BaseEvent event) {
             LogUtil.d(TAG, "onSuccess " + event.getName());
             if (event.getParent() == null) {
-                LogUtil.d(TAG, "an instance event ");
+                LogUtil.d(TAG, "an individual event ");
                 BaseEvent generateEvent = probability.generateEvent(GhostWebView.this, webViewClient.getCurrentUrl());
                 if (generateEvent == null) {
                     LogUtil.d(TAG, "advert click count enough:" + probability.getAdvertClickCount());
-                    stop();
+                    if (ghostEventCallBack != null) {
+                        ghostEventCallBack.onDone();
+                    }
+//                    retry();
                     return;
                 }
                 eventExecutor.execute(generateEvent);
@@ -62,11 +66,16 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
             retry();
         }
     };
+
+    public interface GhostEventCallBack {
+        void onDone();
+    }
+
+    private GhostEventCallBack ghostEventCallBack;
     private final IEventHandler eventHandler = new ViewEventHandler(this);
     private EventExecutor eventExecutor = new EventExecutor();
     private final RedirectHandler redirectHandler = new RedirectHandler();
     private final EventBuilder eventBuilder = new EventBuilder(getContext(), redirectHandler, executeCallBack);
-    private boolean isRecord = false;
     private Probability probability;
     private GhostWebViewTriggerEvent ghostWebViewTriggerEvent;
     private GhostWebViewClient webViewClient;
@@ -97,16 +106,17 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         ParseManager.getInstance().init(this);
     }
 
+    public void setGhostEventCallBack(GhostEventCallBack callBack) {
+        ghostEventCallBack = callBack;
+    }
+
     /**
      * 开始
-     *
-     * @param url
      */
-    public void start(String url) {
-        LogUtil.d(TAG, "start " + url);
-        this.url = url;
-        isRecord = false;
-        EventReporter.getInstance().uploadEvent(Constants.EVENT_LOAD_UNION_URL,Constants.EVENT_TARGET_WEBVIEW,"");
+    public void start() {
+        String url = GhostUtils.getParamsAdvertUrl(Constants.DEFAULT_UNION_URL);
+        LogUtil.d(TAG, "start url " + url);
+        EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_LOAD_UNION_URL, Constants.EVENT_TARGET_WEBVIEW, "");
         eventExecutor.execute(eventBuilder.getLoadPageEvent(this, url));
     }
 
@@ -115,84 +125,9 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
      */
     public void stop() {
         LogUtil.d(TAG, "stop");
-        isRecord = false;
         eventExecutor.shutDown().subscribe();
         eventHandler.quit();
         eventBuilder.quit();
-    }
-
-    /**
-     * 重载
-     *
-     * @param url
-     */
-    public void reLoad(String url) {
-        LogUtil.d(TAG, "reLoad");
-        start(url);
-    }
-
-    /**
-     * 解析
-     */
-    public void onParse() {
-        LogUtil.d(TAG, "parse");
-    }
-
-    /**
-     * 播放解析
-     */
-    public void onPlayParse() {
-        LogUtil.d(TAG, "playParse");
-
-    }
-
-    /**
-     * 录制
-     */
-    public void record() {
-        LogUtil.d(TAG, "record");
-        isRecord = true;
-        ghostWebViewTriggerEvent.startRecord();
-    }
-
-    public boolean isRecord() {
-        LogUtil.d(TAG, "isRecord");
-        return this.isRecord;
-    }
-
-    /**
-     * 播放
-     */
-    public void play() {
-        LogUtil.d(TAG, "play");
-        isRecord = false;
-        eventExecutor.execute(ghostWebViewTriggerEvent.getRecordEvent());
-    }
-
-    /**
-     * 随机
-     */
-    public void random() {
-        LogUtil.d(TAG, "random");
-//        List<BaseEvent> randomEvents = eventBuilder.getRandomEvents(this, 10, true);
-//        eventExecutor.execute(randomEvents);
-        eventExecutor.execute(eventBuilder.getSlideUp(this));
-        eventExecutor.execute(eventBuilder.getSecondNewsScrollAndClickReadMoreNodeEvent(this));
-    }
-
-    /**
-     * 回首页
-     */
-    public void goHome() {
-        LogUtil.d(TAG, "goHome");
-    }
-
-    /**
-     * 返回
-     */
-    public void runGoBack() {
-        LogUtil.d(TAG, "runGoBack");
-        eventExecutor.execute(eventBuilder.getGoBackEvent(this));
     }
 
     /**
@@ -201,9 +136,13 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
 
     private void retry() {
         tryTimes++;
+        ToastUtil.toast(getContext(), "retry times " + tryTimes);
         LogUtil.d(TAG, "retry times:" + tryTimes);
         if (tryTimes > Constants.MAX_TRY_TIMES) {
             LogUtil.d(TAG, "tryTimes>MAX_TRY_TIMES");
+            if (ghostEventCallBack != null) {
+                ghostEventCallBack.onDone();
+            }
             return;
         }
 
@@ -212,7 +151,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
             return;
         }
         isRetrying = true;
-        eventReport.uploadEvent(Constants.EVENT_RETRY, Constants.EVENT_TARGET_WEBVIEW, "");
+        eventReport.uploadEvent(Constants.EVENT_TYPE_RETRY, Constants.EVENT_TARGET_WEBVIEW, "");
         eventExecutor.reset().subscribe(new CompletableObserver() {
             @Override
             public void onSubscribe(Disposable d) {
@@ -222,13 +161,16 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
             @Override
             public void onComplete() {
                 LogUtil.d(TAG, "reset completed");
-                start(url);
                 isRetrying = false;
+                start();
             }
 
             @Override
             public void onError(Throwable e) {
                 LogUtil.d(TAG, "shutdown onError");
+                if (ghostEventCallBack != null) {
+                    ghostEventCallBack.onDone();
+                }
             }
         });
     }
@@ -264,6 +206,5 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
     public void onScrollStateChanged(ScrollState state) {
         LogUtil.d(TAG, "onScrollStateChanged " + state);
     }
-
 
 }

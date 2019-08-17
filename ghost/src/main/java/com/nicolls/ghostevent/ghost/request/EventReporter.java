@@ -25,14 +25,15 @@ public class EventReporter implements IEventReport {
     }
 
     @Override
-    public void uploadEvent(final String type, final String target,final String params) {
+    public void uploadEvent(final int type, final int target, final String params) {
+        LogUtil.d(TAG, "uploadEvent type:" + type);
         try {
             postRxJavaRequest("uploadEvent " + type, new Runnable() {
                 @Override
                 public void run() {
                     LogUtil.d(TAG, "uploadEvent");
 
-                    JSONObject object=new JSONObject();
+                    JSONObject object = new JSONObject();
                     try {
                         object.put("type", type);
                         object.put("target", target);
