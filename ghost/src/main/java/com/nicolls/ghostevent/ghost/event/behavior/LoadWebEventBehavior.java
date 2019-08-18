@@ -8,6 +8,7 @@ import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class LoadWebEventBehavior implements IEventBehavior<Boolean> {
     private static final String TAG="LoadWebEventBehavior";
@@ -21,13 +22,14 @@ public class LoadWebEventBehavior implements IEventBehavior<Boolean> {
         this.redirectHandler=redirectHandler;
     }
     @Override
-    public Boolean onStart() {
+    public Boolean onStart(AtomicBoolean cancel) {
+        redirectHandler.unRegisterRedirectListener(listener);
         redirectHandler.registerRedirectListener(listener);
         return true;
     }
 
     @Override
-    public void onEnd() {
+    public void onEnd(AtomicBoolean cancel) {
         LogUtil.d(TAG,"event end start listen page");
 
         try {

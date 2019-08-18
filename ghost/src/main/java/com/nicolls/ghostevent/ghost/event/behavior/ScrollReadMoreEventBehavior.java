@@ -12,6 +12,7 @@ import com.nicolls.ghostevent.ghost.utils.LogUtil;
 import java.util.Random;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ScrollReadMoreEventBehavior implements IEventBehavior<Line> {
     private static final String TAG = "ScrollReadMoreEventBehavior";
@@ -25,7 +26,7 @@ public class ScrollReadMoreEventBehavior implements IEventBehavior<Line> {
     }
 
     @Override
-    public Line onStart() {
+    public Line onStart(AtomicBoolean cancel) {
         target.getMainHandler().post(new Runnable() {
             @Override
             public void run() {
@@ -77,7 +78,7 @@ public class ScrollReadMoreEventBehavior implements IEventBehavior<Line> {
     }
 
     @Override
-    public void onEnd() {
+    public void onEnd(AtomicBoolean cancel) {
         LogUtil.d(TAG, "onEnd wait page");
 
     }

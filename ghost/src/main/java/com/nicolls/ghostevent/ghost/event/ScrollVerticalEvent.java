@@ -58,12 +58,12 @@ public class ScrollVerticalEvent extends BaseEvent {
     }
 
     @Override
-    public Completable exe(AtomicBoolean cancel) {
+    public Completable exe(final AtomicBoolean cancel) {
         return Completable.fromAction(new Action() {
             @Override
             public void run() throws Exception {
                 if (scrollEventBehavior != null) {
-                    line = scrollEventBehavior.onStart();
+                    line = scrollEventBehavior.onStart(cancel);
                     if(line==null){
                         LogUtil.w(TAG,"line null ");
                         return;

@@ -7,6 +7,7 @@ import com.nicolls.ghostevent.ghost.event.ClickEvent;
 import com.nicolls.ghostevent.ghost.event.ClickIconEvent;
 import com.nicolls.ghostevent.ghost.event.ClickNodeEvent;
 import com.nicolls.ghostevent.ghost.event.GoBackEvent;
+import com.nicolls.ghostevent.ghost.event.GoHomeEvent;
 import com.nicolls.ghostevent.ghost.event.GroupEvent;
 import com.nicolls.ghostevent.ghost.event.LoadPageEvent;
 import com.nicolls.ghostevent.ghost.event.ScrollVerticalEvent;
@@ -98,6 +99,12 @@ public class EventBuilder {
         LoadWebEventBehavior behavior = new LoadWebEventBehavior(target, redirectHandler);
         BaseEvent gobackEvent = new GoBackEvent(target, behavior);
         return gobackEvent;
+    }
+
+    public BaseEvent getGoHomeEvent(IWebTarget target) {
+        LoadWebEventBehavior behavior = new LoadWebEventBehavior(target, redirectHandler);
+        BaseEvent event = new GoHomeEvent(target, behavior);
+        return event;
     }
 
     public BaseEvent getHomeClickArrowTopNodeEvent(IWebTarget target) {

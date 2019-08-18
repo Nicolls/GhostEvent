@@ -13,6 +13,7 @@ public class Constants {
 
 
     public static final String DEFAULT_UNION_URL = "https://cpu.baidu.com/1001/be900f73?scid=33854";
+    public static final String GO_HOME_URL = "https://cpu.baidu.com/1001/be900f73";
     public static final String DEFAULT_UNION_DOMAIN = "cpu.baidu.com";
     public static final String DEFAULT_UNION_DOMAIN_ADVERIT = "aden.baidu.com";
 
@@ -123,6 +124,13 @@ public class Constants {
      * 发生了重试的事件
      */
     public static final int EVENT_TYPE_RETRY = 8;
+
+    /**
+     * 每次加载广告二级页面时，会自动生成范围在（1-6）内在最大广告二级页面显示次数，
+     * 如果随机事件中，展示广告列表的次数到达了这个最大数时业务就会中止
+     */
+    public static final int EVENT_TYPE_ENOUGH_SHOW_ADVERT = 9;
+
 
     // target
     public static final int EVENT_TARGET_WEBVIEW = 1;

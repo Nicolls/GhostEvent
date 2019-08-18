@@ -8,6 +8,7 @@ import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ClickIconEventBehavior implements IEventBehavior<Boolean> {
     private static final String TAG="ClickIconEventBehavior";
@@ -24,7 +25,7 @@ public class ClickIconEventBehavior implements IEventBehavior<Boolean> {
     }
 
     @Override
-    public Boolean onStart() {
+    public Boolean onStart(AtomicBoolean cancel) {
         redirectHandler.registerRedirectListener(listener);
         target.getMainHandler().post(new Runnable() {
             @Override
@@ -45,7 +46,7 @@ public class ClickIconEventBehavior implements IEventBehavior<Boolean> {
     }
 
     @Override
-    public void onEnd() {
+    public void onEnd(AtomicBoolean cancel) {
         LogUtil.d(TAG,"onEnd wait page");
         boolean isOk=false;
         try {

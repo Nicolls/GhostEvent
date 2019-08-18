@@ -9,13 +9,15 @@ import java.util.Random;
 
 public class Probability {
     private static final String TAG = "Probability";
-    private int maxClick = 0;
+    private int maxAdvertClick = 0;
+    private int maxAdvertShow = 0;
     private EventBuilder eventBuilder;
 
     public Probability(EventBuilder eventBuilder) {
         this.eventBuilder = eventBuilder;
         Random random = new Random();
-        maxClick = random.nextInt(4) + 1;
+        maxAdvertClick = random.nextInt(3) + 1;
+        maxAdvertShow = random.nextInt(4) + 1;
     }
 
     private int homeSlideCount = 0;
@@ -40,7 +42,7 @@ public class Probability {
                 if (homeSlideCount == 0 && factor == 0) {
                     LogUtil.d(TAG, "HOME ,hit exit");
                     EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_HOME_EXIT,
-                            Constants.EVENT_TARGET_WEBVIEW, "" + maxClick);
+                            Constants.EVENT_TARGET_WEBVIEW, "" + maxAdvertClick);
                     ToastUtil.toast(webTarget.getContext(), "Home hit exit");
                     return null;
                 } else if (factor == 1) {
@@ -119,6 +121,14 @@ public class Probability {
                 if (secondAdvertSlideCount == 0) {
                     advertShowCount++;
                 }
+
+                if (advertShowCount >= maxAdvertShow) {
+                    LogUtil.d(TAG, "advertShowCount enough exist " + maxAdvertShow);
+                    ToastUtil.toast(webTarget.getContext(), "advertShowCount enough");
+                    EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_ENOUGH_SHOW_ADVERT,
+                            Constants.EVENT_TARGET_WEBVIEW, "" + maxAdvertShow);
+                    return null;
+                }
                 factor = random.nextInt(10);
                 LogUtil.d(TAG, "factor:" + factor);
                 if (secondAdvertSlideCount == 0 && factor >= 0 && factor < 3) {
@@ -148,20 +158,25 @@ public class Probability {
                 if (otherSlideCount == 0) {
                     LogUtil.d(TAG, "other page advertClickCount:" + advertClickCount);
                     advertClickCount++;
-                    if (advertClickCount >= maxClick) {
-                        LogUtil.d(TAG, "advertClickCount enough exist " + maxClick);
+                    if (advertClickCount >= maxAdvertClick) {
+                        LogUtil.d(TAG, "advertClickCount enough exist " + maxAdvertClick);
                         ToastUtil.toast(webTarget.getContext(), "advertClickCount enough");
                         EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_ENOUGH_CLICK_ADVERT,
-                                Constants.EVENT_TARGET_WEBVIEW, "" + maxClick);
+                                Constants.EVENT_TARGET_WEBVIEW, "" + maxAdvertClick);
                         return null;
                     }
                 }
 
                 factor = random.nextInt(10);
                 LogUtil.d(TAG, "factor:" + factor);
-                if (factor >= 0 && factor < 7) {
+                if (factor >= 0 && factor < 3) {
                     LogUtil.d(TAG, "OTHER ,hit go back");
                     return eventBuilder.getGoBackEvent(webTarget);
+                } else if (factor >= 3 && factor < 7) {
+
+                    LogUtil.d(TAG, "OTHER ,hit go home");
+                    return eventBuilder.getGoHomeEvent(webTarget);
+
                 } else {
                     otherSlideCount++;
                     LogUtil.d(TAG, "OTHER ,hit slide up");
@@ -174,5 +189,10 @@ public class Probability {
     public int getAdvertClickCount() {
         LogUtil.d(TAG, "advertClickCount " + advertClickCount);
         return advertClickCount;
+    }
+
+    public int getAdvertShowCount() {
+        LogUtil.d(TAG, "advertShowCount " + advertShowCount);
+        return advertShowCount;
     }
 }

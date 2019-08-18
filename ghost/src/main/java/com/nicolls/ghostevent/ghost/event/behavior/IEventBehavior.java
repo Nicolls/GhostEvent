@@ -2,10 +2,12 @@ package com.nicolls.ghostevent.ghost.event.behavior;
 
 import com.nicolls.ghostevent.ghost.event.BaseEvent;
 
-public interface IEventBehavior<T> {
-    T onStart();
+import java.util.concurrent.atomic.AtomicBoolean;
 
-    void onEnd();
+public interface IEventBehavior<T> {
+    T onStart(AtomicBoolean cancel);
+
+    void onEnd(AtomicBoolean cancel);
 
     long getTimeOut();
 }

@@ -53,7 +53,7 @@ public class ClickEvent extends BaseEvent {
             @Override
             public void run() throws Exception {
                 if (eventBehavior != null) {
-                    eventBehavior.onStart();
+                    eventBehavior.onStart(cancel);
                 }
                 if (cancel.get()) {
                     LogUtil.d(TAG, "cancel!");
@@ -66,7 +66,7 @@ public class ClickEvent extends BaseEvent {
                     }
                 });
                 if (eventBehavior != null) {
-                    eventBehavior.onEnd();
+                    eventBehavior.onEnd(cancel);
                 }
             }
         }).subscribeOn(Schedulers.io());
