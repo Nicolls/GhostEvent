@@ -110,7 +110,7 @@ public class Constants {
      */
     public static final int EVENT_TYPE_CLICK_ADVERT = 5;
     /**
-     * 每次加载广告时，会自动生成范围在（1-4）内在最大广告点击数，
+     * 每次加载广告时，会自动生成范围在（1~3随机值）内在最大广告点击数，
      * 如果随机事件中，展示广告详情的次数到达了这个最大数时业务就会中止
      */
     public static final int EVENT_TYPE_ENOUGH_CLICK_ADVERT = 6;
@@ -126,8 +126,7 @@ public class Constants {
     public static final int EVENT_TYPE_RETRY = 8;
 
     /**
-     * 每次加载广告二级页面时，会自动生成范围在（1-6）内在最大广告二级页面显示次数，
-     * 如果随机事件中，展示广告列表的次数到达了这个最大数时业务就会中止
+     * 加载广告二级页面时，达到了本次最大允许次数 (1~4的随机值)
      */
     public static final int EVENT_TYPE_ENOUGH_SHOW_ADVERT = 9;
 
