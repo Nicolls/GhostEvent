@@ -42,16 +42,4 @@ public class Advert {
         }
     }
 
-    public void test() {
-        if (ghost != null) {
-            ghost.test();
-        }
-    }
-
-    public void back() {
-        if (ghost != null) {
-            ghost.back();
-        }
-    }
-
 }

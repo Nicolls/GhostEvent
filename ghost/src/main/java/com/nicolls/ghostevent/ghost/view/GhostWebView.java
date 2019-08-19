@@ -13,7 +13,6 @@ import com.nicolls.ghostevent.ghost.core.RedirectHandler;
 import com.nicolls.ghostevent.ghost.core.ViewEventHandler;
 import com.nicolls.ghostevent.ghost.event.BaseEvent;
 import com.nicolls.ghostevent.ghost.parse.ParseManager;
-import com.nicolls.ghostevent.ghost.parse.model.ViewNode;
 import com.nicolls.ghostevent.ghost.request.EventReporter;
 import com.nicolls.ghostevent.ghost.request.IEventReport;
 import com.nicolls.ghostevent.ghost.utils.Constants;
@@ -44,7 +43,8 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
                 LogUtil.d(TAG, "an individual event ");
                 BaseEvent generateEvent = probability.generateEvent(GhostWebView.this, webViewClient.getCurrentUrl());
                 if (generateEvent == null) {
-                    LogUtil.d(TAG, "advert click count enough:" + probability.getAdvertClickCount());
+                    LogUtil.d(TAG, "advert click count enough:" + probability.getAdvertClickCount()
+                            + " advert show " + probability.getAdvertShowCount());
                     if (ghostEventCallBack != null) {
                         ghostEventCallBack.onDone();
                     }
@@ -115,6 +115,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
      */
     public void start() {
         String url = GhostUtils.getParamsAdvertUrl(Constants.DEFAULT_UNION_URL);
+        probability.init();
         LogUtil.d(TAG, "start url " + url);
         EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_LOAD_UNION_URL, Constants.EVENT_TARGET_WEBVIEW, "");
         eventExecutor.execute(eventBuilder.getLoadPageEvent(this, url));

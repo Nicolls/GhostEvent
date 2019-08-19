@@ -12,6 +12,7 @@ public class Probability {
     private static final String TAG = "Probability";
     private int maxAdvertClick = 0;
     private int maxAdvertShow = 0;
+    private int maxNeedClickAdvertPageCount = 0;
     private EventBuilder eventBuilder;
 
     public Probability(EventBuilder eventBuilder) {
@@ -19,6 +20,7 @@ public class Probability {
         Random random = new Random();
         maxAdvertClick = random.nextInt(3) + 1;
         maxAdvertShow = random.nextInt(4) + 1;
+        maxNeedClickAdvertPageCount = random.nextInt(10) + 20;
     }
 
     private int homeSlideCount = 0;
@@ -27,6 +29,11 @@ public class Probability {
     private int otherSlideCount = 0;
     private int advertShowCount = 0;
     private int advertClickCount = 0;
+    private int clickLoadPageCount = 0;
+
+    public void init() {
+        clickLoadPageCount = 0;
+    }
 
     public BaseEvent generateEvent(IWebTarget webTarget, String url) {
         Random random = new Random();
@@ -40,7 +47,7 @@ public class Probability {
                 otherSlideCount = 0;
                 factor = random.nextInt(10);
                 LogUtil.d(TAG, "factor:" + factor);
-                if (homeSlideCount == 0 && factor == 0) {
+                if ((homeSlideCount == 0 && factor == 0) || (homeSlideCount > 3 && advertShowCount >= 3 && factor == advertShowCount)) {
                     LogUtil.d(TAG, "HOME ,hit exit");
                     EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_HOME_EXIT,
                             Constants.EVENT_TARGET_WEBVIEW, "" + maxAdvertClick);
@@ -52,13 +59,23 @@ public class Probability {
                 } else if (factor >= 0 && factor < 5) {
                     homeSlideCount++;
                     Random r2 = new Random();
-                    factor = r2.nextInt(10);
-                    if (factor < 8) {
-                        LogUtil.d(TAG, "HOME hit click news");
-                        return eventBuilder.getHomeSelectClickEvent(webTarget, ViewNode.Type.NEWS);
+                    factor = r2.nextInt(100);
+                    if (clickLoadPageCount >= maxNeedClickAdvertPageCount) {
+                        LogUtil.d(TAG, "HOME clickLoadPageCount enough " + clickLoadPageCount);
+                        if (factor > 50) {
+                            LogUtil.d(TAG, "HOME hit click advert");
+                            clickLoadPageCount=0;
+                            return eventBuilder.getHomeSelectClickEvent(webTarget, ViewNode.Type.ADVERT);
+                        }
                     } else {
-                        LogUtil.d(TAG, "HOME hit click");
-                        return eventBuilder.getClickEvent(webTarget);
+                        if (factor > 60 && factor < 65) {
+                            LogUtil.d(TAG, "HOME hit click");
+                            return eventBuilder.getClickEvent(webTarget);
+                        } else {
+                            LogUtil.d(TAG, "HOME hit click news");
+                            clickLoadPageCount++;
+                            return eventBuilder.getHomeSelectClickEvent(webTarget, ViewNode.Type.NEWS);
+                        }
                     }
 
                 } else {
@@ -83,7 +100,7 @@ public class Probability {
                     Random nextRandom = new Random();
                     factor = nextRandom.nextInt(100);
                     LogUtil.d(TAG, "next factor:" + factor);
-                    if (factor >= 0 && factor < 10 && secondNewsSlideCount == 0) {
+                    if (factor >= 0 && factor < (10 - advertShowCount * 3) && secondNewsSlideCount == 0) {
                         LogUtil.d(TAG, "SECOND_NEWS hit head advert");
                         return eventBuilder.getSecondNewsAdvertHeadClickEvent(webTarget);
                     } else {
@@ -101,11 +118,13 @@ public class Probability {
                             } else if (factor >= 50 && factor < 60) {
                                 Random r2 = new Random();
                                 factor = r2.nextInt(10);
-                                if (factor < 7) {
+                                if (factor < (7 + advertShowCount)) {
                                     LogUtil.d(TAG, "SECOND_NEWS ,hit news click");
+                                    clickLoadPageCount++;
                                     return eventBuilder.getSecondNewsSelectClickEvent(webTarget, ViewNode.Type.NEWS);
                                 } else {
                                     LogUtil.d(TAG, "SECOND_NEWS ,hit click");
+                                    clickLoadPageCount++;
                                     return eventBuilder.getClickEvent(webTarget);
                                 }
                             } else {
@@ -141,21 +160,22 @@ public class Probability {
                 if (advertShowCount >= maxAdvertShow) {
                     LogUtil.d(TAG, "advertShowCount enough exist " + maxAdvertShow);
                     ToastUtil.toast(webTarget.getContext(), "advertShowCount enough");
-                    EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_ENOUGH_SHOW_ADVERT,
+                    EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_ENOUGH_CLICK_ADVERT,
                             Constants.EVENT_TARGET_WEBVIEW, "" + maxAdvertShow);
                     return null;
                 }
                 factor = random.nextInt(10);
                 LogUtil.d(TAG, "factor:" + factor);
-                if (secondAdvertSlideCount == 0 && factor >= 0 && factor < 3) {
+                if (secondAdvertSlideCount == 0 && factor >= 0 && factor < (3 + 2 * advertShowCount)) {
                     LogUtil.d(TAG, "SECOND_ADVERT ,hit exit");
                     return eventBuilder.getGoBackEvent(webTarget);
                 } else {
                     Random nextRandom = new Random();
                     factor = nextRandom.nextInt(100);
                     LogUtil.d(TAG, "next factor:" + factor);
-                    if (factor >= 0 && factor < 30) {
+                    if (factor >= (10 * advertShowCount) && factor < 30) {
                         LogUtil.d(TAG, "SECOND_ADVERT hit advert");
+                        clickLoadPageCount++;
                         return eventBuilder.getClickEvent(webTarget);
                     } else {
                         secondAdvertSlideCount++;

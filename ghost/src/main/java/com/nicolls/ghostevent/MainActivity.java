@@ -35,11 +35,4 @@ public class MainActivity extends AppCompatActivity {
         Advert.instance.detach();
     }
 
-    public void onTest(View view) {
-        Advert.instance.test();
-    }
-
-    public void onBack(View view) {
-        Advert.instance.back();
-    }
 }

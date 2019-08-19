@@ -128,7 +128,7 @@ public class Constants {
     /**
      * 加载广告二级页面时，达到了本次最大允许次数 (1~4的随机值)
      */
-    public static final int EVENT_TYPE_ENOUGH_SHOW_ADVERT = 9;
+//    public static final int EVENT_TYPE_ENOUGH_SHOW_ADVERT = 9;
 
 
     // target
