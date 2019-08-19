@@ -42,15 +42,15 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
             LogUtil.d(TAG, "onSuccess " + event.getName());
             if (event.getParent() == null) {
                 LogUtil.d(TAG, "an individual event ");
-                BaseEvent generateEvent = probability.generateEvent(GhostWebView.this, webViewClient.getCurrentUrl());
-                if (generateEvent == null) {
-                    LogUtil.d(TAG, "advert click count enough:" + probability.getAdvertClickCount());
-                    if (ghostEventCallBack != null) {
-                        ghostEventCallBack.onDone();
-                    }
-                    return;
-                }
-                eventExecutor.execute(generateEvent);
+//                BaseEvent generateEvent = probability.generateEvent(GhostWebView.this, webViewClient.getCurrentUrl());
+//                if (generateEvent == null) {
+//                    LogUtil.d(TAG, "advert click count enough:" + probability.getAdvertClickCount());
+//                    if (ghostEventCallBack != null) {
+//                        ghostEventCallBack.onDone();
+//                    }
+//                    return;
+//                }
+//                eventExecutor.execute(generateEvent);
             }
         }
 
@@ -135,7 +135,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
      */
     public void test() {
         LogUtil.d(TAG, "test");
-        eventExecutor.execute(eventBuilder.getHomeSelectClickEvent(this, ViewNode.Type.NEWS));
+        eventExecutor.execute(eventBuilder.getHomeSelectClickEvent(this, ViewNode.Type.ADVERT));
     }
 
     /**

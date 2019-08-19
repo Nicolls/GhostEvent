@@ -67,6 +67,12 @@ public class SecondNewsJsInterface implements IJsInterface {
                 type = ViewNode.Type.ARROW_TOP;
             } else if (domNode.className.contains(Constants.DIV_CLASSNAME_ADVERT_TOP)) {
                 type = ViewNode.Type.ADVERT_TOP;
+            } else if (domNode.className.contains(Constants.DIV_CLASSNAME_NEWS)) {
+                type = ViewNode.Type.NEWS;
+            } else if (domNode.className.contains(Constants.DIV_CLASSNAME_ADVERT)) {
+                type = ViewNode.Type.ADVERT;
+            } else if (domNode.className.contains(Constants.DIV_CLASSNAME_VIDEO)) {
+                type = ViewNode.Type.NEWS;
             }
             ViewNode viewNode = new ViewNode(domNode, type);
             LogUtil.d(TAG, "onFoundItem :" + viewNode.toString());

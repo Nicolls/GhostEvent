@@ -64,7 +64,7 @@ public class HomeJsInterface implements IJsInterface {
             } else if (domNode.className.contains(Constants.DIV_CLASSNAME_ADVERT)) {
                 type = ViewNode.Type.ADVERT;
             } else if (domNode.className.contains(Constants.DIV_CLASSNAME_VIDEO)) {
-                type = ViewNode.Type.VIDEO;
+                type = ViewNode.Type.NEWS;
             }
             ViewNode viewNode = new ViewNode(domNode, type);
             LogUtil.d(TAG, "onFoundItem :" + viewNode.toString());

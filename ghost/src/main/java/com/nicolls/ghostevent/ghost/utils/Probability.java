@@ -3,6 +3,7 @@ package com.nicolls.ghostevent.ghost.utils;
 import com.nicolls.ghostevent.ghost.core.EventBuilder;
 import com.nicolls.ghostevent.ghost.core.IWebTarget;
 import com.nicolls.ghostevent.ghost.event.BaseEvent;
+import com.nicolls.ghostevent.ghost.parse.model.ViewNode;
 import com.nicolls.ghostevent.ghost.request.EventReporter;
 
 import java.util.Random;
@@ -50,8 +51,16 @@ public class Probability {
                     return eventBuilder.getSlideDown(webTarget);
                 } else if (factor >= 0 && factor < 5) {
                     homeSlideCount++;
-                    LogUtil.d(TAG, "HOME hit click");
-                    return eventBuilder.getClickEvent(webTarget);
+                    Random r2 = new Random();
+                    factor = r2.nextInt(10);
+                    if (factor < 7) {
+                        LogUtil.d(TAG, "HOME hit click news");
+                        return eventBuilder.getHomeSelectClickEvent(webTarget, ViewNode.Type.NEWS);
+                    } else {
+                        LogUtil.d(TAG, "HOME hit click");
+                        return eventBuilder.getClickEvent(webTarget);
+                    }
+
                 } else {
                     homeSlideCount++;
                     if (homeSlideCount > 4 && factor == 8) {
@@ -90,8 +99,15 @@ public class Probability {
                                 LogUtil.d(TAG, "SECOND_NEWS ,hit scroll to read more and click");
                                 return eventBuilder.getSecondNewsScrollAndClickReadMoreNodeEvent(webTarget);
                             } else if (factor >= 50 && factor < 60) {
-                                LogUtil.d(TAG, "SECOND_NEWS ,hit click");
-                                return eventBuilder.getClickEvent(webTarget);
+                                Random r2 = new Random();
+                                factor = r2.nextInt(10);
+                                if (factor < 7) {
+                                    LogUtil.d(TAG, "SECOND_NEWS ,hit news click");
+                                    return eventBuilder.getSecondNewsSelectClickEvent(webTarget, ViewNode.Type.NEWS);
+                                } else {
+                                    LogUtil.d(TAG, "SECOND_NEWS ,hit click");
+                                    return eventBuilder.getClickEvent(webTarget);
+                                }
                             } else {
                                 secondNewsSlideCount++;
                                 if (secondNewsSlideCount > 7 && (factor >= 60 && factor < (60 + secondNewsSlideCount))) {
