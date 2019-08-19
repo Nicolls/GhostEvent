@@ -10,6 +10,9 @@ import com.nicolls.ghostevent.ghost.parse.secondnews.SecondNewsJsInterface;
 import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class ParseManager {
 
     private static final String TAG = "ParseManager";
@@ -24,6 +27,17 @@ public class ParseManager {
 
     private HomeJsInterface homeJsInterface;
     private SecondNewsJsInterface secondNewsJsInterface;
+    private ViewNode homeArrowTop;
+
+    private ViewNode mainIcon;
+
+    private ViewNode readMore;
+
+    private ViewNode currentParseNode;
+
+    private ViewNode advertTop;
+
+    private List<ViewNode> viewNodes = new ArrayList<>();
 
     public void init(WebView webView) {
         homeJsInterface = new HomeJsInterface(webView.getContext(), homeTarget);
@@ -54,20 +68,10 @@ public class ParseManager {
         }
     }
 
-    private ViewNode homeArrowTop;
-
-    private ViewNode mainIcon;
-
-    private ViewNode readMore;
-
-    private ViewNode currentParseNode;
-
-    private ViewNode advertTop;
-
     private final IHomeTarget homeTarget = new IHomeTarget() {
         @Override
         public void onFoundItem(ViewNode result) {
-
+            viewNodes.add(result);
         }
 
         @Override
@@ -113,8 +117,10 @@ public class ParseManager {
 
             if (result.type == ViewNode.Type.READ_MORE) {
                 readMore = result;
-            } else if(result.type == ViewNode.Type.ADVERT_TOP){
-                advertTop=result;
+            } else if (result.type == ViewNode.Type.ADVERT_TOP) {
+                advertTop = result;
+            } else {
+                viewNodes.add(result);
             }
         }
     };
@@ -137,6 +143,14 @@ public class ParseManager {
 
     public ViewNode getAdvertTop() {
         return advertTop;
+    }
+
+    public List<ViewNode> getViewNodes() {
+        return viewNodes;
+    }
+
+    public void clearViewNodes() {
+        viewNodes.clear();
     }
 
 }

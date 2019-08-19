@@ -11,14 +11,18 @@ import com.nicolls.ghostevent.ghost.event.GoHomeEvent;
 import com.nicolls.ghostevent.ghost.event.GroupEvent;
 import com.nicolls.ghostevent.ghost.event.LoadPageEvent;
 import com.nicolls.ghostevent.ghost.event.ScrollVerticalEvent;
+import com.nicolls.ghostevent.ghost.event.SelectNodeClickEvent;
 import com.nicolls.ghostevent.ghost.event.SlideEvent;
 import com.nicolls.ghostevent.ghost.event.behavior.ClickIconEventBehavior;
 import com.nicolls.ghostevent.ghost.event.behavior.LoadWebEventBehavior;
 import com.nicolls.ghostevent.ghost.event.behavior.ScrollReadMoreEventBehavior;
 import com.nicolls.ghostevent.ghost.event.model.TouchPoint;
 import com.nicolls.ghostevent.ghost.parse.home.HomeArrowTopParser;
+import com.nicolls.ghostevent.ghost.parse.home.HomeParser;
+import com.nicolls.ghostevent.ghost.parse.model.ViewNode;
 import com.nicolls.ghostevent.ghost.parse.secondnews.SecondNewsArrowTopParser;
 import com.nicolls.ghostevent.ghost.parse.secondnews.SecondNewsMainIconParser;
+import com.nicolls.ghostevent.ghost.parse.secondnews.SecondNewsParser;
 import com.nicolls.ghostevent.ghost.parse.secondnews.SecondNewsReadMoreParser;
 import com.nicolls.ghostevent.ghost.parse.secondnews.SecondNewsTopAdvertParser;
 import com.nicolls.ghostevent.ghost.utils.GhostUtils;
@@ -119,6 +123,20 @@ public class EventBuilder {
         ClickIconEventBehavior behavior = new ClickIconEventBehavior(target, redirectHandler, topParser);
         ClickIconEvent clickIconEvent = new ClickIconEvent(target, behavior);
         return clickIconEvent;
+    }
+
+    public BaseEvent getHomeSelectClickEvent(IWebTarget target, ViewNode.Type type) {
+        HomeParser parser = new HomeParser();
+        ClickIconEventBehavior behavior = new ClickIconEventBehavior(target, redirectHandler, parser);
+        BaseEvent event = new SelectNodeClickEvent(target, behavior,type);
+        return event;
+    }
+
+    public BaseEvent getSecondNewsSelectClickEvent(IWebTarget target,ViewNode.Type type) {
+        SecondNewsParser parser = new SecondNewsParser();
+        ClickIconEventBehavior behavior = new ClickIconEventBehavior(target, redirectHandler, parser);
+        SelectNodeClickEvent event = new SelectNodeClickEvent(target, behavior,type);
+        return event;
     }
 
     public BaseEvent getSecondNewsClickMainIconNodeEvent(IWebTarget target) {

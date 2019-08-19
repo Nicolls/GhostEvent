@@ -79,3 +79,29 @@ var findAdvertTopItem = function(width,height) {
     var node='{"index":0,"childIndex":0,"left":'+left+',"top":'+top+',"right":'+right+',"bottom":'+bottom+',"className":"'+className+'","idName":"'+idName+'","title":"advert_top"}';
     window.secondNewsParser.onFoundItem(node);
 };
+var findItemLocation = function(width,height) {
+    var clientWidth = (document.documentElement.clientWidth || document.body.clientWidth);
+    var clientHeight = (document.documentElement.clientHeight || document.body.clientHeight);
+    var devicePixelRatio=height/clientHeight;
+    var items=document.getElementsByClassName("n-item");
+    if(items.length<=0){
+        return;
+    }
+    for(var i=0;i<items.length;i++){
+        var item=items[i];
+        var className=item.className;
+        var idName='';
+        var contents=item.getElementsByClassName("content");
+        var titleDiv=item.getElementsByClassName("n-title element");
+        var title=titleDiv[0].getElementsByTagName("span")[0].innerHTML;
+        for (var j=0;j<contents.length;j++){
+            var content=contents[j];
+            var left=toDecimal(content.getBoundingClientRect().left*devicePixelRatio);
+            var top=toDecimal(content.getBoundingClientRect().top*devicePixelRatio);
+            var right=toDecimal(content.getBoundingClientRect().right*devicePixelRatio);
+            var bottom=toDecimal(content.getBoundingClientRect().bottom*devicePixelRatio);
+            var node='{"index":'+i+',"childIndex":'+j+',"left":'+left+',"top":'+top+',"right":'+right+',"bottom":'+bottom+',"className":"'+className+'","idName":"'+idName+'","title":"'+title+'"}';
+            window.secondNewsParser.onFoundItem(node);
+        }
+    }
+};

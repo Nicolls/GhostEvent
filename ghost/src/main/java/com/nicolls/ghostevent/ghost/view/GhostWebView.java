@@ -13,6 +13,7 @@ import com.nicolls.ghostevent.ghost.core.RedirectHandler;
 import com.nicolls.ghostevent.ghost.core.ViewEventHandler;
 import com.nicolls.ghostevent.ghost.event.BaseEvent;
 import com.nicolls.ghostevent.ghost.parse.ParseManager;
+import com.nicolls.ghostevent.ghost.parse.model.ViewNode;
 import com.nicolls.ghostevent.ghost.request.EventReporter;
 import com.nicolls.ghostevent.ghost.request.IEventReport;
 import com.nicolls.ghostevent.ghost.utils.Constants;
@@ -134,6 +135,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
      */
     public void test() {
         LogUtil.d(TAG, "test");
+        eventExecutor.execute(eventBuilder.getHomeSelectClickEvent(this, ViewNode.Type.NEWS));
     }
 
     /**
