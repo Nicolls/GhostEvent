@@ -38,4 +38,9 @@ public class ServiceGhost extends Ghost {
         LogUtil.d(TAG, "test");
 
     }
+
+    @Override
+    public void back() {
+        LogUtil.d(TAG, "back");
+    }
 }

@@ -49,21 +49,40 @@ public class SelectNodeClickEvent extends ClickEvent {
         LogUtil.d(TAG, "select " + (clickNode == null ? "" : clickNode.toString()));
 
         if (clickNode != null) {
+            LogUtil.d(TAG, "use clickNode");
             Random random = new Random();
+            if (clickNode.right > GhostUtils.displayWidth) {
+                clickNode.right = GhostUtils.displayWidth - 100;
+                clickNode.left = GhostUtils.displayWidth / 8;
+            }
             int width = (int) (clickNode.right - clickNode.left);
             int height = (int) (clickNode.bottom - clickNode.top);
             int w = random.nextInt(width);
-            int h = random.nextInt(height);
+            int h = random.nextInt(height / 2);
 
             float x = clickNode.left + Math.abs(w);
             if (x >= (clickNode.right - 20)) {
                 x = clickNode.right - 20;
             }
-            float y = clickNode.top + Math.abs(h);
+            float y = clickNode.top + 50 + Math.abs(h);
             if (y >= (clickNode.bottom - 20)) {
                 y = clickNode.bottom - 20;
             }
             touchPoint = TouchPoint.obtainClick(x, y);
+        } else {
+            Random random = new Random();
+            if (random.nextInt(20) >= 17) {
+                LogUtil.d(TAG, "clickNode null random click");
+                int displayWidth = GhostUtils.displayWidth;
+                int borderWidth = displayWidth / 4;
+                int displayHeight = GhostUtils.displayHeight;
+                int borderHeight = displayHeight / 8;
+
+                int x = borderWidth + random.nextInt(displayWidth / 2);
+                int y = borderHeight + random.nextInt(displayHeight / 2);
+                LogUtil.d(TAG, "getClickEvent x:" + x + " y:" + y);
+                touchPoint = TouchPoint.obtainClick(x, y);
+            }
         }
         super.doEvent();
     }

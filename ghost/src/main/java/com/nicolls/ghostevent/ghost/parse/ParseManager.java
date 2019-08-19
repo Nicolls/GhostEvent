@@ -51,6 +51,8 @@ public class ParseManager {
 
     public void loadJsInterface(WebView webView, String url) {
         GhostUtils.Page page = GhostUtils.currentPage(url);
+        viewNodes.clear();
+        LogUtil.d(TAG, "loadJsInterface " + page + " url:" + url);
         switch (page) {
             case HOME:
                 webView.loadUrl(homeJsInterface.getJsText());

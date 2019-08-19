@@ -5,6 +5,7 @@ import com.nicolls.ghostevent.ghost.event.behavior.IEventBehavior;
 import com.nicolls.ghostevent.ghost.event.model.TouchPoint;
 import com.nicolls.ghostevent.ghost.parse.ParseManager;
 import com.nicolls.ghostevent.ghost.parse.model.ViewNode;
+import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 
 import java.util.Random;
 
@@ -19,6 +20,12 @@ public class ClickNodeEvent extends ClickEvent {
         ViewNode viewNode = ParseManager.getInstance().getCurrentParseNode();
         if (viewNode != null) {
             Random random = new Random();
+
+            if (viewNode.right > GhostUtils.displayWidth) {
+                viewNode.right = GhostUtils.displayWidth - 100;
+                viewNode.left = GhostUtils.displayWidth / 8;
+            }
+
             int width = (int) (viewNode.right - viewNode.left);
             int height = (int) (viewNode.bottom - viewNode.top);
             int w = random.nextInt(width);

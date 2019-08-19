@@ -92,4 +92,12 @@ public class ActivityGhost extends Ghost {
         }
     }
 
+    @Override
+    public void back() {
+        LogUtil.d(TAG, "back");
+        if (ghostWebView != null) {
+            ghostWebView.back();
+        }
+    }
+
 }

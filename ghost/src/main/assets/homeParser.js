@@ -56,13 +56,12 @@ var findArrowTopItem = function(width,height) {
 };
 
 var findItemLocation = function(width,height) {
-    /*window.homeParser.onParseStart();*/
     var clientWidth = (document.documentElement.clientWidth || document.body.clientWidth);
     var clientHeight = (document.documentElement.clientHeight || document.body.clientHeight);
     var devicePixelRatio=height/clientHeight;
-    var items=document.getElementsByClassName("n-item");
+    var layout=document.getElementsByClassName("news-list container no-top-gap")[0];
+    var items=layout.getElementsByClassName("n-item");
     if(items.length<=0){
-        /*window.homeParser.onParseFail();*/
         return;
     }
     for(var i=0;i<items.length;i++){
@@ -80,8 +79,6 @@ var findItemLocation = function(width,height) {
             var bottom=toDecimal(content.getBoundingClientRect().bottom*devicePixelRatio);
             var node='{"index":'+i+',"childIndex":'+j+',"left":'+left+',"top":'+top+',"right":'+right+',"bottom":'+bottom+',"className":"'+className+'","idName":"'+idName+'","title":"'+title+'"}';
             window.homeParser.onFoundItem(node);
-            /*window.homeParser.onFoundItemHtml(content.outerHTML);*/
         }
     }
-    /*window.homeParser.onParseSuccess();*/
 };

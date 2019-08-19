@@ -38,4 +38,8 @@ public class MainActivity extends AppCompatActivity {
     public void onTest(View view) {
         Advert.instance.test();
     }
+
+    public void onBack(View view) {
+        Advert.instance.back();
+    }
 }

@@ -3,6 +3,7 @@ package com.nicolls.ghostevent.ghost.event.behavior;
 import com.nicolls.ghostevent.ghost.core.IWebTarget;
 import com.nicolls.ghostevent.ghost.core.RedirectHandler;
 import com.nicolls.ghostevent.ghost.parse.IWebParser;
+import com.nicolls.ghostevent.ghost.parse.ParseManager;
 import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
@@ -27,6 +28,7 @@ public class ClickIconEventBehavior implements IEventBehavior<Boolean> {
     @Override
     public Boolean onStart(AtomicBoolean cancel) {
         redirectHandler.registerRedirectListener(listener);
+        ParseManager.getInstance().clearViewNodes();
         target.getMainHandler().post(new Runnable() {
             @Override
             public void run() {

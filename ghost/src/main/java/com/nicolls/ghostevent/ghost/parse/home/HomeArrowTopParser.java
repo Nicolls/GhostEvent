@@ -31,7 +31,6 @@ public class HomeArrowTopParser extends WebBaseParser {
 
     @Override
     public void parse(IWebTarget target, Semaphore semaphore) {
-//        super.parse(target, semaphore);
         LogUtil.d(TAG, "start parse");
         foundItemByClass(target, semaphore);
         LogUtil.d(TAG, "end parse");

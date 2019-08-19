@@ -83,7 +83,8 @@ var findItemLocation = function(width,height) {
     var clientWidth = (document.documentElement.clientWidth || document.body.clientWidth);
     var clientHeight = (document.documentElement.clientHeight || document.body.clientHeight);
     var devicePixelRatio=height/clientHeight;
-    var items=document.getElementsByClassName("n-item");
+    var layout=document.getElementsByClassName("news-list container left-img-list")[0];
+    var items=layout.getElementsByClassName("n-item");
     if(items.length<=0){
         return;
     }

@@ -25,9 +25,9 @@ public class GhostWebViewClient extends WebViewClient {
     private IWebTarget target;
     private String url;
 
-    public GhostWebViewClient(IWebTarget target,RedirectHandler redirectHandler) {
+    public GhostWebViewClient(IWebTarget target, RedirectHandler redirectHandler) {
         this.redirectHandler = redirectHandler;
-        this.target=target;
+        this.target = target;
     }
 
     @Override
@@ -76,7 +76,7 @@ public class GhostWebViewClient extends WebViewClient {
         this.url = url;
         if (!isError && !isHaveNotifySuccess) {
             isHaveNotifySuccess = true;
-            onSuccess(view,url);
+            onSuccess(view, url);
         }
     }
 
@@ -103,20 +103,31 @@ public class GhostWebViewClient extends WebViewClient {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             LogUtil.d(TAG, "new api");
             if (request.isForMainFrame()) {
-                isError = true;
-                redirectHandler.notifyFail();
+                onError(view);
             }
         } else {
-            isError = true;
-            redirectHandler.notifyFail();
+            onError(view);
         }
+
+    }
+
+    private void onError(WebView view) {
+        isError = true;
+        LogUtil.d(TAG, "onError");
+        ParseManager.getInstance().loadJsInterface(view, url);
+        target.getMainHandler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                redirectHandler.notifyFail();
+            }
+        }, 1000);
 
     }
 
     /**
      * 加载成功
      */
-    private void onSuccess(WebView view,final String url) {
+    private void onSuccess(WebView view, final String url) {
         LogUtil.d(TAG, "load onSuccess");
         ParseManager.getInstance().loadJsInterface(view, url);
         target.getMainHandler().postDelayed(new Runnable() {
@@ -124,21 +135,21 @@ public class GhostWebViewClient extends WebViewClient {
             public void run() {
                 redirectHandler.notifySuccess(url);
             }
-        },1000);
-        GhostUtils.Page page=GhostUtils.currentPage(url);
-        switch (page){
+        }, 1000);
+        GhostUtils.Page page = GhostUtils.currentPage(url);
+        switch (page) {
             case HOME:
-                EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_SHOW_HOME_PAGE,Constants.EVENT_TARGET_WEBVIEW,"");
+                EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_SHOW_HOME_PAGE, Constants.EVENT_TARGET_WEBVIEW, "");
             case OTHER:
-                EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_CLICK_ADVERT,Constants.EVENT_TARGET_WEBVIEW,"");
+                EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_CLICK_ADVERT, Constants.EVENT_TARGET_WEBVIEW, "");
             case SECOND_ADVERT:
-                EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_SHOW_SECOND_ADVERT_PAGE,Constants.EVENT_TARGET_WEBVIEW,"");
+                EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_SHOW_SECOND_ADVERT_PAGE, Constants.EVENT_TARGET_WEBVIEW, "");
 
             case SECOND_NEWS:
-                EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_SHOW_SECOND_NEWS_PAGE,Constants.EVENT_TARGET_WEBVIEW,"");
+                EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_SHOW_SECOND_NEWS_PAGE, Constants.EVENT_TARGET_WEBVIEW, "");
 
-                default:
-                    break;
+            default:
+                break;
         }
     }
 

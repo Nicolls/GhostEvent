@@ -86,4 +86,6 @@ public abstract class Ghost {
     public abstract void exit();
 
     public abstract void test();
+
+    public abstract void back();
 }

@@ -53,7 +53,7 @@ public class Probability {
                     homeSlideCount++;
                     Random r2 = new Random();
                     factor = r2.nextInt(10);
-                    if (factor < 7) {
+                    if (factor < 8) {
                         LogUtil.d(TAG, "HOME hit click news");
                         return eventBuilder.getHomeSelectClickEvent(webTarget, ViewNode.Type.NEWS);
                     } else {

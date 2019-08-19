@@ -48,4 +48,10 @@ public class Advert {
         }
     }
 
+    public void back() {
+        if (ghost != null) {
+            ghost.back();
+        }
+    }
+
 }
