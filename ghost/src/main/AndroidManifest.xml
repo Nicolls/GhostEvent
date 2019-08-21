@@ -14,10 +14,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <service
-            android:name="com.nicolls.ghostevent.ghost.view.WebViewService"
-            android:enabled="true"
-            android:exported="false"></service>
 
         <activity android:name="com.nicolls.ghostevent.MainActivity">
             <intent-filter>

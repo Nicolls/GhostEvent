@@ -5,7 +5,6 @@ import android.content.Context;
 
 import com.nicolls.ghostevent.ghost.ActivityGhost;
 import com.nicolls.ghostevent.ghost.Ghost;
-import com.nicolls.ghostevent.ghost.ServiceGhost;
 import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
@@ -15,6 +14,7 @@ public class Advert {
 
     private Advert() {
     }
+
     private Ghost ghost;
 
     public void attach(Activity activity) {
@@ -28,8 +28,7 @@ public class Advert {
     }
 
     private void attachToService(Context appContext) {
-        ghost = new ServiceGhost(appContext);
-        ghost.init();
+
     }
 
     private void attachToActivity(Activity activity) {

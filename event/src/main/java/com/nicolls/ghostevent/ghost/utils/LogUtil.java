@@ -10,7 +10,7 @@ import android.util.Log;
  * </p>
  */
 public class LogUtil {
-    private static final boolean debug=true;
+    private static final boolean debug=false;
     public static void d(String tag, String message) {
         if(!debug){
             return;
