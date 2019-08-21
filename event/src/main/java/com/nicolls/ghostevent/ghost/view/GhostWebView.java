@@ -12,6 +12,7 @@ import com.nicolls.ghostevent.ghost.core.IWebTarget;
 import com.nicolls.ghostevent.ghost.core.RedirectHandler;
 import com.nicolls.ghostevent.ghost.core.ViewEventHandler;
 import com.nicolls.ghostevent.ghost.event.BaseEvent;
+import com.nicolls.ghostevent.ghost.event.LoadPageEvent;
 import com.nicolls.ghostevent.ghost.parse.ParseManager;
 import com.nicolls.ghostevent.ghost.request.EventReporter;
 import com.nicolls.ghostevent.ghost.request.IEventReport;
@@ -20,7 +21,6 @@ import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 import com.nicolls.ghostevent.ghost.utils.Probability;
 
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -38,6 +38,9 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         @Override
         public void onSuccess(BaseEvent event) {
             LogUtil.d(TAG, "onSuccess " + event.getName());
+            if (event instanceof LoadPageEvent) {
+                LogUtil.d("View", "inflate success ", true);
+            }
             if (event.getParent() == null) {
                 LogUtil.d(TAG, "an individual event ");
                 BaseEvent generateEvent = probability.generateEvent(GhostWebView.this, webViewClient.getCurrentUrl());
