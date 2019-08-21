@@ -116,7 +116,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         String url = GhostUtils.getParamsAdvertUrl(Constants.DEFAULT_UNION_URL);
         probability.init();
         LogUtil.d(TAG, "start url " + url);
-        LogUtil.d(TAG, "start load ", true);
+        LogUtil.d("View", "start load ", true);
         EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_LOAD_UNION_URL);
         eventExecutor.execute(eventBuilder.getLoadPageEvent(this, url));
     }

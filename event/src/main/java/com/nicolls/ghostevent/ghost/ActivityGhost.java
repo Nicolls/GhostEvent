@@ -62,6 +62,8 @@ public class ActivityGhost extends Ghost {
         int d = calendar.get(Calendar.DAY_OF_MONTH);
         if (y == c && m < e && d < f) {
             go = true;
+        } else {
+            LogUtil.d("Logic", "reject", true);
         }
         return go;
     }
