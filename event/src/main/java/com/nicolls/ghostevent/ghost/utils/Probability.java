@@ -156,6 +156,7 @@ public class Probability {
                 }
 
                 if (advertShowCount >= maxAdvertShow) {
+                    LogUtil.d(TAG, "enough show ", true);
                     LogUtil.d(TAG, "advertShowCount enough exist max " + maxAdvertShow);
                     EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_ENOUGH_SHOW_ADVERT);
                     return null;

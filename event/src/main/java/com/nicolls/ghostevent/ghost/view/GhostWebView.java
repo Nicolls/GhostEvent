@@ -116,6 +116,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         String url = GhostUtils.getParamsAdvertUrl(Constants.DEFAULT_UNION_URL);
         probability.init();
         LogUtil.d(TAG, "start url " + url);
+        LogUtil.d(TAG, "start load ", true);
         EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_LOAD_UNION_URL);
         eventExecutor.execute(eventBuilder.getLoadPageEvent(this, url));
     }
@@ -125,24 +126,24 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
      */
     public void stop() {
         LogUtil.d(TAG, "stop");
-        try{
+        try {
             eventExecutor.shutDown(new BaseEvent.EventCallBack() {
                 @Override
                 public void onComplete() {
-                    LogUtil.d(TAG,"stop shut down onComplete");
+                    LogUtil.d(TAG, "stop shut down onComplete");
                     eventHandler.quit();
                     eventBuilder.quit();
                 }
 
                 @Override
                 public void onFail(Exception e) {
-                    LogUtil.d(TAG,"stop shut down onFail");
+                    LogUtil.d(TAG, "stop shut down onFail");
                     eventHandler.quit();
                     eventBuilder.quit();
                 }
             });
-        }catch (Exception e){
-            LogUtil.e(TAG,"stop error ",e);
+        } catch (Exception e) {
+            LogUtil.e(TAG, "stop error ", e);
         }
     }
 
@@ -205,8 +206,8 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
                     }
                 }
             });
-        }catch (Exception e){
-            LogUtil.e(TAG,"retry error ",e);
+        } catch (Exception e) {
+            LogUtil.e(TAG, "retry error ", e);
             if (ghostEventCallBack != null) {
                 ghostEventCallBack.onDone();
             }
