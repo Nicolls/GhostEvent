@@ -2,8 +2,6 @@ package com.nicolls.ghostevent.ghost.utils;
 
 import android.util.Log;
 
-import com.nicolls.ghostevent.BuildConfig;
-
 /**
  * author:mengjk
  * date:18-11-14
