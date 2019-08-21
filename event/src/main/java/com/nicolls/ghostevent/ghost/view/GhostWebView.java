@@ -19,10 +19,9 @@ import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 import com.nicolls.ghostevent.ghost.utils.Probability;
-import com.nicolls.ghostevent.ghost.utils.ToastUtil;
 
-import io.reactivex.CompletableObserver;
-import io.reactivex.disposables.Disposable;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 /**
  * author:mengjiankang
@@ -43,8 +42,8 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
                 LogUtil.d(TAG, "an individual event ");
                 BaseEvent generateEvent = probability.generateEvent(GhostWebView.this, webViewClient.getCurrentUrl());
                 if (generateEvent == null) {
-                    LogUtil.d(TAG, "advert click count enough:" + probability.getAdvertClickCount()
-                            + " advert show " + probability.getAdvertShowCount());
+                    LogUtil.d(TAG, "generate stop ,advert click count:" + probability.getAdvertClickCount()
+                            + " advert show count:" + probability.getAdvertShowCount());
                     if (ghostEventCallBack != null) {
                         ghostEventCallBack.onDone();
                     }
@@ -73,7 +72,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
 
     private GhostEventCallBack ghostEventCallBack;
     private final IEventHandler eventHandler = new ViewEventHandler(this);
-    private EventExecutor eventExecutor = new EventExecutor();
+    private EventExecutor eventExecutor = new EventExecutor(eventHandler);
     private final RedirectHandler redirectHandler = new RedirectHandler();
     private final EventBuilder eventBuilder = new EventBuilder(getContext(), redirectHandler, executeCallBack);
     private Probability probability;
@@ -117,7 +116,7 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         String url = GhostUtils.getParamsAdvertUrl(Constants.DEFAULT_UNION_URL);
         probability.init();
         LogUtil.d(TAG, "start url " + url);
-        EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_LOAD_UNION_URL, Constants.EVENT_TARGET_WEBVIEW, "");
+        EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_LOAD_UNION_URL);
         eventExecutor.execute(eventBuilder.getLoadPageEvent(this, url));
     }
 
@@ -126,9 +125,25 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
      */
     public void stop() {
         LogUtil.d(TAG, "stop");
-        eventExecutor.shutDown().subscribe();
-        eventHandler.quit();
-        eventBuilder.quit();
+        try{
+            eventExecutor.shutDown(new BaseEvent.EventCallBack() {
+                @Override
+                public void onComplete() {
+                    LogUtil.d(TAG,"stop shut down onComplete");
+                    eventHandler.quit();
+                    eventBuilder.quit();
+                }
+
+                @Override
+                public void onFail(Exception e) {
+                    LogUtil.d(TAG,"stop shut down onFail");
+                    eventHandler.quit();
+                    eventBuilder.quit();
+                }
+            });
+        }catch (Exception e){
+            LogUtil.e(TAG,"stop error ",e);
+        }
     }
 
     /**
@@ -157,44 +172,45 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
      */
 
     private void retry() {
-        tryTimes++;
-        ToastUtil.toast(getContext(), "retry times " + tryTimes);
-        LogUtil.d(TAG, "retry times:" + tryTimes);
-        if (tryTimes > Constants.MAX_TRY_TIMES) {
-            LogUtil.d(TAG, "tryTimes>MAX_TRY_TIMES");
-            if (ghostEventCallBack != null) {
-                ghostEventCallBack.onDone();
-            }
-            return;
-        }
-
-        if (isRetrying) {
-            LogUtil.d(TAG, "retrying...");
-            return;
-        }
-        isRetrying = true;
-        eventReport.uploadEvent(Constants.EVENT_TYPE_RETRY, Constants.EVENT_TARGET_WEBVIEW, "");
-        eventExecutor.reset().subscribe(new CompletableObserver() {
-            @Override
-            public void onSubscribe(Disposable d) {
-                LogUtil.d(TAG, "shutDown onSubscribe");
-            }
-
-            @Override
-            public void onComplete() {
-                LogUtil.d(TAG, "reset completed");
-                isRetrying = false;
-                start();
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                LogUtil.d(TAG, "shutdown onError");
+        try {
+            tryTimes++;
+            LogUtil.d(TAG, "retry times:" + tryTimes);
+            if (tryTimes > Constants.MAX_TRY_TIMES) {
+                LogUtil.d(TAG, "tryTimes>MAX_TRY_TIMES");
                 if (ghostEventCallBack != null) {
                     ghostEventCallBack.onDone();
                 }
+                return;
             }
-        });
+
+            if (isRetrying) {
+                LogUtil.d(TAG, "retrying...");
+                return;
+            }
+            isRetrying = true;
+            eventReport.uploadEvent(Constants.EVENT_TYPE_RETRY);
+            eventExecutor.reset(new BaseEvent.EventCallBack() {
+                @Override
+                public void onComplete() {
+                    LogUtil.d(TAG, "reset completed");
+                    isRetrying = false;
+                    start();
+                }
+
+                @Override
+                public void onFail(Exception e) {
+                    LogUtil.d(TAG, "shutdown onError");
+                    if (ghostEventCallBack != null) {
+                        ghostEventCallBack.onDone();
+                    }
+                }
+            });
+        }catch (Exception e){
+            LogUtil.e(TAG,"retry error ",e);
+            if (ghostEventCallBack != null) {
+                ghostEventCallBack.onDone();
+            }
+        }
     }
 
     @Override
@@ -205,6 +221,11 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
     @Override
     public Handler getEventHandler() {
         return eventHandler.getEventHandler();
+    }
+
+    @Override
+    public ExecutorService getEventTaskPool() {
+        return eventHandler.getEventTaskPool();
     }
 
     @Override

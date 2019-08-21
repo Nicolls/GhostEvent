@@ -13,6 +13,7 @@ import com.nicolls.ghostevent.ghost.utils.LogUtil;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Semaphore;
 
 public class SelectNodeClickEvent extends ClickEvent {
     private static final String TAG = "SelectNodeClickEvent";
@@ -26,7 +27,7 @@ public class SelectNodeClickEvent extends ClickEvent {
     }
 
     @Override
-    protected void doEvent() {
+    protected void doEvent(final Semaphore semaphore) {
         List<ViewNode> viewNodes = ParseManager.getInstance().getViewNodes();
         Collections.reverse(viewNodes);
         int viewHeight = GhostUtils.displayHeight;
@@ -84,6 +85,11 @@ public class SelectNodeClickEvent extends ClickEvent {
                 touchPoint = TouchPoint.obtainClick(x, y);
             }
         }
-        super.doEvent();
+        super.doEvent(semaphore);
+    }
+
+    @Override
+    public String getName() {
+        return TAG;
     }
 }

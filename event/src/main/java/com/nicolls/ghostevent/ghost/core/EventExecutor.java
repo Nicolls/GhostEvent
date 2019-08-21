@@ -8,22 +8,18 @@ import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.reactivex.Completable;
-import io.reactivex.CompletableObserver;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
-
 public class EventExecutor {
     private static final String TAG = "EventExecutor";
     private BlockingQueue<BaseEvent> eventBlockingQueue = new LinkedBlockingQueue<>();
     private Thread executeThread;
+    private IEventHandler eventHandler;
     private volatile AtomicBoolean cancelAtom = new AtomicBoolean(false);
-    private Disposable lastDisposable;
     // 事件信号量，事件需要按顺序一个接一个的执行
     private final Semaphore semaphore = new Semaphore(0, true);
 
@@ -40,7 +36,8 @@ public class EventExecutor {
 
     private ExecuteCallBack executeCallBack;
 
-    public EventExecutor() {
+    public EventExecutor(final IEventHandler eventHandler) {
+        this.eventHandler = eventHandler;
         init();
     }
 
@@ -115,13 +112,7 @@ public class EventExecutor {
 
 
     private void executeEvent(final BaseEvent event) {
-        event.exe(cancelAtom).observeOn(Schedulers.io()).subscribe(new CompletableObserver() {
-            @Override
-            public void onSubscribe(Disposable d) {
-                LogUtil.d(TAG, "onSubscribe");
-                lastDisposable = d;
-            }
-
+        event.exe(cancelAtom, new BaseEvent.EventCallBack() {
             @Override
             public void onComplete() {
                 if (cancelAtom.get()) {
@@ -137,17 +128,9 @@ public class EventExecutor {
             }
 
             @Override
-            public void onError(Throwable e) {
-                LogUtil.e(TAG, "execute event " + event.getName() + " fail!" + e);
-                if (event.needRetry()) {
-                    LogUtil.d(TAG, event.getName() + "need retry!");
-                    executeEvent(event);
-                    return;
-                }
+            public void onFail(Exception e) {
+                LogUtil.e(TAG, "execute event " + event.getName() + " fail!", e);
                 // 只要出现事件错误，则停止
-                if (lastDisposable != null) {
-                    lastDisposable.dispose();
-                }
                 executeCallBack.onFail(event);
                 LogUtil.d(TAG, "semaphore release");
                 semaphore.release();
@@ -155,9 +138,10 @@ public class EventExecutor {
         });
     }
 
-    public Completable shutDown() {
+    public void shutDown(final BaseEvent.EventCallBack eventCallBack) {
         LogUtil.d(TAG, "shutDown");
-        return Completable.fromRunnable(new Runnable() {
+        ExecutorService executorService=eventHandler.getEventTaskPool();
+        executorService.execute(new Runnable() {
             @Override
             public void run() {
                 LogUtil.d(TAG, "do shutDown set cancelAtom true and put CancelEvent");
@@ -167,34 +151,45 @@ public class EventExecutor {
                     try {
                         boolean ok = eventBlockingQueue.offer(CancelEvent.instance, CancelEvent.instance.getExecuteTimeOut(), TimeUnit.MILLISECONDS);
                         LogUtil.d(TAG, "offer cancel event ok:" + ok);
+                        if (!ok) {
+                            resetSemaphore.release();
+                        }
                     } catch (InterruptedException e) {
                         LogUtil.e(TAG, "invoke shutdown exe cancel event error ", e);
                         e.printStackTrace();
                     }
                 }
+                if (eventCallBack != null) {
+                    eventCallBack.onComplete();
+                }
             }
-        }).subscribeOn(Schedulers.io());
+        });
     }
 
-    public Completable reset() {
-        return Completable.fromRunnable(new Runnable() {
+    public void reset(final BaseEvent.EventCallBack eventCallBack) {
+        eventHandler.getEventTaskPool().execute(new Runnable() {
             @Override
             public void run() {
                 resetSemaphore = new Semaphore(0, true);
-                shutDown().subscribe();
+                shutDown(BaseEvent.EventCallBack.defaultCallBack);
+
+                LogUtil.d(TAG, "reset tryAcquire resetSemaphore");
                 try {
-                    LogUtil.d(TAG, "reset tryAcquire resetSemaphore");
-                    resetSemaphore.tryAcquire(CancelEvent.instance.getExecuteTimeOut() + Constants.DEFAULT_EVENT_EXECUTE_TIMEOUT_EXTEND, TimeUnit.MILLISECONDS);
-                    LogUtil.d(TAG, "resetSemaphore Acquired, reset completed");
-                    eventBlockingQueue.clear();
-                    cancelAtom.set(false);
-                    init();
+                    boolean isOK = resetSemaphore.tryAcquire(CancelEvent.instance.getExecuteTimeOut()
+                            + Constants.DEFAULT_EVENT_EXECUTE_TIMEOUT_EXTEND, TimeUnit.MILLISECONDS);
+                    LogUtil.d(TAG, "resetSemaphore Acquired " + isOK + ", reset completed ");
+
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-
+                eventBlockingQueue.clear();
+                cancelAtom.set(false);
+                init();
+                if (eventCallBack != null) {
+                    eventCallBack.onComplete();
+                }
             }
-        }).subscribeOn(Schedulers.io());
+        });
     }
 
 }

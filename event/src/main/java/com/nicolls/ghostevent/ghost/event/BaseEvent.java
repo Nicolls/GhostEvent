@@ -6,8 +6,6 @@ import com.nicolls.ghostevent.ghost.utils.Constants;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.reactivex.Completable;
-
 /**
  * author:mengjiankang
  * date:2018/11/25
@@ -16,9 +14,28 @@ import io.reactivex.Completable;
  */
 public abstract class BaseEvent {
     private static final String TAG = "BaseEvent";
+
+    public interface EventCallBack {
+        void onComplete();
+
+        void onFail(Exception e);
+
+        EventCallBack defaultCallBack = new EventCallBack() {
+            @Override
+            public void onComplete() {
+
+            }
+
+            @Override
+            public void onFail(Exception e) {
+
+            }
+        };
+    }
+
     protected GroupEvent parent;
 
-    public abstract Completable exe(AtomicBoolean cancel);
+    public abstract void exe(AtomicBoolean cancel, final EventCallBack callBack);
 
     public int getId() {
         return hashCode();
@@ -34,10 +51,6 @@ public abstract class BaseEvent {
 
     public void setParent(GroupEvent parent) {
         this.parent = parent;
-    }
-
-    public boolean needRetry() {
-        return false;
     }
 
     protected void sleepTimes(long times) {

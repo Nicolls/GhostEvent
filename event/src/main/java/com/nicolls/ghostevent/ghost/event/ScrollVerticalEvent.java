@@ -14,13 +14,10 @@ import com.nicolls.ghostevent.ghost.utils.LogUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import io.reactivex.Completable;
-import io.reactivex.functions.Action;
-import io.reactivex.schedulers.Schedulers;
 
 public class ScrollVerticalEvent extends BaseEvent {
     private static final String TAG = "ScrollVerticalEvent";
@@ -58,14 +55,26 @@ public class ScrollVerticalEvent extends BaseEvent {
     }
 
     @Override
-    public Completable exe(final AtomicBoolean cancel) {
-        return Completable.fromAction(new Action() {
+    public void exe(final AtomicBoolean cancel, final EventCallBack eventCallBack) {
+        ExecutorService executorService=target.getEventTaskPool();
+        if(executorService==null||executorService.isShutdown()||executorService.isTerminated()){
+            LogUtil.w(TAG,"executorService shutdown ");
+            if(eventCallBack!=null){
+                cancel.set(true);
+                eventCallBack.onFail(null);
+            }
+            return;
+        }
+        executorService.execute(new Runnable() {
             @Override
-            public void run() throws Exception {
+            public void run() {
                 if (scrollEventBehavior != null) {
                     line = scrollEventBehavior.onStart(cancel);
-                    if(line==null){
-                        LogUtil.w(TAG,"line null ");
+                    if (line == null) {
+                        LogUtil.w(TAG, "line null ");
+                        if (eventCallBack != null) {
+                            eventCallBack.onComplete();
+                        }
                         return;
                     }
                 }
@@ -123,7 +132,7 @@ public class ScrollVerticalEvent extends BaseEvent {
                     }
 
                     private void delayRelease() {
-                        target.getEventHandler().postDelayed(new Runnable() {
+                        target.getMainHandler().postDelayed(new Runnable() {
                             @Override
                             public void run() {
                                 LogUtil.d(TAG, "release semaphore");
@@ -138,16 +147,23 @@ public class ScrollVerticalEvent extends BaseEvent {
                         animator.start();
                     }
                 });
-                boolean ok = semaphore.tryAcquire(getExecuteTimeOut(), TimeUnit.MILLISECONDS);
+                boolean ok = false;
+                try {
+                    ok = semaphore.tryAcquire(getExecuteTimeOut(), TimeUnit.MILLISECONDS);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 animator.removeAllListeners();
                 if (!ok) {
                     LogUtil.d(TAG, "scroll vertical event time out");
-                    throw new RuntimeException("vertical scroll time out!");
                 } else {
                     LogUtil.d(TAG, "scroll vertical event completed scrollY:" + webView.getScrollY());
                 }
+                if (eventCallBack != null) {
+                    eventCallBack.onComplete();
+                }
             }
-        }).subscribeOn(Schedulers.io());
+        });
     }
 
     @Override

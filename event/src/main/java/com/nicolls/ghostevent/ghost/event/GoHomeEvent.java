@@ -8,11 +8,8 @@ import com.nicolls.ghostevent.ghost.event.behavior.LoadWebEventBehavior;
 import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import io.reactivex.Completable;
-import io.reactivex.functions.Action;
-import io.reactivex.schedulers.Schedulers;
 
 public class GoHomeEvent extends BaseEvent {
     private static final String TAG = "LoadPageEvent";
@@ -25,15 +22,27 @@ public class GoHomeEvent extends BaseEvent {
     }
 
     @Override
-    public Completable exe(final AtomicBoolean cancel) {
-        return Completable.fromAction(new Action() {
+    public void exe(final AtomicBoolean cancel, final EventCallBack eventCallBack) {
+        ExecutorService executorService=target.getEventTaskPool();
+        if(executorService==null||executorService.isShutdown()||executorService.isTerminated()){
+            LogUtil.w(TAG,"executorService shutdown ");
+            if(eventCallBack!=null){
+                cancel.set(true);
+                eventCallBack.onFail(null);
+            }
+            return;
+        }
+        executorService.execute(new Runnable() {
             @Override
-            public void run() throws Exception {
+            public void run() {
                 if (eventBehavior != null) {
                     eventBehavior.onStart(cancel);
                 }
                 if (cancel.get()) {
                     LogUtil.d(TAG, "cancel!");
+                    if (eventCallBack != null) {
+                        eventCallBack.onComplete();
+                    }
                     return;
                 }
                 target.getMainHandler().post(new Runnable() {
@@ -46,8 +55,11 @@ public class GoHomeEvent extends BaseEvent {
                 if (eventBehavior != null) {
                     eventBehavior.onEnd(cancel);
                 }
+                if (eventCallBack != null) {
+                    eventCallBack.onComplete();
+                }
             }
-        }).subscribeOn(Schedulers.io());
+        });
     }
 
     @Override

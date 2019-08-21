@@ -21,7 +21,7 @@ public class SecondNewsParser extends WebBaseParser {
         String findItem=String.format(Constants.JS_FUNCTION_FIND_ITEM,webView.getWidth(),webView.getHeight());
         LogUtil.d(TAG,"findItem "+findItem);
         target.executeJs(findItem);
-        target.getEventHandler().postDelayed(new Runnable() {
+        target.getMainHandler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 LogUtil.d(TAG, "semaphore release");

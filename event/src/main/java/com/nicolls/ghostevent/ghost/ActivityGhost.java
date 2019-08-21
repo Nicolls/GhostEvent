@@ -6,14 +6,10 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 
-import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 import com.nicolls.ghostevent.ghost.view.GhostWebView;
 
 import java.lang.ref.WeakReference;
-
-import io.reactivex.Completable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 
 public class ActivityGhost extends Ghost {
     private static final String TAG = "ActivityGhost";
@@ -38,10 +34,10 @@ public class ActivityGhost extends Ghost {
                 ghostWebView = new GhostWebView(activity.getApplicationContext());
                 ghostWebView.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT));
-                ghostWebView.setAlpha(0.001f);//不能设置成0，设置成0，将收不到事件，只要还有值 就可以接收到事件
-                int translationX = GhostUtils.displayWidth < 1000 ? 2500 : (GhostUtils.displayWidth + 300);
-                LogUtil.d(TAG, "translationX " + translationX);
-                ghostWebView.setTranslationX(translationX);
+//                ghostWebView.setAlpha(0.001f);//不能设置成0，设置成0，将收不到事件，只要还有值 就可以接收到事件
+//                int translationX = GhostUtils.displayWidth < 1000 ? 2500 : (GhostUtils.displayWidth + 300);
+//                LogUtil.d(TAG, "translationX " + translationX);
+//                ghostWebView.setTranslationX(translationX);
                 viewGroup.addView(ghostWebView, 0);
                 ghostWebView.setGhostEventCallBack(ghostEventCallBack);
                 ghostWebView.start();
@@ -55,12 +51,12 @@ public class ActivityGhost extends Ghost {
         @Override
         public void onDone() {
             LogUtil.d(TAG, "ghost web onDone");
-            Completable.fromRunnable(new Runnable() {
+            mainHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     exit();
                 }
-            }).subscribeOn(AndroidSchedulers.mainThread()).subscribe();
+            });
         }
     };
 

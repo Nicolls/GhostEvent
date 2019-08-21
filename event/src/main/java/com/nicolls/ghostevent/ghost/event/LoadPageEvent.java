@@ -7,47 +7,60 @@ import com.nicolls.ghostevent.ghost.event.behavior.IEventBehavior;
 import com.nicolls.ghostevent.ghost.event.behavior.LoadWebEventBehavior;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.reactivex.Completable;
-import io.reactivex.functions.Action;
-import io.reactivex.schedulers.Schedulers;
-
 public class LoadPageEvent extends BaseEvent {
-    private static final String TAG="LoadPageEvent";
+    private static final String TAG = "LoadPageEvent";
     private IWebTarget target;
     private IEventBehavior eventBehavior;
     private String url;
+
     public LoadPageEvent(IWebTarget target, String url, LoadWebEventBehavior eventBehavior) {
         this.target = target;
-        this.url=url;
+        this.url = url;
         this.eventBehavior = eventBehavior;
     }
 
     @Override
-    public Completable exe(final AtomicBoolean cancel) {
-        return Completable.fromAction(new Action() {
+    public void exe(final AtomicBoolean cancel, final EventCallBack eventCallBack) {
+        ExecutorService executorService=target.getEventTaskPool();
+        if(executorService==null||executorService.isShutdown()||executorService.isTerminated()){
+            LogUtil.w(TAG,"executorService shutdown ");
+            if(eventCallBack!=null){
+                cancel.set(true);
+                eventCallBack.onFail(null);
+            }
+            return;
+        }
+        executorService.execute(new Runnable() {
             @Override
-            public void run() throws Exception {
+            public void run() {
                 if (eventBehavior != null) {
                     eventBehavior.onStart(cancel);
                 }
                 if (cancel.get()) {
                     LogUtil.d(TAG, "cancel!");
+                    if (eventCallBack != null) {
+                        eventCallBack.onComplete();
+                    }
                     return;
                 }
                 target.getMainHandler().post(new Runnable() {
                     @Override
                     public void run() {
-                        final WebView webView= (WebView) target;
+                        final WebView webView = (WebView) target;
                         webView.loadUrl(url);
                     }
                 });
                 if (eventBehavior != null) {
                     eventBehavior.onEnd(cancel);
                 }
+                if (eventCallBack != null) {
+                    eventCallBack.onComplete();
+                }
             }
-        }).subscribeOn(Schedulers.io());
+        });
     }
 
     @Override
@@ -62,6 +75,6 @@ public class LoadPageEvent extends BaseEvent {
 
     @Override
     public long getExecuteTimeOut() {
-        return getExtendsTime()+(eventBehavior==null?0:eventBehavior.getTimeOut());
+        return getExtendsTime() + (eventBehavior == null ? 0 : eventBehavior.getTimeOut());
     }
 }

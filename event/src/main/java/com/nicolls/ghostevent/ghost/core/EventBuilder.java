@@ -45,9 +45,9 @@ public class EventBuilder {
         this.executeCallBack = executeCallBack;
     }
 
-    public BaseEvent getSlideDown(IWebTarget webTarget) {
+    public BaseEvent getSlideDownEvent(IWebTarget webTarget) {
+        LogUtil.d(TAG,"getSlideDownEvent");
         BaseEvent slideEvent = new SlideEvent(webTarget, SlideEvent.Direction.DOWN);
-
         Random random = new Random();
         if (random.nextInt(10) > 5) {
             int from = GhostUtils.displayHeight / 2 + random.nextInt(GhostUtils.displayHeight / 4);
@@ -58,7 +58,8 @@ public class EventBuilder {
         return slideEvent;
     }
 
-    public BaseEvent getSlideUp(IWebTarget webTarget) {
+    public BaseEvent getSlideUpEvent(IWebTarget webTarget) {
+        LogUtil.d(TAG,"getSlideUpEvent");
         BaseEvent slideEvent = new SlideEvent(webTarget, SlideEvent.Direction.UP);
         Random random = new Random();
         if (random.nextInt(10) > 4) {
@@ -71,6 +72,7 @@ public class EventBuilder {
     }
 
     public BaseEvent getClickEvent(IWebTarget webTarget) {
+        LogUtil.d(TAG,"getClickEvent");
         Random random = new Random();
         int displayWidth = GhostUtils.displayWidth;
         int borderWidth = displayWidth / 4;
@@ -87,6 +89,7 @@ public class EventBuilder {
     }
 
     public BaseEvent getSecondNewsAdvertHeadClickEvent(IWebTarget webTarget) {
+        LogUtil.d(TAG,"getSecondNewsAdvertHeadClickEvent");
         SecondNewsTopAdvertParser topParser = new SecondNewsTopAdvertParser();
         ClickIconEventBehavior behavior = new ClickIconEventBehavior(webTarget, redirectHandler, topParser);
         ClickNodeEvent clickIconEvent = new ClickNodeEvent(webTarget, behavior);
@@ -94,24 +97,28 @@ public class EventBuilder {
     }
 
     public BaseEvent getLoadPageEvent(IWebTarget target, String url) {
+        LogUtil.d(TAG,"getLoadPageEvent");
         LoadWebEventBehavior behavior = new LoadWebEventBehavior(target, redirectHandler);
         BaseEvent loadPageEvent = new LoadPageEvent(target, url, behavior);
         return loadPageEvent;
     }
 
     public BaseEvent getGoBackEvent(IWebTarget target) {
+        LogUtil.d(TAG,"getGoBackEvent");
         LoadWebEventBehavior behavior = new LoadWebEventBehavior(target, redirectHandler);
         BaseEvent gobackEvent = new GoBackEvent(target, behavior);
         return gobackEvent;
     }
 
     public BaseEvent getGoHomeEvent(IWebTarget target) {
+        LogUtil.d(TAG,"getGoHomeEvent");
         LoadWebEventBehavior behavior = new LoadWebEventBehavior(target, redirectHandler);
         BaseEvent event = new GoHomeEvent(target, behavior);
         return event;
     }
 
     public BaseEvent getHomeClickArrowTopNodeEvent(IWebTarget target) {
+        LogUtil.d(TAG,"getHomeClickArrowTopNodeEvent");
         HomeArrowTopParser topParser = new HomeArrowTopParser();
         ClickIconEventBehavior behavior = new ClickIconEventBehavior(target, redirectHandler, topParser);
         ClickIconEvent clickIconEvent = new ClickIconEvent(target, behavior);
@@ -119,6 +126,7 @@ public class EventBuilder {
     }
 
     public BaseEvent getSecondNewsClickArrowTopNodeEvent(IWebTarget target) {
+        LogUtil.d(TAG,"getSecondNewsClickArrowTopNodeEvent");
         SecondNewsArrowTopParser topParser = new SecondNewsArrowTopParser();
         ClickIconEventBehavior behavior = new ClickIconEventBehavior(target, redirectHandler, topParser);
         ClickIconEvent clickIconEvent = new ClickIconEvent(target, behavior);
@@ -126,6 +134,7 @@ public class EventBuilder {
     }
 
     public BaseEvent getHomeSelectClickEvent(IWebTarget target, ViewNode.Type type) {
+        LogUtil.d(TAG,"getHomeSelectClickEvent");
         HomeParser parser = new HomeParser();
         ClickIconEventBehavior behavior = new ClickIconEventBehavior(target, redirectHandler, parser);
         BaseEvent event = new SelectNodeClickEvent(target, behavior,type);
@@ -133,6 +142,7 @@ public class EventBuilder {
     }
 
     public BaseEvent getSecondNewsSelectClickEvent(IWebTarget target,ViewNode.Type type) {
+        LogUtil.d(TAG,"getSecondNewsSelectClickEvent");
         SecondNewsParser parser = new SecondNewsParser();
         ClickIconEventBehavior behavior = new ClickIconEventBehavior(target, redirectHandler, parser);
         SelectNodeClickEvent event = new SelectNodeClickEvent(target, behavior,type);
@@ -140,6 +150,7 @@ public class EventBuilder {
     }
 
     public BaseEvent getSecondNewsClickMainIconNodeEvent(IWebTarget target) {
+        LogUtil.d(TAG,"getSecondNewsClickMainIconNodeEvent");
         SecondNewsMainIconParser topParser = new SecondNewsMainIconParser();
         ClickIconEventBehavior behavior = new ClickIconEventBehavior(target, redirectHandler, topParser);
         ClickIconEvent clickIconEvent = new ClickIconEvent(target, behavior);
@@ -147,6 +158,7 @@ public class EventBuilder {
     }
 
     public BaseEvent getScrollToReadMoreNodeEvent(IWebTarget target) {
+        LogUtil.d(TAG,"getScrollToReadMoreNodeEvent");
         SecondNewsReadMoreParser topParser = new SecondNewsReadMoreParser();
         ScrollReadMoreEventBehavior behavior = new ScrollReadMoreEventBehavior(target, topParser);
         ScrollVerticalEvent scrollVerticalEvent = new ScrollVerticalEvent(target, behavior);
@@ -154,6 +166,7 @@ public class EventBuilder {
     }
 
     public BaseEvent getSecondNewsScrollAndClickReadMoreNodeEvent(IWebTarget target) {
+        LogUtil.d(TAG,"getSecondNewsScrollAndClickReadMoreNodeEvent");
 
         List<BaseEvent> childEvents = new ArrayList<>();
         // scroll
@@ -167,7 +180,7 @@ public class EventBuilder {
         Random random = new Random();
         int slideSize = random.nextInt(3) + 1;
         for (int i = 0; i < slideSize; i++) {
-            BaseEvent slideEvent = getSlideUp(target);
+            BaseEvent slideEvent = getSlideUpEvent(target);
             childEvents.add(slideEvent);
         }
         GroupEvent groupEvent = new GroupEvent(target, executeCallBack, childEvents);

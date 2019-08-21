@@ -3,12 +3,13 @@ package com.nicolls.ghostevent.ghost.parse.secondnews;
 import android.content.Context;
 import android.webkit.JavascriptInterface;
 
-import com.alibaba.fastjson.JSON;
 import com.nicolls.ghostevent.ghost.parse.IJsInterface;
 import com.nicolls.ghostevent.ghost.parse.model.DomNode;
 import com.nicolls.ghostevent.ghost.parse.model.ViewNode;
 import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
+
+import org.json.JSONObject;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -56,7 +57,7 @@ public class SecondNewsJsInterface implements IJsInterface {
     public void onFoundItem(String item) {
         LogUtil.d(TAG, "onFoundItem " + item);
         try {
-            DomNode domNode = JSON.parseObject(item, DomNode.class);
+            DomNode domNode = new DomNode(new JSONObject(item));
             ViewNode.Type type = ViewNode.Type.OTHER;
             if (domNode.className.contains(Constants.DIV_CLASSNAME_MAIN_ICON)) {
                 type = ViewNode.Type.MAIN_ICON;

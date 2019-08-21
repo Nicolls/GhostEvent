@@ -20,7 +20,7 @@ public class SecondNewsTopAdvertParser extends WebBaseParser {
                 webView.getWidth(), webView.getHeight());
         LogUtil.d(TAG, "findItemByClassName " + findItemByClassName);
         target.executeJs(findItemByClassName);
-        target.getEventHandler().postDelayed(new Runnable() {
+        target.getMainHandler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 LogUtil.d(TAG, "semaphore release");

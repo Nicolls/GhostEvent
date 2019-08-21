@@ -22,7 +22,7 @@ public class AdvertParser extends WebBaseParser {
         target.executeJs(printContext);
         target.executeJs(findItem);
 
-        target.getEventHandler().postDelayed(new Runnable() {
+        target.getMainHandler().postDelayed(new Runnable() {
             @Override
             public void run() {
                 LogUtil.d(TAG, "semaphore release");

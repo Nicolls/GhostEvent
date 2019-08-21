@@ -1,28 +1,33 @@
 package com.nicolls.ghostevent.ghost.parse.model;
 
-import com.alibaba.fastjson.annotation.JSONField;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.Serializable;
 
 public class DomNode implements Serializable {
+    private static final String TAG = "DomNode";
 
-    @JSONField
+    public DomNode(JSONObject jsonObject) throws JSONException {
+        index = jsonObject.getInt("index");
+        childIndex = jsonObject.getInt("childIndex");
+        left = (float) jsonObject.getDouble("left");
+        top = (float) jsonObject.getDouble("top");
+        right = (float) jsonObject.getDouble("right");
+        bottom = (float) jsonObject.getDouble("bottom");
+        className = jsonObject.getString("className");
+        idName = jsonObject.getString("idName");
+        title = jsonObject.getString("title");
+    }
+
     public int index;
-    @JSONField
     public int childIndex;
-    @JSONField
     public float left;
-    @JSONField
     public float top;
-    @JSONField
     public float right;
-    @JSONField
     public float bottom;
-    @JSONField
     public String className;
-    @JSONField
     public String idName;
-    @JSONField
     public String title;
 
     @Override

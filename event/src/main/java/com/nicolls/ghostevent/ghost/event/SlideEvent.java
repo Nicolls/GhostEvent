@@ -15,10 +15,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import io.reactivex.Completable;
-import io.reactivex.schedulers.Schedulers;
 
 /**
  * author:mengjiankang
@@ -108,18 +106,33 @@ public class SlideEvent extends BaseEvent {
     }
 
     @Override
-    public Completable exe(final AtomicBoolean cancel) {
-        return Completable.fromRunnable(new Runnable() {
+    public void exe(final AtomicBoolean cancel, final EventCallBack eventCallBack) {
+        ExecutorService executorService=target.getEventTaskPool();
+        if(executorService==null||executorService.isShutdown()||executorService.isTerminated()){
+            LogUtil.w(TAG,"executorService shutdown ");
+            if(eventCallBack!=null){
+                cancel.set(true);
+                eventCallBack.onFail(null);
+            }
+            return;
+        }
+        executorService.execute(new Runnable() {
             @Override
             public void run() {
                 if (cancel.get()) {
                     LogUtil.d(TAG, "cancel!");
+                    if (eventCallBack != null) {
+                        eventCallBack.onComplete();
+                    }
                     return;
                 }
                 doEvent(cancel);
                 sleepTimes(DELAY_COMPLETED);
+                if (eventCallBack != null) {
+                    eventCallBack.onComplete();
+                }
             }
-        }).subscribeOn(Schedulers.io());
+        });
     }
 
     @Override

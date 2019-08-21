@@ -49,13 +49,11 @@ public class Probability {
                 LogUtil.d(TAG, "factor:" + factor);
                 if ((homeSlideCount == 0 && factor == 0) || (homeSlideCount > 4 && advertShowCount >= 3 && factor == advertShowCount)) {
                     LogUtil.d(TAG, "HOME ,hit exit");
-                    EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_HOME_EXIT,
-                            Constants.EVENT_TARGET_WEBVIEW, "" + maxAdvertClick);
-                    ToastUtil.toast(webTarget.getContext(), "Home hit exit");
+                    EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_HOME_EXIT);
                     return null;
                 } else if (factor == 1) {
                     LogUtil.d(TAG, "HOME hit down fresh");
-                    return eventBuilder.getSlideDown(webTarget);
+                    return eventBuilder.getSlideDownEvent(webTarget);
                 } else if (factor >= 0 && factor < 5) {
                     homeSlideCount++;
                     Random r2 = new Random();
@@ -85,7 +83,7 @@ public class Probability {
                         return eventBuilder.getHomeClickArrowTopNodeEvent(webTarget);
                     }
                     LogUtil.d(TAG, "HOME hit slide up");
-                    return eventBuilder.getSlideUp(webTarget);
+                    return eventBuilder.getSlideUpEvent(webTarget);
                 }
             case SECOND_NEWS:
                 homeSlideCount = 0;
@@ -107,7 +105,7 @@ public class Probability {
                         if (secondNewsSlideCount == 0) {
                             secondNewsSlideCount++;
                             LogUtil.d(TAG, "SECOND_NEWS hit slide up first");
-                            return eventBuilder.getSlideUp(webTarget);
+                            return eventBuilder.getSlideUpEvent(webTarget);
                         } else {
                             if (factor >= 0 && factor <= 25) {
                                 LogUtil.d(TAG, "SECOND_NEWS ,hit go back");
@@ -140,11 +138,11 @@ public class Probability {
                                 }
                                 if (factor > 85 && factor < 90) {
                                     LogUtil.d(TAG, "SECOND_NEWS ,hit slide down");
-                                    return eventBuilder.getSlideDown(webTarget);
+                                    return eventBuilder.getSlideDownEvent(webTarget);
 
                                 }
                                 LogUtil.d(TAG, "SECOND_NEWS ,hit slide up");
-                                return eventBuilder.getSlideUp(webTarget);
+                                return eventBuilder.getSlideUpEvent(webTarget);
                             }
                         }
                     }
@@ -158,16 +156,14 @@ public class Probability {
                 }
 
                 if (advertShowCount >= maxAdvertShow) {
-                    LogUtil.d(TAG, "advertShowCount enough exist " + maxAdvertShow);
-                    ToastUtil.toast(webTarget.getContext(), "advertShowCount enough");
-                    EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_ENOUGH_SHOW_ADVERT,
-                            Constants.EVENT_TARGET_WEBVIEW, "" + maxAdvertShow);
+                    LogUtil.d(TAG, "advertShowCount enough exist max " + maxAdvertShow);
+                    EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_ENOUGH_SHOW_ADVERT);
                     return null;
                 }
                 factor = random.nextInt(10);
                 LogUtil.d(TAG, "factor:" + factor);
                 if (secondAdvertSlideCount == 0 && factor >= 0 && factor < (3 + 2 * advertShowCount)) {
-                    LogUtil.d(TAG, "SECOND_ADVERT ,hit exit");
+                    LogUtil.d(TAG, "SECOND_ADVERT ,hit back");
                     return eventBuilder.getGoBackEvent(webTarget);
                 } else {
                     Random nextRandom = new Random();
@@ -181,10 +177,10 @@ public class Probability {
                         secondAdvertSlideCount++;
                         if (factor > 90) {
                             LogUtil.d(TAG, "SECOND_ADVERT ,hit slide down");
-                            return eventBuilder.getSlideDown(webTarget);
+                            return eventBuilder.getSlideDownEvent(webTarget);
                         }
                         LogUtil.d(TAG, "SECOND_ADVERT ,hit slide up");
-                        return eventBuilder.getSlideUp(webTarget);
+                        return eventBuilder.getSlideUpEvent(webTarget);
                     }
                 }
             case OTHER:
@@ -195,10 +191,8 @@ public class Probability {
                     LogUtil.d(TAG, "other page advertClickCount:" + advertClickCount);
                     advertClickCount++;
                     if (advertClickCount >= maxAdvertClick) {
-                        LogUtil.d(TAG, "advertClickCount enough exist " + maxAdvertClick);
-                        ToastUtil.toast(webTarget.getContext(), "advertClickCount enough");
-                        EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_ENOUGH_CLICK_ADVERT,
-                                Constants.EVENT_TARGET_WEBVIEW, "" + maxAdvertClick);
+                        LogUtil.d(TAG, "advertClickCount enough exist max" + maxAdvertClick);
+                        EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_ENOUGH_CLICK_ADVERT);
                         return null;
                     }
                 }
@@ -216,7 +210,7 @@ public class Probability {
                 } else {
                     otherSlideCount++;
                     LogUtil.d(TAG, "OTHER ,hit slide up");
-                    return eventBuilder.getSlideUp(webTarget);
+                    return eventBuilder.getSlideUpEvent(webTarget);
                 }
         }
         return null;

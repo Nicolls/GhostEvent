@@ -4,12 +4,13 @@ import android.content.Context;
 import android.text.TextUtils;
 import android.webkit.JavascriptInterface;
 
-import com.alibaba.fastjson.JSON;
 import com.nicolls.ghostevent.ghost.parse.IJsInterface;
 import com.nicolls.ghostevent.ghost.parse.model.DomNode;
 import com.nicolls.ghostevent.ghost.parse.model.ViewNode;
 import com.nicolls.ghostevent.ghost.utils.Constants;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
+
+import org.json.JSONObject;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -57,7 +58,7 @@ public class HomeJsInterface implements IJsInterface {
     public void onFoundItem(String item) {
         LogUtil.d(TAG, "onFoundItem " + item);
         try {
-            DomNode domNode = JSON.parseObject(item, DomNode.class);
+            DomNode domNode = new DomNode(new JSONObject(item));
             ViewNode.Type type = ViewNode.Type.OTHER;
             if (domNode.className.contains(Constants.DIV_CLASSNAME_NEWS)) {
                 type = ViewNode.Type.NEWS;
@@ -98,7 +99,8 @@ public class HomeJsInterface implements IJsInterface {
     public void onFoundClassItem(String item) {
         LogUtil.d(TAG, "onFoundClassItem:" + item);
         try {
-            DomNode domNode = JSON.parseObject(item, DomNode.class);
+            JSONObject jsonObject = new JSONObject(item);
+            DomNode domNode = new DomNode(jsonObject);
             if (TextUtils.equals(Constants.DIV_CLASSNAME_ARROW_TOP, domNode.className)) {
                 ViewNode viewNode = new ViewNode(domNode, ViewNode.Type.ARROW_TOP);
                 target.onFoundClassItem(viewNode);

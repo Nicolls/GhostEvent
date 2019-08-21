@@ -139,14 +139,14 @@ public class GhostWebViewClient extends WebViewClient {
         GhostUtils.Page page = GhostUtils.currentPage(url);
         switch (page) {
             case HOME:
-                EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_SHOW_HOME_PAGE, Constants.EVENT_TARGET_WEBVIEW, "");
+                EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_SHOW_HOME_PAGE);
             case OTHER:
-                EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_CLICK_ADVERT, Constants.EVENT_TARGET_WEBVIEW, "");
+                EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_CLICK_ADVERT);
             case SECOND_ADVERT:
-                EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_SHOW_SECOND_ADVERT_PAGE, Constants.EVENT_TARGET_WEBVIEW, "");
+                EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_SHOW_SECOND_ADVERT_PAGE);
 
             case SECOND_NEWS:
-                EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_SHOW_SECOND_NEWS_PAGE, Constants.EVENT_TARGET_WEBVIEW, "");
+                EventReporter.getInstance().uploadEvent(Constants.EVENT_TYPE_SHOW_SECOND_NEWS_PAGE);
 
             default:
                 break;

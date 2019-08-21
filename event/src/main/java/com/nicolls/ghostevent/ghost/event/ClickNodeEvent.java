@@ -8,15 +8,17 @@ import com.nicolls.ghostevent.ghost.parse.model.ViewNode;
 import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 
 import java.util.Random;
+import java.util.concurrent.Semaphore;
 
 public class ClickNodeEvent extends ClickEvent {
+    private static final String TAG="ClickIconEvent";
 
     public ClickNodeEvent(ITarget target, IEventBehavior eventBehavior) {
         super(target, null, eventBehavior);
     }
 
     @Override
-    protected void doEvent() {
+    protected void doEvent(final Semaphore semaphore) {
         ViewNode viewNode = ParseManager.getInstance().getCurrentParseNode();
         if (viewNode != null) {
             Random random = new Random();
@@ -41,6 +43,11 @@ public class ClickNodeEvent extends ClickEvent {
             }
             touchPoint = TouchPoint.obtainClick(x, y);
         }
-        super.doEvent();
+        super.doEvent(semaphore);
+    }
+
+    @Override
+    public String getName() {
+        return TAG;
     }
 }

@@ -10,15 +10,10 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import io.reactivex.Completable;
-import io.reactivex.CompletableObserver;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
-import io.reactivex.schedulers.Schedulers;
 
 public class GroupEvent extends BaseEvent {
     private static final String TAG = "GroupEvent";
@@ -27,6 +22,7 @@ public class GroupEvent extends BaseEvent {
     private List<BaseEvent> childList = new ArrayList<>();
     private long timeOut = 0;
     private EventExecutor.ExecuteCallBack executeCallBack;
+    private ITarget target;
 
     public GroupEvent(ITarget target, EventExecutor.ExecuteCallBack executeCallBack) {
         this(target, executeCallBack, new BaseEvent[]{});
@@ -37,6 +33,7 @@ public class GroupEvent extends BaseEvent {
     }
 
     public GroupEvent(ITarget target, EventExecutor.ExecuteCallBack executeCallBack, List<BaseEvent> list) {
+        this.target = target;
         this.executeCallBack = executeCallBack;
         if (list != null) {
             for (BaseEvent event : list) {
@@ -84,13 +81,24 @@ public class GroupEvent extends BaseEvent {
     }
 
     @Override
-    public Completable exe(final AtomicBoolean cancel) {
-
-        return Completable.fromAction(new Action() {
+    public void exe(final AtomicBoolean cancel, final EventCallBack eventCallBack) {
+        ExecutorService executorService=target.getEventTaskPool();
+        if(executorService==null||executorService.isShutdown()||executorService.isTerminated()){
+            LogUtil.w(TAG,"executorService shutdown ");
+            if(eventCallBack!=null){
+                cancel.set(true);
+                eventCallBack.onFail(null);
+            }
+            return;
+        }
+        executorService.execute(new Runnable() {
             @Override
-            public void run() throws Exception {
+            public void run() {
                 if (cancel.get()) {
                     LogUtil.d(TAG, "cancel!");
+                    if (eventCallBack != null) {
+                        eventCallBack.onComplete();
+                    }
                     return;
                 }
                 for (final BaseEvent event : childList) {
@@ -103,12 +111,8 @@ public class GroupEvent extends BaseEvent {
                     if (!isOk) {
                         break;
                     }
-                    event.exe(cancel).observeOn(Schedulers.io()).subscribe(new CompletableObserver() {
-                        @Override
-                        public void onSubscribe(Disposable d) {
-                            LogUtil.d(TAG, "onSubscribe " + event.getName());
-                        }
 
+                    event.exe(cancel, new EventCallBack() {
                         @Override
                         public void onComplete() {
                             LogUtil.d(TAG, "child event completed " + event.getName() + ",release semaphore");
@@ -120,14 +124,9 @@ public class GroupEvent extends BaseEvent {
                         }
 
                         @Override
-                        public void onError(Throwable e) {
+                        public void onFail(Exception e) {
                             LogUtil.e(TAG, "group execute child event error " + event.getName(), e);
                             onChildFail(event);
-                            if (event.needRetry()) {
-                                LogUtil.d(TAG, "onError, event " + event.getName() + " need retry again");
-                                event.exe(cancel);
-                                return;
-                            }
                             if (executeCallBack != null) {
                                 executeCallBack.onFail(event);
                             }
@@ -137,7 +136,12 @@ public class GroupEvent extends BaseEvent {
                     });
                     long timeOut = event.getExecuteTimeOut();
                     LogUtil.d(TAG, "next child try acquire wait current child. timeOut:" + timeOut);
-                    boolean ok = semaphore.tryAcquire(timeOut, TimeUnit.MILLISECONDS);
+                    boolean ok = false;
+                    try {
+                        ok = semaphore.tryAcquire(timeOut, TimeUnit.MILLISECONDS);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     if (!ok) {
                         LogUtil.d(TAG, "child acquired time out!");
                         executeCallBack.onTimeOut(event);
@@ -145,8 +149,11 @@ public class GroupEvent extends BaseEvent {
                         LogUtil.d(TAG, "child acquired semaphore");
                     }
                 }
+                if (eventCallBack != null) {
+                    eventCallBack.onComplete();
+                }
             }
-        }).subscribeOn(Schedulers.io());
+        });
     }
 
     @Override
@@ -183,9 +190,9 @@ public class GroupEvent extends BaseEvent {
 
     @Override
     public String getDescribe() {
-        JSONObject jsonObject=new JSONObject();
+        JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put("group",true);
+            jsonObject.put("group", true);
 
         } catch (JSONException e) {
             e.printStackTrace();

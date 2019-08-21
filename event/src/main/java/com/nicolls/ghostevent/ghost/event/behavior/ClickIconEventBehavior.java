@@ -52,7 +52,7 @@ public class ClickIconEventBehavior implements IEventBehavior<Boolean> {
         LogUtil.d(TAG,"onEnd wait page");
         boolean isOk=false;
         try {
-            target.getEventHandler().postDelayed(checkLoadPage, CHECK_WAIT_TIME);
+            target.getMainHandler().postDelayed(checkLoadPage, CHECK_WAIT_TIME);
             isOk = semaphore.tryAcquire(getTimeOut(), TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -77,7 +77,7 @@ public class ClickIconEventBehavior implements IEventBehavior<Boolean> {
         @Override
         public void onStart(String url) {
             LogUtil.d(TAG,"page load onStart");
-            target.getEventHandler().removeCallbacks(checkLoadPage);
+            target.getMainHandler().removeCallbacks(checkLoadPage);
         }
 
         @Override

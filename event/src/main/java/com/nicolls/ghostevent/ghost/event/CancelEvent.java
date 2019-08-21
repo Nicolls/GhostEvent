@@ -9,9 +9,9 @@ import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
 import org.json.JSONObject;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import io.reactivex.Completable;
 
 public class CancelEvent extends BaseEvent {
     private static final String TAG = "CancelEvent";
@@ -27,6 +27,11 @@ public class CancelEvent extends BaseEvent {
         }
 
         @Override
+        public ExecutorService getEventTaskPool() {
+            return null;
+        }
+
+        @Override
         public void doEvent(MotionEvent event) {
 
         }
@@ -38,13 +43,11 @@ public class CancelEvent extends BaseEvent {
     }
 
     @Override
-    public Completable exe(AtomicBoolean cancel) {
-        return Completable.fromRunnable(new Runnable() {
-            @Override
-            public void run() {
-                LogUtil.d(TAG, "trigger cancel");
-            }
-        });
+    public void exe(AtomicBoolean cancel, EventCallBack eventCallBack) {
+        LogUtil.d(TAG, "trigger cancel");
+        if (eventCallBack != null) {
+            eventCallBack.onComplete();
+        }
     }
 
     @Override
@@ -59,7 +62,7 @@ public class CancelEvent extends BaseEvent {
 
     @Override
     public String getDescribe() {
-        JSONObject jsonObject=new JSONObject();
+        JSONObject jsonObject = new JSONObject();
         return jsonObject.toString();
     }
 }

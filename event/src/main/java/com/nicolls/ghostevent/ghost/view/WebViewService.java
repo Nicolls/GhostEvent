@@ -5,7 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.Build;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -13,14 +15,12 @@ import android.view.WindowManager;
 import com.nicolls.ghostevent.ghost.utils.GhostUtils;
 import com.nicolls.ghostevent.ghost.utils.LogUtil;
 
-import io.reactivex.Completable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-
 public class WebViewService extends Service {
 
     private static final String TAG = "WebViewService";
     private GhostWebView ghostWebView;
     private WindowManager windowManager;
+    private Handler mainHandler = new Handler(Looper.getMainLooper());
 
     public WebViewService() {
     }
@@ -41,12 +41,12 @@ public class WebViewService extends Service {
         @Override
         public void onDone() {
             LogUtil.d(TAG, "ghost web onDone");
-            Completable.fromRunnable(new Runnable() {
+            mainHandler.post(new Runnable() {
                 @Override
                 public void run() {
                     exit();
                 }
-            }).subscribeOn(AndroidSchedulers.mainThread()).subscribe();
+            });
         }
     };
 

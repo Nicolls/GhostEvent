@@ -1,24 +1,30 @@
 package com.nicolls.ghostevent.ghost.request.model;
 
-import com.alibaba.fastjson.annotation.JSONField;
-import com.nicolls.ghostevent.ghost.request.network.model.BaseResponse;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.Serializable;
 
 //{"code":0,"message":null,"result":{"enable":true,"url":"https://cpu.baidu.com/1001/be900f73?scid=33854"}}
 
-public class ConfigModel extends BaseResponse {
-    @JSONField
+public class ConfigModel implements Serializable {
     public String code;
-    @JSONField
     public String message;
-    @JSONField
     public Result result;
 
+    public ConfigModel(JSONObject jsonObject) throws JSONException {
+        this.code = jsonObject.getString("code");
+        this.message = jsonObject.getString("message");
+        JSONObject result = jsonObject.getJSONObject("result");
+        if (result != null) {
+            this.result = new Result();
+            this.result.enable = result.getBoolean("enable");
+            this.result.url = result.getString("url");
+        }
+    }
+
     public static class Result implements Serializable {
-        @JSONField
         public boolean enable;
-        @JSONField
         public String url;
 
         @Override
@@ -35,7 +41,7 @@ public class ConfigModel extends BaseResponse {
         return "ConfigModel{" +
                 "code='" + code + '\'' +
                 ", message='" + message + '\'' +
-                ", result=" + (result==null?"null":result.toString()) +
+                ", result=" + (result == null ? "null" : result.toString()) +
                 '}';
     }
 }

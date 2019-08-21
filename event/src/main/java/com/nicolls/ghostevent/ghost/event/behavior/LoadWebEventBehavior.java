@@ -32,7 +32,7 @@ public class LoadWebEventBehavior implements IEventBehavior<Boolean> {
         LogUtil.d(TAG,"event end start listen page");
 
         try {
-            target.getEventHandler().postDelayed(checkLoadPage,CHECK_WAIT_TIME);
+            target.getMainHandler().postDelayed(checkLoadPage,CHECK_WAIT_TIME);
             boolean isOk=semaphore.tryAcquire(getTimeOut(),TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -56,7 +56,7 @@ public class LoadWebEventBehavior implements IEventBehavior<Boolean> {
         @Override
         public void onStart(String url) {
             LogUtil.d(TAG,"page load onStart");
-            target.getEventHandler().removeCallbacks(checkLoadPage);
+            target.getMainHandler().removeCallbacks(checkLoadPage);
         }
 
         @Override

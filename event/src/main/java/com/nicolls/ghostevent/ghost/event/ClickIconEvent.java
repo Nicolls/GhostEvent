@@ -6,20 +6,27 @@ import com.nicolls.ghostevent.ghost.event.model.TouchPoint;
 import com.nicolls.ghostevent.ghost.parse.ParseManager;
 import com.nicolls.ghostevent.ghost.parse.model.ViewNode;
 
-public class ClickIconEvent extends ClickEvent {
+import java.util.concurrent.Semaphore;
 
+public class ClickIconEvent extends ClickEvent {
+    private static final String TAG="ClickIconEvent";
     public ClickIconEvent(ITarget target, IEventBehavior eventBehavior) {
         super(target, null, eventBehavior);
     }
 
     @Override
-    protected void doEvent() {
+    protected void doEvent(final Semaphore semaphore) {
         ViewNode viewNode = ParseManager.getInstance().getCurrentParseNode();
         if (viewNode != null) {
             float x = viewNode.centerX;
             float y = viewNode.centerY;
             touchPoint=TouchPoint.obtainClick(x,y);
         }
-        super.doEvent();
+        super.doEvent(semaphore);
+    }
+
+    @Override
+    public String getName() {
+        return TAG;
     }
 }
