@@ -24,6 +24,7 @@ public class GhostWebViewClient extends WebViewClient {
     private final RedirectHandler redirectHandler;
     private IWebTarget target;
     private String url;
+    private boolean isLoadStartDone = false;
 
     public GhostWebViewClient(IWebTarget target, RedirectHandler redirectHandler) {
         this.redirectHandler = redirectHandler;
@@ -32,7 +33,10 @@ public class GhostWebViewClient extends WebViewClient {
 
     @Override
     public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-        String scheme = request.getUrl().getScheme();
+        String scheme = "http";
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            scheme = request.getUrl().getScheme();
+        }
         // 拦截非http / https类型请求
         if (!isHttpUrl(scheme)) {
             return true;
@@ -59,10 +63,16 @@ public class GhostWebViewClient extends WebViewClient {
         return url;
     }
 
+    public void initLoadStartDone() {
+        LogUtil.d(TAG,"initLoadStartDone");
+        isLoadStartDone = false;
+    }
+
     @Override
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
         super.onPageStarted(view, url, favicon);
         LogUtil.d(TAG, "onPageStarted " + url);
+        isLoadStartDone = true;
         this.url = url;
         isError = false;
         isHaveNotifySuccess = false;
@@ -112,6 +122,11 @@ public class GhostWebViewClient extends WebViewClient {
     }
 
     private void onError(WebView view) {
+        if (!isLoadStartDone) {
+            LogUtil.d(TAG, "onError have not start");
+            return;
+        }
+        isLoadStartDone = false;
         isError = true;
         LogUtil.d(TAG, "onError");
         ParseManager.getInstance().loadJsInterface(view, url);
@@ -119,6 +134,7 @@ public class GhostWebViewClient extends WebViewClient {
             @Override
             public void run() {
                 redirectHandler.notifyFail();
+                isLoadStartDone = false;
             }
         }, 1000);
 
@@ -128,7 +144,11 @@ public class GhostWebViewClient extends WebViewClient {
      * 加载成功
      */
     private void onSuccess(WebView view, final String url) {
-        LogUtil.d(TAG, "load onSuccess");
+        LogUtil.d(TAG, "load onSuccess start done:" + isLoadStartDone);
+        if (!isLoadStartDone) {
+            LogUtil.d(TAG, "onSuccess have not start");
+            return;
+        }
         ParseManager.getInstance().loadJsInterface(view, url);
         target.getMainHandler().postDelayed(new Runnable() {
             @Override
@@ -136,6 +156,7 @@ public class GhostWebViewClient extends WebViewClient {
                 redirectHandler.notifySuccess(url);
             }
         }, 1000);
+        isLoadStartDone = false;
         GhostUtils.Page page = GhostUtils.currentPage(url);
         switch (page) {
             case HOME:

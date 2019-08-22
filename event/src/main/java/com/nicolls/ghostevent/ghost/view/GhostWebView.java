@@ -40,6 +40,9 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
             LogUtil.d(TAG, "onSuccess " + event.getName());
             if (event instanceof LoadPageEvent) {
                 LogUtil.d("View", "inflate success ", true);
+                if (webViewClient != null) {
+                    webViewClient.initLoadStartDone();
+                }
             }
             if (event.getParent() == null) {
                 LogUtil.d(TAG, "an individual event ");
@@ -59,12 +62,24 @@ public class GhostWebView extends BaseWebView implements IWebTarget {
         @Override
         public void onFail(BaseEvent event) {
             LogUtil.d(TAG, "onFail");
+            if (event instanceof LoadPageEvent) {
+                LogUtil.d("View", "inflate onFail ", true);
+                if (webViewClient != null) {
+                    webViewClient.initLoadStartDone();
+                }
+            }
             retry();
         }
 
         @Override
         public void onTimeOut(BaseEvent event) {
             LogUtil.d(TAG, "onTimeOut");
+            if (event instanceof LoadPageEvent) {
+                LogUtil.d("View", "inflate time out ", true);
+                if (webViewClient != null) {
+                    webViewClient.initLoadStartDone();
+                }
+            }
             retry();
         }
     };

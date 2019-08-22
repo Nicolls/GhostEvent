@@ -48,7 +48,7 @@ public class ClickIconEventBehavior implements IEventBehavior<Boolean> {
     }
 
     @Override
-    public void onEnd(AtomicBoolean cancel) {
+    public Boolean onEnd(AtomicBoolean cancel) {
         LogUtil.d(TAG,"onEnd wait page");
         boolean isOk=false;
         try {
@@ -59,6 +59,7 @@ public class ClickIconEventBehavior implements IEventBehavior<Boolean> {
         }
         LogUtil.d(TAG,"onEnd get page load completed semaphore acquire "+isOk);
         redirectHandler.unRegisterRedirectListener(listener);
+        return true;
     }
 
     private final Runnable checkLoadPage = new Runnable() {

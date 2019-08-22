@@ -9,21 +9,17 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class LoadWebEventBehavior implements IEventBehavior<Boolean> {
-    private static final String TAG = "LoadWebEventBehavior";
+public class ClickEventBehavior implements IEventBehavior<Boolean> {
+    private static final String TAG="ClickEventBehavior";
 
-    private static final long CHECK_WAIT_TIME = 2000;
+    private static final long CHECK_WAIT_TIME=2000;
     private RedirectHandler redirectHandler;
     private IWebTarget target;
-    private final Semaphore semaphore = new Semaphore(0);
-    private boolean needLoadPage = false;
-
-    public LoadWebEventBehavior(IWebTarget target, RedirectHandler redirectHandler, boolean needLoadPage) {
-        this.target = target;
-        this.redirectHandler = redirectHandler;
-        this.needLoadPage = needLoadPage;
+    private final Semaphore semaphore=new Semaphore(0);
+    public ClickEventBehavior(IWebTarget target, RedirectHandler redirectHandler){
+        this.target=target;
+        this.redirectHandler=redirectHandler;
     }
-
     @Override
     public Boolean onStart(AtomicBoolean cancel) {
         redirectHandler.unRegisterRedirectListener(listener);
@@ -33,20 +29,19 @@ public class LoadWebEventBehavior implements IEventBehavior<Boolean> {
 
     @Override
     public Boolean onEnd(AtomicBoolean cancel) {
-        LogUtil.d(TAG, "event end start listen page");
-        boolean isOk = false;
+        LogUtil.d(TAG,"event end start listen page");
+
         try {
-            target.getMainHandler().postDelayed(checkLoadPage, CHECK_WAIT_TIME);
-            isOk = semaphore.tryAcquire(getTimeOut(), TimeUnit.MILLISECONDS);
+            target.getMainHandler().postDelayed(checkLoadPage,CHECK_WAIT_TIME);
+            boolean isOk=semaphore.tryAcquire(getTimeOut(),TimeUnit.MILLISECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         redirectHandler.unRegisterRedirectListener(listener);
-        LogUtil.w(TAG, "onEnd " + isOk);
-        return isOk;
+        return true;
     }
 
-    private final Runnable checkLoadPage = new Runnable() {
+    private final Runnable checkLoadPage=new Runnable() {
         @Override
         public void run() {
             semaphore.release();
@@ -58,27 +53,24 @@ public class LoadWebEventBehavior implements IEventBehavior<Boolean> {
         return Constants.TIME_DEFAULT_LOAD_PAGE_WAIT_TIME;
     }
 
-    private RedirectHandler.RedirectListener listener = new RedirectHandler.RedirectListener() {
+    private RedirectHandler.RedirectListener listener=new RedirectHandler.RedirectListener() {
         @Override
         public void onStart(String url) {
-            LogUtil.d(TAG, "page load onStart");
+            LogUtil.d(TAG,"page load onStart");
             target.getMainHandler().removeCallbacks(checkLoadPage);
         }
 
         @Override
         public void onSuccess(String url) {
-            LogUtil.d(TAG, "page load success ");
-            LogUtil.d(TAG, "start begin is a legal load");
+            LogUtil.d(TAG,"page load success");
             redirectHandler.unRegisterRedirectListener(this);
             semaphore.release();
         }
 
         @Override
         public void onFail() {
-            LogUtil.d(TAG, "page load onFail");
-            if (!needLoadPage) {
-                semaphore.release();
-            }
+            LogUtil.d(TAG,"page load onFail");
+            semaphore.release();
         }
     };
 }

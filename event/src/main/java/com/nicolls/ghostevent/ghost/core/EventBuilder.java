@@ -13,6 +13,7 @@ import com.nicolls.ghostevent.ghost.event.LoadPageEvent;
 import com.nicolls.ghostevent.ghost.event.ScrollVerticalEvent;
 import com.nicolls.ghostevent.ghost.event.SelectNodeClickEvent;
 import com.nicolls.ghostevent.ghost.event.SlideEvent;
+import com.nicolls.ghostevent.ghost.event.behavior.ClickEventBehavior;
 import com.nicolls.ghostevent.ghost.event.behavior.ClickIconEventBehavior;
 import com.nicolls.ghostevent.ghost.event.behavior.LoadWebEventBehavior;
 import com.nicolls.ghostevent.ghost.event.behavior.ScrollReadMoreEventBehavior;
@@ -83,7 +84,7 @@ public class EventBuilder {
         int y = borderHeight + random.nextInt(displayHeight / 2);
         LogUtil.d(TAG, "getClickEvent x:" + x + " y:" + y);
         TouchPoint clickRandom = TouchPoint.obtainClick(x, y);
-        LoadWebEventBehavior behavior = new LoadWebEventBehavior(webTarget, redirectHandler);
+        ClickEventBehavior behavior = new ClickEventBehavior(webTarget, redirectHandler);
         BaseEvent clickRedirect = new ClickEvent(webTarget, clickRandom, behavior);
         return clickRedirect;
     }
@@ -98,21 +99,21 @@ public class EventBuilder {
 
     public BaseEvent getLoadPageEvent(IWebTarget target, String url) {
         LogUtil.d(TAG,"getLoadPageEvent");
-        LoadWebEventBehavior behavior = new LoadWebEventBehavior(target, redirectHandler);
+        LoadWebEventBehavior behavior = new LoadWebEventBehavior(target, redirectHandler,true);
         BaseEvent loadPageEvent = new LoadPageEvent(target, url, behavior);
         return loadPageEvent;
     }
 
     public BaseEvent getGoBackEvent(IWebTarget target) {
         LogUtil.d(TAG,"getGoBackEvent");
-        LoadWebEventBehavior behavior = new LoadWebEventBehavior(target, redirectHandler);
+        LoadWebEventBehavior behavior = new LoadWebEventBehavior(target, redirectHandler,false);
         BaseEvent gobackEvent = new GoBackEvent(target, behavior);
         return gobackEvent;
     }
 
     public BaseEvent getGoHomeEvent(IWebTarget target) {
         LogUtil.d(TAG,"getGoHomeEvent");
-        LoadWebEventBehavior behavior = new LoadWebEventBehavior(target, redirectHandler);
+        LoadWebEventBehavior behavior = new LoadWebEventBehavior(target, redirectHandler,false);
         BaseEvent event = new GoHomeEvent(target, behavior);
         return event;
     }

@@ -78,9 +78,9 @@ public class ScrollReadMoreEventBehavior implements IEventBehavior<Line> {
     }
 
     @Override
-    public void onEnd(AtomicBoolean cancel) {
-        LogUtil.d(TAG, "onEnd wait page");
-
+    public Line onEnd(AtomicBoolean cancel) {
+        LogUtil.d(TAG, "onEnd wait");
+        return null;
     }
 
     @Override

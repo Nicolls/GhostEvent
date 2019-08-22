@@ -15,16 +15,16 @@ import org.json.JSONObject;
 
 public abstract class Ghost {
     private static final String TAG = "Ghost";
-    private NetRequest requester;
+    private HttpUrlRequest requester;
     private Context context;
     private boolean isWorking = false;
 
-    protected Handler mainHandler=new Handler(Looper.getMainLooper());
+    protected Handler mainHandler = new Handler(Looper.getMainLooper());
 
     public Ghost(Context context) {
         this.context = context.getApplicationContext();
         requester = new HttpUrlRequest();
-        ((HttpUrlRequest) requester).setRequestCallBack(requestCallBack);
+        requester.setRequestCallBack(requestCallBack);
     }
 
     private final NetRequest.RequestCallBack requestCallBack = new NetRequest.RequestCallBack() {
@@ -41,7 +41,7 @@ public abstract class Ghost {
                 LogUtil.e(TAG, " on parse error ", e);
             }
             if (!isWorking) {
-                LogUtil.w(TAG,"already exit");
+                LogUtil.w(TAG, "activity already exit");
                 return;
             }
             startOnUiThread();
@@ -50,9 +50,10 @@ public abstract class Ghost {
         @Override
         public void onFail(String message) {
             if (!isWorking) {
-                LogUtil.w(TAG,"already exit");
+                LogUtil.w(TAG, "activity already exit");
                 return;
             }
+            // 请求发生错误也要执行
             startOnUiThread();
         }
     };
@@ -80,7 +81,7 @@ public abstract class Ghost {
         }).start();
     }
 
-    private void startOnUiThread(){
+    private void startOnUiThread() {
         mainHandler.post(new Runnable() {
             @Override
             public void run() {

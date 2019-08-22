@@ -57,14 +57,17 @@ public class HttpUrlRequest implements NetRequest {
                 String result = getString(inputStream);
                 LogUtil.d(TAG, "response:" + result);
                 inputStream.close();
-                JSONObject jsonObject=new JSONObject(result);
-                if(requestCallBack!=null){
+                JSONObject jsonObject = new JSONObject(result);
+                if (requestCallBack != null) {
                     requestCallBack.onSuccess(jsonObject);
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
             LogUtil.e(TAG, "executeRequest error ", e);
+            if (requestCallBack != null) {
+                requestCallBack.onFail(e == null ? "null" : e.getMessage());
+            }
         }
     }
 

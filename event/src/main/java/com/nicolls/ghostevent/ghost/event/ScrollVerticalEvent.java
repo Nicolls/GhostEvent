@@ -159,6 +159,10 @@ public class ScrollVerticalEvent extends BaseEvent {
                 } else {
                     LogUtil.d(TAG, "scroll vertical event completed scrollY:" + webView.getScrollY());
                 }
+
+                if (scrollEventBehavior != null) {
+                    scrollEventBehavior.onEnd(cancel);
+                }
                 if (eventCallBack != null) {
                     eventCallBack.onComplete();
                 }
